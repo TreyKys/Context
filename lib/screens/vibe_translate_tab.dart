@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/vibe_provider.dart';
+import '../widgets/result_card.dart';
 
-class VibeTranslateTab extends StatefulWidget {
+class VibeTranslateTab extends ConsumerStatefulWidget {
   const VibeTranslateTab({super.key});
 
   @override
-  State<VibeTranslateTab> createState() => _VibeTranslateTabState();
+  ConsumerState<VibeTranslateTab> createState() => _VibeTranslateTabState();
 }
 
-class _VibeTranslateTabState extends State<VibeTranslateTab> {
+class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   String? _selectedMode = 'Define';
   String? _selectedContext = 'Gen Z / TikTok Slang';
   final TextEditingController _controller = TextEditingController();
@@ -58,10 +61,25 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
     }
   }
 
+  void _handleSearch() {
+    final input = _controller.text.trim();
+    if (input.isEmpty) return;
+
+    // Dismiss keyboard
+    FocusScope.of(context).unfocus();
+
+    ref.read(vibeProvider.notifier).generateVibe(
+      input,
+      _selectedMode!,
+      _selectedContext!,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Determine greeting based on current time
     final greeting = _getGreeting();
+    final vibeState = ref.watch(vibeProvider);
 
     return SingleChildScrollView(
       child: Padding(
@@ -105,13 +123,19 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
                   TextField(
                     controller: _controller,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Enter a word or phrase...',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: const TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
+                      suffixIcon: IconButton(
+                        icon: const Icon(CupertinoIcons.arrow_right_circle_fill, color: Colors.cyanAccent),
+                        onPressed: _handleSearch,
+                      ),
                     ),
-                    maxLines: null,
+                    maxLines: 1,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => _handleSearch(),
                   ),
                   const SizedBox(height: 20),
 
@@ -139,6 +163,18 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
                 ],
               ),
             ),
+
+            const SizedBox(height: 32),
+
+            // Result Area
+            ResultCard(
+              isLoading: vibeState.isLoading,
+              result: vibeState.result,
+              error: vibeState.error,
+            ),
+
+            // Bottom spacing
+            const SizedBox(height: 80),
           ],
         ),
       ),
