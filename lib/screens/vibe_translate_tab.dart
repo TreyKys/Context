@@ -234,7 +234,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                     child: Icon(icon, size: 16, color: Colors.white),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(item, overflow: TextOverflow.ellipsis)),
+                  Text(item),
                 ],
               ),
             );

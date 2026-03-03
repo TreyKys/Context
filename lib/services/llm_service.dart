@@ -57,39 +57,24 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
         final response = await _model.generateContent(content);
         final responseText = response.text;
 
-        if (responseText == null) {
+        if (responseText == null || responseText.isEmpty) {
           throw Exception('Empty response from API');
         }
 
         // Strip markdown backticks if present (JSON parsing helper)
-        String cleanJson = responseText.trim();
-        if (cleanJson.startsWith('```json')) {
-          cleanJson = cleanJson.substring(7);
-        } else if (cleanJson.startsWith('```')) {
-          cleanJson = cleanJson.substring(3);
-        }
-        if (cleanJson.endsWith('```')) {
-          cleanJson = cleanJson.substring(0, cleanJson.length - 3);
-        }
+        String cleanJson = responseText.replaceAll(RegExp(r'```(?:json)?'), '').replaceAll('```', '').trim();
 
         final Map<String, dynamic> jsonMap = jsonDecode(cleanJson);
         return VibeResult.fromJson(jsonMap, isDirectSearch: isDirectSearch);
       } catch (e) {
-        if (e is GenerativeAIException) {
-          retries++;
-          if (retries >= 3) {
-            throw Exception(
-              'Decryption Failed: Signal Lost or High Network Traffic.',
-            );
-          }
-          // Exponential backoff
-          await Future.delayed(Duration(seconds: retries == 1 ? 2 : 4));
-        } else {
-          // JSON parsing error or other
+        retries++;
+        if (retries >= 3) {
           throw Exception(
             'Decryption Failed: Signal Lost or High Network Traffic.',
           );
         }
+        // Exponential backoff
+        await Future.delayed(Duration(seconds: retries == 1 ? 2 : 4));
       }
     }
     throw Exception('Decryption Failed: Signal Lost or High Network Traffic.');
