@@ -8,7 +8,7 @@ void main() {
         'literal_definition': 'A test definition',
         'vibe_translation': 'A test vibe',
         'example_sentence': 'A test example',
-        'tags': ['tag1', 'tag2', 'tag3']
+        'tags': ['tag1', 'tag2', 'tag3'],
       };
 
       final result = VibeResult.fromJson(json);
@@ -32,7 +32,7 @@ void main() {
 
     test('fromJson handles non-string tags', () {
       final json = {
-        'tags': [1, 2, 'three']
+        'tags': [1, 2, 'three'],
       };
 
       final result = VibeResult.fromJson(json);

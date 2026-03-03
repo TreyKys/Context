@@ -11,14 +11,28 @@ class LLMService {
     if (apiKey == null) {
       throw Exception('GEMINI_API_KEY not found in .env');
     }
-    _model = GenerativeModel(
-      model: 'gemini-3-flash-preview',
-      apiKey: apiKey,
-    );
+    _model = GenerativeModel(model: 'gemini-3-flash-preview', apiKey: apiKey);
   }
 
-  Future<VibeResult> generateVibe(String input, String mode, String vibe) async {
-    final prompt = '''
+  Future<VibeResult> directSearch(String input) async {
+    final prompt =
+        '''
+You are a hyper-intelligent linguistic and cultural analyst. The user is searching for: '$input'.
+Return a strict JSON object with no markdown backticks containing:
+1. literal_meaning: A sharp, factual definition.
+2. etymology_context: A breakdown of the word's origins or current cultural/professional usage.
+3. tags: An array of 4 highly specific string tags (e.g., #Finance, #GenZ).
+''';
+    return _callLlmAndParse(prompt, isDirectSearch: true);
+  }
+
+  Future<VibeResult> generateVibe(
+    String input,
+    String mode,
+    String vibe,
+  ) async {
+    final prompt =
+        '''
 You are a hyper-intelligent cultural dictionary. The user wants you to process the word/phrase: '$input'.
 Action requested (Mode): '$mode'. > Target Persona (Vibe): '$vibe'.
 
@@ -29,31 +43,55 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
 4. tags: An array of 3 relevant strings.
 ''';
 
-    try {
-      final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
-      final responseText = response.text;
+    return _callLlmAndParse(prompt, isDirectSearch: false);
+  }
 
-      if (responseText == null) {
-        throw Exception('Empty response from API');
-      }
+  Future<VibeResult> _callLlmAndParse(
+    String prompt, {
+    required bool isDirectSearch,
+  }) async {
+    int retries = 0;
+    while (retries < 3) {
+      try {
+        final content = [Content.text(prompt)];
+        final response = await _model.generateContent(content);
+        final responseText = response.text;
 
-      // Strip markdown backticks if present (JSON parsing helper)
-      String cleanJson = responseText.trim();
-      if (cleanJson.startsWith('```json')) {
-        cleanJson = cleanJson.substring(7);
-      } else if (cleanJson.startsWith('```')) {
-        cleanJson = cleanJson.substring(3);
-      }
-      if (cleanJson.endsWith('```')) {
-        cleanJson = cleanJson.substring(0, cleanJson.length - 3);
-      }
+        if (responseText == null) {
+          throw Exception('Empty response from API');
+        }
 
-      final Map<String, dynamic> jsonMap = jsonDecode(cleanJson);
-      return VibeResult.fromJson(jsonMap);
-    } catch (e) {
-      // Re-throw so the provider can handle the error state
-      throw Exception('Failed to generate vibe: $e');
+        // Strip markdown backticks if present (JSON parsing helper)
+        String cleanJson = responseText.trim();
+        if (cleanJson.startsWith('```json')) {
+          cleanJson = cleanJson.substring(7);
+        } else if (cleanJson.startsWith('```')) {
+          cleanJson = cleanJson.substring(3);
+        }
+        if (cleanJson.endsWith('```')) {
+          cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+        }
+
+        final Map<String, dynamic> jsonMap = jsonDecode(cleanJson);
+        return VibeResult.fromJson(jsonMap, isDirectSearch: isDirectSearch);
+      } catch (e) {
+        if (e is GenerativeAIException) {
+          retries++;
+          if (retries >= 3) {
+            throw Exception(
+              'Decryption Failed: Signal Lost or High Network Traffic.',
+            );
+          }
+          // Exponential backoff
+          await Future.delayed(Duration(seconds: retries == 1 ? 2 : 4));
+        } else {
+          // JSON parsing error or other
+          throw Exception(
+            'Decryption Failed: Signal Lost or High Network Traffic.',
+          );
+        }
+      }
     }
+    throw Exception('Decryption Failed: Signal Lost or High Network Traffic.');
   }
 }

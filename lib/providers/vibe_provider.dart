@@ -7,27 +7,17 @@ class VibeState {
   final VibeResult? result;
   final String? error;
 
-  VibeState({
-    this.isLoading = false,
-    this.result,
-    this.error,
-  });
+  VibeState({this.isLoading = false, this.result, this.error});
 
   factory VibeState.initial() => VibeState();
 
   factory VibeState.loading() => VibeState(isLoading: true);
 
-  factory VibeState.success(VibeResult result) => VibeState(
-    isLoading: false,
-    result: result,
-    error: null,
-  );
+  factory VibeState.success(VibeResult result) =>
+      VibeState(isLoading: false, result: result, error: null);
 
-  factory VibeState.error(String error) => VibeState(
-    isLoading: false,
-    result: null,
-    error: error,
-  );
+  factory VibeState.error(String error) =>
+      VibeState(isLoading: false, result: null, error: error);
 }
 
 final llmServiceProvider = Provider<LLMService>((ref) => LLMService());
@@ -50,6 +40,18 @@ class VibeNotifier extends Notifier<VibeState> {
       state = VibeState.error(e.toString());
     }
   }
+
+  Future<void> directSearch(String input) async {
+    state = VibeState.loading();
+    try {
+      final result = await _llmService.directSearch(input);
+      state = VibeState.success(result);
+    } catch (e) {
+      state = VibeState.error(e.toString());
+    }
+  }
 }
 
-final vibeProvider = NotifierProvider<VibeNotifier, VibeState>(VibeNotifier.new);
+final vibeProvider = NotifierProvider<VibeNotifier, VibeState>(
+  VibeNotifier.new,
+);

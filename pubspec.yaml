@@ -16,6 +16,8 @@ dependencies:
   google_generative_ai: ^0.4.7
   flutter_dotenv: ^6.0.0
   flutter_riverpod: ^3.2.1
+  animated_text_kit: ^4.3.0
+  google_fonts: ^8.0.2
 
 dev_dependencies:
   flutter_test:
