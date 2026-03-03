@@ -32,20 +32,35 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentIndex = index;
           });
         },
-        backgroundColor: const Color(0xFF1E1F20),
-        selectedItemColor: Colors.blueAccent,
+        backgroundColor: const Color(0xFF0B0C10),
+        selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.sparkles),
+            icon: const Icon(CupertinoIcons.sparkles),
+            activeIcon: _buildGradientIcon(CupertinoIcons.sparkles),
             label: 'Vibe Translate',
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.search),
+            icon: const Icon(CupertinoIcons.search),
+            activeIcon: _buildGradientIcon(CupertinoIcons.search),
             label: 'Direct Search',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGradientIcon(IconData icon) {
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return const LinearGradient(
+          colors: [Color(0xFF6A0DAD), Color(0xFF0B0C10)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(bounds);
+      },
+      child: Icon(icon, color: Colors.white),
     );
   }
 }

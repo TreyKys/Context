@@ -95,9 +95,22 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1F20), // Deep dark grey
-                borderRadius: BorderRadius.circular(32), // Heavily rounded
-                border: Border.all(color: Colors.grey.shade800, width: 1),
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6A0DAD).withValues(alpha: 0.3), // Gradient glow
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 0),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 15.0,
+                    spreadRadius: 2.0,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -120,19 +133,23 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Left Control (Mode)
-                      _buildDropdown(
-                        value: _selectedMode,
-                        items: _modes,
-                        onChanged: (val) => setState(() => _selectedMode = val),
-                        icon: CupertinoIcons.gear,
+                      Expanded(
+                        child: _buildDropdown(
+                          value: _selectedMode,
+                          items: _modes,
+                          onChanged: (val) => setState(() => _selectedMode = val),
+                          icon: CupertinoIcons.gear,
+                        ),
                       ),
-
+                      const SizedBox(width: 12),
                       // Right Control (Context)
-                      _buildDropdown(
-                        value: _selectedContext,
-                        items: _contexts,
-                        onChanged: (val) => setState(() => _selectedContext = val),
-                        icon: CupertinoIcons.person_2,
+                      Expanded(
+                        child: _buildDropdown(
+                          value: _selectedContext,
+                          items: _contexts,
+                          onChanged: (val) => setState(() => _selectedContext = val),
+                          icon: CupertinoIcons.person_2,
+                        ),
                       ),
                     ],
                   ),
@@ -154,27 +171,35 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2E2F),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6A0DAD), Color(0xFF0B0C10)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
+          isExpanded: true,
           value: value,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          dropdownColor: const Color(0xFF2D2E2F),
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          dropdownColor: const Color(0xFF0B0C10),
           style: const TextStyle(color: Colors.white, fontSize: 14),
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
               value: item,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: [
-                  Icon(icon, size: 16, color: Colors.blueAccent),
+                  Icon(icon, size: 16, color: Colors.white),
                   const SizedBox(width: 8),
-                  Text(
-                    item.length > 15 ? '${item.substring(0, 15)}...' : item,
-                    overflow: TextOverflow.ellipsis,
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      item,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
