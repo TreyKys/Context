@@ -25,7 +25,7 @@ Action requested (Mode): '$mode'. > Target Persona (Vibe): '$vibe'.
 Analyze the input and return a strict JSON object with exactly these four keys. Do not use markdown backticks:
 1. literal_definition: A short, standard dictionary definition.
 2. vibe_translation: The definition fully translated into the exact vernacular, tone, and slang of the Target Persona. Fully commit to the bit.
-3. example_sentence: A hilarious, highly accurate sentence using the word from the perspective of the Target Persona. (for relativity and humor, use "For Context.......(then whatever you want to say the example sentence is)"
+3. example_sentence: A hilarious, highly accurate sentence using the word strictly from the perspective of the Target Persona. To anchor the humor and relativity, the sentence MUST begin with either 'For context...' or 'Well, in context...'
 4. tags: An array of 3 relevant strings.
 ''';
 
