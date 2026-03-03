@@ -1,15 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/home_screen.dart';
 
-Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-  runApp(
-    const ProviderScope(
-      child: ContextDictionaryApp(),
-    ),
-  );
+void main() async {
+  // 1. This MUST be the absolute first line
+  WidgetsFlutterBinding.ensureInitialized(); 
+
+  try {
+    // 2. Load the environment variables
+    await dotenv.load(fileName: ".env");
+    
+    // 3. Run the actual app wrapped in Riverpod
+    runApp(const ProviderScope(child: ContextDictionaryApp())); 
+    
+  } catch (error, stackTrace) {
+    // 4. If ANYTHING fails above, boot this error screen instead of crashing
+    runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: const Color(0xFF8B0000), // Dark Red
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              '''FATAL CRASH:
+$error
+
+STACKTRACE:
+$stackTrace''',
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+        ),
+      ),
+    ));
+  }
 }
 
 class ContextDictionaryApp extends StatelessWidget {
