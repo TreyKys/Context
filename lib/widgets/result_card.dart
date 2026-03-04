@@ -3,21 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../models/vibe_result.dart';
+import 'paywall_card.dart';
 
 class ResultCard extends StatelessWidget {
   final VibeResult? result;
   final String? error;
   final bool isLoading;
+  final bool isQuotaLocked;
 
   const ResultCard({
     super.key,
     this.result,
     this.error,
     this.isLoading = false,
+    this.isQuotaLocked = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Quota Locked State
+    if (isQuotaLocked) {
+      return const PaywallCard();
+    }
+
     // Loading State
     if (isLoading) {
       return Center(

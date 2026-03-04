@@ -86,6 +86,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             isLoading: vibeState.isLoading,
             result: vibeState.result,
             error: vibeState.error,
+            isQuotaLocked: vibeState.isQuotaLocked,
           ),
 
           const SizedBox(height: 80),
