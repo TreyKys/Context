@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
+
+// Create a global provider to hold the initial notification payload
+final initialNotificationPayloadProvider = Provider<String?>((ref) => null);
 
 void main() async {
   // 1. This MUST be the absolute first line
@@ -12,8 +16,23 @@ void main() async {
     // 2. Load the environment variables
     await dotenv.load(fileName: ".env");
 
-    // 3. Run the actual app wrapped in Riverpod
-    runApp(const ProviderScope(child: ContextDictionaryApp()));
+    // 3. Initialize Notification Service
+    final notificationService = NotificationService();
+    await notificationService.init();
+    await notificationService.requestPermissions();
+    await notificationService.scheduleDailyNotifications();
+
+    final initialPayload = notificationService.initialPayload;
+
+    // 4. Run the actual app wrapped in Riverpod
+    runApp(
+      ProviderScope(
+        overrides: [
+          initialNotificationPayloadProvider.overrideWithValue(initialPayload),
+        ],
+        child: const ContextDictionaryApp(),
+      ),
+    );
   } catch (error, stackTrace) {
     // 4. If ANYTHING fails above, boot this error screen instead of crashing
     runApp(

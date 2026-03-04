@@ -18,13 +18,13 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
     final input = _searchController.text.trim();
     if (input.isNotEmpty) {
       FocusScope.of(context).unfocus();
-      ref.read(vibeProvider.notifier).directSearch(input);
+      ref.read(directSearchProvider.notifier).directSearch(input);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vibeState = ref.watch(vibeProvider);
+    final vibeState = ref.watch(directSearchProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),

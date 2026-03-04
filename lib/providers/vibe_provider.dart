@@ -55,3 +55,7 @@ class VibeNotifier extends Notifier<VibeState> {
 final vibeProvider = NotifierProvider<VibeNotifier, VibeState>(
   VibeNotifier.new,
 );
+
+final directSearchProvider = NotifierProvider<VibeNotifier, VibeState>(
+  VibeNotifier.new,
+);

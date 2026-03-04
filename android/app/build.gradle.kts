@@ -28,6 +28,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // flutter_local_notifications requires setting multiDexEnabled or other fixes if multidex is needed,
+        // minSdk 24 usually avoids multidex issues natively, but we specify it for safety.
+        multiDexEnabled = true
     }
 
     buildTypes {

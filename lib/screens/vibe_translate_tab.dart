@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibe_provider.dart';
 import '../widgets/result_card.dart';
+import '../main.dart'; // To access initialNotificationPayloadProvider
 
 class VibeTranslateTab extends ConsumerStatefulWidget {
   const VibeTranslateTab({super.key});
@@ -17,6 +18,22 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   final TextEditingController _controller = TextEditingController();
 
   final List<String> _modes = ['Define', 'Roast', 'Explain Like I\'m 5'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkNotificationPayload();
+    });
+  }
+
+  void _checkNotificationPayload() {
+    final payload = ref.read(initialNotificationPayloadProvider);
+    if (payload != null && payload.isNotEmpty) {
+      _controller.text = payload;
+      _handleSearch();
+    }
+  }
 
   final List<String> _contexts = [
     'Gen Z / TikTok Slang',
@@ -234,7 +251,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                     child: Icon(icon, size: 16, color: Colors.white),
                   ),
                   const SizedBox(width: 8),
-                  Text(item),
+                  Flexible(child: Text(item, overflow: TextOverflow.visible)),
                 ],
               ),
             );
