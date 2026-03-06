@@ -12,6 +12,14 @@
 -keep class com.google.android.gms.tflite.** { *; }
 -keep class org.tensorflow.** { *; }
 
+# Rules for Google Mobile Ads and Play Services (AdMob)
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.android.gms.internal.ads.** { *; }
+-keep class com.google.ads.** { *; }
+-dontwarn com.google.android.gms.ads.**
+-dontwarn com.google.android.gms.internal.ads.**
+-dontwarn com.google.ads.**
+
 # Keep model classes (important for JSON serialization/deserialization)
 -keep public class * extends java.lang.Object {
     public <init>();
