@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
+import 'services/quota_service.dart';
 
 // Create a global provider to hold the initial notification payload
 final initialNotificationPayloadProvider = Provider<String?>((ref) => null);
@@ -13,10 +15,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // 2. Load the environment variables
+    // 2. Initialize AdMob SDK
+    await MobileAds.instance.initialize();
+
+    // 3. Load the environment variables
     await dotenv.load(fileName: ".env");
 
-    // 3. Initialize Notification Service
+    // 4. Initialize Notification Service
     final notificationService = NotificationService();
     await notificationService.init();
     await notificationService.requestPermissions();
@@ -24,17 +29,22 @@ void main() async {
 
     final initialPayload = notificationService.initialPayload;
 
-    // 4. Run the actual app wrapped in Riverpod
+    // 5. Initialize Quota Service
+    final quotaService = QuotaService();
+    await quotaService.init();
+
+    // 6. Run the actual app wrapped in Riverpod
     runApp(
       ProviderScope(
         overrides: [
           initialNotificationPayloadProvider.overrideWithValue(initialPayload),
+          quotaServiceProvider.overrideWithValue(quotaService),
         ],
         child: const ContextDictionaryApp(),
       ),
     );
   } catch (error, stackTrace) {
-    // 4. If ANYTHING fails above, boot this error screen instead of crashing
+    // 7. If ANYTHING fails above, boot this error screen instead of crashing
     runApp(
       MaterialApp(
         debugShowCheckedModeBanner: false,

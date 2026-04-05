@@ -1,5 +1,5 @@
 // A curated, massive list of trending words across various cultures (GenZ, Crypto, Tech, Corporate, Pop Culture)
-final List<String> trendingWords = [
+final List<String> _baseTrendingWords = [
   'Exit Liquidity',
   'Diamond Hands',
   'Rug Pull',
@@ -690,3 +690,9 @@ final List<String> trendingWords = [
   'Cottagecore',
   'Dark Academia',
 ];
+
+List<String> get trendingWords {
+  final list = List<String>.from(_baseTrendingWords);
+  list.shuffle();
+  return list;
+}

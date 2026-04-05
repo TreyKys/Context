@@ -204,6 +204,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               isLoading: vibeState.isLoading,
               result: vibeState.result,
               error: vibeState.error,
+              isQuotaLocked: vibeState.isQuotaLocked,
             ),
 
             // Bottom spacing
