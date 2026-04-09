@@ -7,7 +7,11 @@ import 'package:myapp/models/vibe_result.dart';
 
 class MockLLMService implements LLMService {
   @override
-  Future<VibeResult> generateVibe(String input, String mode, String vibe) async {
+  Future<VibeResult> generateVibe(
+    String input,
+    String mode,
+    String vibe,
+  ) async {
     return VibeResult(
       literalDefinition: 'Test',
       vibeTranslation: 'Test',
@@ -15,17 +19,28 @@ class MockLLMService implements LLMService {
       tags: [],
     );
   }
+
+  @override
+  Future<VibeResult> directSearch(String input) async {
+    return VibeResult(
+      literalDefinition: 'Test literal meaning',
+      vibeTranslation: 'Test etymology context',
+      exampleSentence: '',
+      tags: ['Test'],
+      isDirectSearch: true,
+    );
+  }
 }
 
 void main() {
   testWidgets('App launches and shows greeting', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        llmServiceProvider.overrideWithValue(MockLLMService()),
-      ],
-      child: const ContextDictionaryApp(),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [llmServiceProvider.overrideWithValue(MockLLMService())],
+        child: const ContextDictionaryApp(),
+      ),
+    );
 
     // Verify that the greeting part of the text is present.
     // Since the greeting is dynamic ("Good Morning", etc.), we might not know exactly which one.

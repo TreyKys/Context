@@ -11,6 +11,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Flag to enable support for the new language APIs
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -28,6 +30,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // flutter_local_notifications requires setting multiDexEnabled or other fixes if multidex is needed,
+        // minSdk 24 usually avoids multidex issues natively, but we specify it for safety.
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -44,4 +50,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 }
