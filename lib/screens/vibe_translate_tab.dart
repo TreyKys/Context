@@ -1,23 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/vibe_provider.dart';
+import '../widgets/result_card.dart';
+import '../main.dart'; // To access initialNotificationPayloadProvider
 
-class VibeTranslateTab extends StatefulWidget {
+class VibeTranslateTab extends ConsumerStatefulWidget {
   const VibeTranslateTab({super.key});
 
   @override
-  State<VibeTranslateTab> createState() => _VibeTranslateTabState();
+  ConsumerState<VibeTranslateTab> createState() => _VibeTranslateTabState();
 }
 
-class _VibeTranslateTabState extends State<VibeTranslateTab> {
+class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   String? _selectedMode = 'Define';
   String? _selectedContext = 'Gen Z / TikTok Slang';
   final TextEditingController _controller = TextEditingController();
 
-  final List<String> _modes = [
-    'Define',
-    'Roast',
-    'Explain Like I\'m 5',
-  ];
+  final List<String> _modes = ['Define', 'Roast', 'Explain Like I\'m 5'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkNotificationPayload();
+    });
+  }
+
+  void _checkNotificationPayload() {
+    final payload = ref.read(initialNotificationPayloadProvider);
+    if (payload != null && payload.isNotEmpty) {
+      _controller.text = payload;
+      _handleSearch();
+    }
+  }
 
   final List<String> _contexts = [
     'Gen Z / TikTok Slang',
@@ -58,10 +74,23 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
     }
   }
 
+  void _handleSearch() {
+    final input = _controller.text.trim();
+    if (input.isEmpty) return;
+
+    // Dismiss keyboard
+    FocusScope.of(context).unfocus();
+
+    ref
+        .read(vibeProvider.notifier)
+        .generateVibe(input, _selectedMode!, _selectedContext!);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Determine greeting based on current time
     final greeting = _getGreeting();
+    final vibeState = ref.watch(vibeProvider);
 
     return SingleChildScrollView(
       child: Padding(
@@ -95,9 +124,22 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1F20), // Deep dark grey
+                color: const Color(0xFF0B0C10), // Obsidian
                 borderRadius: BorderRadius.circular(32), // Heavily rounded
                 border: Border.all(color: Colors.grey.shade800, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 15.0,
+                    spreadRadius: 2.0,
+                    offset: const Offset(0, 4),
+                  ),
+                  const BoxShadow(
+                    color: Colors.purpleAccent,
+                    blurRadius: 8.0,
+                    spreadRadius: 0.0,
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -105,40 +147,68 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
                   TextField(
                     controller: _controller,
                     style: const TextStyle(color: Colors.white, fontSize: 18),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Enter a word or phrase...',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintStyle: const TextStyle(color: Colors.grey),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
+                      suffixIcon: IconButton(
+                        icon: const Icon(
+                          CupertinoIcons.arrow_right_circle_fill,
+                          color: Colors.cyanAccent,
+                        ),
+                        onPressed: _handleSearch,
+                      ),
                     ),
-                    maxLines: null,
+                    maxLines: 1,
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => _handleSearch(),
                   ),
                   const SizedBox(height: 20),
 
                   // Controls Row
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Left Control (Mode)
-                      _buildDropdown(
-                        value: _selectedMode,
-                        items: _modes,
-                        onChanged: (val) => setState(() => _selectedMode = val),
-                        icon: CupertinoIcons.gear,
+                      Expanded(
+                        child: _buildDropdown(
+                          value: _selectedMode,
+                          items: _modes,
+                          onChanged: (val) =>
+                              setState(() => _selectedMode = val),
+                          icon: CupertinoIcons.gear,
+                        ),
                       ),
+                      const SizedBox(width: 12),
 
                       // Right Control (Context)
-                      _buildDropdown(
-                        value: _selectedContext,
-                        items: _contexts,
-                        onChanged: (val) => setState(() => _selectedContext = val),
-                        icon: CupertinoIcons.person_2,
+                      Expanded(
+                        child: _buildDropdown(
+                          value: _selectedContext,
+                          items: _contexts,
+                          onChanged: (val) =>
+                              setState(() => _selectedContext = val),
+                          icon: CupertinoIcons.person_2,
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 32),
+
+            // Result Area
+            ResultCard(
+              isLoading: vibeState.isLoading,
+              result: vibeState.result,
+              error: vibeState.error,
+              isQuotaLocked: vibeState.isQuotaLocked,
+            ),
+
+            // Bottom spacing
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -154,28 +224,35 @@ class _VibeTranslateTabState extends State<VibeTranslateTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2E2F),
+        color: const Color(0xFF0B0C10),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade800),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
+          isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          dropdownColor: const Color(0xFF2D2E2F),
+          dropdownColor: const Color(0xFF0B0C10),
           style: const TextStyle(color: Colors.white, fontSize: 14),
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
               value: item,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 16, color: Colors.blueAccent),
-                  const SizedBox(width: 8),
-                  Text(
-                    item.length > 15 ? '${item.substring(0, 15)}...' : item,
-                    overflow: TextOverflow.ellipsis,
+                  ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return const LinearGradient(
+                        colors: [Colors.purpleAccent, Color(0xFF0B0C10)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds);
+                    },
+                    child: Icon(icon, size: 16, color: Colors.white),
                   ),
+                  const SizedBox(width: 8),
+                  Flexible(child: Text(item, overflow: TextOverflow.visible)),
                 ],
               ),
             );
