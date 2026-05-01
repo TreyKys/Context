@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
@@ -64,8 +65,15 @@ class NotificationService {
         ?.requestExactAlarmsPermission();
   }
 
-  Future<void> scheduleDailyNotifications() async {
+  Future<void> scheduleDailyNotifications({bool force = false}) async {
+    // Only reschedule if forced or not already scheduled (prevents duplicates on every launch)
+    final prefs = await SharedPreferences.getInstance();
+    final lastScheduled = prefs.getString('notifications_last_scheduled');
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    if (!force && lastScheduled == today) return;
+
     await _flutterLocalNotificationsPlugin.cancelAll();
+    await prefs.setString('notifications_last_scheduled', today);
 
     final Random random = Random();
     final List<String> shuffledWords = List.from(trendingWords)

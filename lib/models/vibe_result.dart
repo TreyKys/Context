@@ -4,6 +4,7 @@ class VibeResult {
   final String exampleSentence;
   final List<String> tags;
   final bool isDirectSearch;
+  final bool isVerified;
 
   VibeResult({
     required this.literalDefinition,
@@ -11,11 +12,13 @@ class VibeResult {
     required this.exampleSentence,
     required this.tags,
     this.isDirectSearch = false,
+    this.isVerified = false,
   });
 
   factory VibeResult.fromJson(
     Map<String, dynamic> json, {
     bool isDirectSearch = false,
+    bool isVerified = false,
   }) {
     if (isDirectSearch) {
       return VibeResult(
@@ -24,13 +27,14 @@ class VibeResult {
         vibeTranslation:
             json['etymology_context'] as String? ??
             'Etymology/Context not available.',
-        exampleSentence: '', // Not used in direct search
+        exampleSentence: '',
         tags:
             (json['tags'] as List<dynamic>?)
                 ?.map((e) => e.toString())
                 .toList() ??
             [],
         isDirectSearch: true,
+        isVerified: isVerified,
       );
     }
 
@@ -45,6 +49,7 @@ class VibeResult {
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           [],
       isDirectSearch: false,
+      isVerified: isVerified,
     );
   }
 }

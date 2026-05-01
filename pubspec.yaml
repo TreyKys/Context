@@ -1,5 +1,5 @@
-name: myapp
-description: "A new Flutter project."
+name: context_dictionary
+description: "The Context Dictionary — AI-powered cultural and contextual word definitions."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -23,6 +23,14 @@ dependencies:
   flutter_timezone: ^1.0.8
   shared_preferences: ^2.5.4
   google_mobile_ads: ^7.0.0
+  sqflite: ^2.4.2
+  path: ^1.9.0
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  package_info_plus: ^8.1.2
+  in_app_purchase: ^3.2.0
+  http: ^1.2.2
+  flutter_overlay_window: ^0.4.4
 
 dev_dependencies:
   flutter_test:
