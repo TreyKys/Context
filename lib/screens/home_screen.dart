@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../providers/quota_provider.dart';
 import 'vibe_translate_tab.dart';
 import 'direct_search_tab.dart';
 import 'library_screen.dart';
 import 'settings_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _tabs = const [
@@ -20,6 +23,56 @@ class _HomeScreenState extends State<HomeScreen> {
     DirectSearchTab(),
     LibraryScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for rating prompt after build completes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.listenManual(showRatingPromptProvider, (_, shouldShow) {
+        if (shouldShow && mounted) {
+          _showRatingSnackBar();
+          ref.read(showRatingPromptProvider.notifier).state = false;
+        }
+      });
+    });
+  }
+
+  void _showRatingSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        duration: const Duration(seconds: 5),
+        content: Row(
+          children: [
+            const Text('⭐', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Enjoying Context? A quick rating really helps us!',
+                style: TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'Rate Us',
+          textColor: Colors.cyanAccent,
+          onPressed: () {
+            launchUrl(
+              Uri.parse(
+                'https://play.google.com/store/apps/details?id=com.context.dict.v1',
+              ),
+              mode: LaunchMode.externalApplication,
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   void _openSettings() {
     Navigator.push(
@@ -38,7 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(CupertinoIcons.gear_alt_fill, color: Colors.grey, size: 22),
+            icon: const Icon(
+              CupertinoIcons.gear_alt_fill,
+              color: Colors.grey,
+              size: 22,
+            ),
             onPressed: _openSettings,
             tooltip: 'Settings',
           ),
@@ -49,10 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(
-            height: 1,
-            color: Colors.grey.shade900,
-          ),
+          Divider(height: 1, color: Colors.grey.shade900),
           Theme(
             data: Theme.of(context).copyWith(
               splashColor: Colors.transparent,

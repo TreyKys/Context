@@ -1,0 +1,264 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+/// Registered as a separate Flutter engine entry point.
+/// flutter_overlay_window calls this to render the floating widget.
+@pragma('vm:entry-point')
+void overlayMain() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Load env (assets are available in the overlay isolate)
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {}
+
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
+      ),
+      home: const _OverlaySearchWidget(),
+    ),
+  );
+}
+
+class _OverlaySearchWidget extends StatefulWidget {
+  const _OverlaySearchWidget();
+
+  @override
+  State<_OverlaySearchWidget> createState() => _OverlaySearchWidgetState();
+}
+
+class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isLoading = false;
+  String? _result;
+  String? _error;
+  bool _expanded = false;
+
+  Future<void> _search() async {
+    final input = _controller.text.trim();
+    if (input.isEmpty) return;
+
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isLoading = true;
+      _result = null;
+      _error = null;
+      _expanded = true;
+    });
+
+    try {
+      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+      if (apiKey.isEmpty) {
+        setState(() {
+          _error = 'API key not configured.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
+      final prompt =
+          'Give a concise 1-2 sentence definition of "$input" suitable for '
+          'quick reference. Include current cultural/slang usage if applicable. '
+          'Plain text only, no JSON, no formatting.';
+
+      final response = await model
+          .generateContent([Content.text(prompt)])
+          .timeout(const Duration(seconds: 10));
+
+      setState(() {
+        _result = response.text?.trim() ?? 'No result.';
+        _isLoading = false;
+      });
+    } catch (_) {
+      setState(() {
+        _error = 'Signal lost. Check connection.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _close() {
+    FlutterOverlayWindow.closeOverlay();
+  }
+
+  void _clear() {
+    _controller.clear();
+    setState(() {
+      _result = null;
+      _error = null;
+      _expanded = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F0F1A),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.4), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purpleAccent.withValues(alpha: 0.15),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Search row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+              child: Row(
+                children: [
+                  ShaderMask(
+                    shaderCallback: (b) => const LinearGradient(
+                      colors: [Colors.purpleAccent, Colors.cyanAccent],
+                    ).createShader(b),
+                    child: const Icon(
+                      CupertinoIcons.sparkles,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      autofocus: false,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Search a word...',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (_) => _search(),
+                    ),
+                  ),
+                  if (_expanded)
+                    GestureDetector(
+                      onTap: _clear,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          CupertinoIcons.xmark_circle_fill,
+                          color: Colors.grey[700],
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  GestureDetector(
+                    onTap: _search,
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.purpleAccent, Colors.cyanAccent],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.arrow_right,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: _close,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        CupertinoIcons.minus_circle_fill,
+                        color: Colors.grey[600],
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Result area
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(14, 0, 14, 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        color: Colors.cyanAccent,
+                        strokeWidth: 1.5,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Translating...',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              )
+            else if (_error != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                ),
+              )
+            else if (_result != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(color: Color(0xFF1E1E2E), height: 1),
+                    const SizedBox(height: 8),
+                    Text(
+                      _result!,
+                      style: const TextStyle(
+                        color: Color(0xFFDDDDDD),
+                        fontSize: 12,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'via Context Dictionary',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 10,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

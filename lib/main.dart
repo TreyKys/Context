@@ -13,6 +13,9 @@ import 'services/history_service.dart';
 import 'services/subscription_service.dart';
 import 'providers/library_provider.dart';
 import 'providers/subscription_provider.dart';
+import 'providers/quota_provider.dart';
+// Overlay entry point — must be imported so the compiler includes it
+import 'overlay/overlay_main.dart' as overlay_entry; // ignore: unused_import
 
 final initialNotificationPayloadProvider = Provider<String?>((ref) => null);
 
@@ -51,6 +54,10 @@ void main() async {
           quotaServiceProvider.overrideWithValue(quotaService),
           libraryServiceProvider.overrideWithValue(libraryService),
           subscriptionServiceProvider.overrideWithValue(subscriptionService),
+          // Seed the reactive quota counter with the real value at startup
+          quotaCountProvider.overrideWith(
+            (ref) => quotaService.availableSearches,
+          ),
         ],
         child: ContextDictionaryApp(showOnboarding: !hasOnboarded),
       ),

@@ -3,8 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibe_provider.dart';
+import '../providers/quota_provider.dart';
 import '../services/history_service.dart';
+import '../services/quota_service.dart';
 import '../widgets/result_card.dart';
+import '../widgets/search_counter.dart';
 import '../main.dart';
 
 class VibeTranslateTab extends ConsumerStatefulWidget {
@@ -244,6 +247,9 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                 ],
               ),
             ),
+
+            // Search counter — free tier only
+            SearchCounter(isPremium: ref.read(quotaServiceProvider).isPremium),
 
             // History chips
             if (_showHistory && _history.isNotEmpty) ...[

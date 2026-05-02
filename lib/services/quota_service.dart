@@ -7,7 +7,10 @@ class QuotaService {
   static const String _dateKey = 'last_search_date';
   static const String _searchesKey = 'available_searches';
   static const String _premiumKey = 'is_premium';
+  static const String _totalSearchCountKey = 'total_search_count';
+  static const String _ratingShownKey = 'rating_shown';
   static const int _dailyLimit = 3;
+  static const int _ratingTriggerCount = 5;
 
   SharedPreferences? _prefs;
 
@@ -56,5 +59,24 @@ class QuotaService {
     if (_prefs == null || isPremium) return;
     int current = _prefs!.getInt(_searchesKey) ?? 0;
     await _prefs!.setInt(_searchesKey, current + amount);
+  }
+
+  /// Increments lifetime search count. Returns true if this is the trigger
+  /// search (5th) and the prompt hasn't been shown yet.
+  Future<bool> incrementAndCheckRating() async {
+    final prefs = _prefs;
+    if (prefs == null) return false;
+
+    final alreadyShown = prefs.getBool(_ratingShownKey) ?? false;
+    if (alreadyShown) return false;
+
+    final count = (prefs.getInt(_totalSearchCountKey) ?? 0) + 1;
+    await prefs.setInt(_totalSearchCountKey, count);
+
+    if (count == _ratingTriggerCount) {
+      await prefs.setBool(_ratingShownKey, true);
+      return true;
+    }
+    return false;
   }
 }
