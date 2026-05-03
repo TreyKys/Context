@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:share_plus/share_plus.dart';
 import '../models/vibe_result.dart';
 import '../providers/library_provider.dart';
 import 'paywall_card.dart';
@@ -125,7 +125,7 @@ class _ResultContent extends ConsumerWidget {
         '${result.isDirectSearch ? '' : '${result.vibeTranslation}\n\n'}'
         '${result.tags.map((t) => t.startsWith('#') ? t : '#$t').join(' ')}';
     HapticFeedback.lightImpact();
-    SharePlus.instance.share(ShareParams(text: text));
+    Share.share(text);
   }
 
   @override
@@ -134,7 +134,7 @@ class _ResultContent extends ConsumerWidget {
     final savedAsync = word.isNotEmpty
         ? ref.watch(isWordSavedProvider(word.trim().toLowerCase()))
         : const AsyncData(false);
-    final isSaved = savedAsync.valueOrNull ?? false;
+    final isSaved = savedAsync.value ?? false;
 
     return Container(
       width: double.infinity,

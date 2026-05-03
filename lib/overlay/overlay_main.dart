@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.

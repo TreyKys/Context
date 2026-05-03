@@ -29,7 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // Listen for rating prompt after build completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.listenManual(showRatingPromptProvider, (_, shouldShow) {
+      ref.listenManual<bool>(showRatingPromptProvider, (_, shouldShow) {
         if (shouldShow && mounted) {
           _showRatingSnackBar();
           ref.read(showRatingPromptProvider.notifier).state = false;

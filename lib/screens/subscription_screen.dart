@@ -47,7 +47,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final monthly = service.products.where((p) => p.id == kMonthlySubId).firstOrNull;
     final yearly = service.products.where((p) => p.id == kYearlySubId).firstOrNull;
 
-    final isPremium = ref.watch(isPremiumProvider).valueOrNull ?? false;
+    final isPremium = ref.watch(isPremiumProvider).value ?? false;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0C10),

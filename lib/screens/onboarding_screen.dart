@@ -205,7 +205,7 @@ class _OnboardPage2 extends StatelessWidget {
     ('Corporate Executive', CupertinoIcons.briefcase_fill, Colors.blue),
     ('Web3 Degen', CupertinoIcons.chart_bar_fill, Colors.yellow),
     ('Exhausted Parent', CupertinoIcons.person_2_fill, Colors.pink),
-    ('90s Hacker', CupertinoIcons.keyboard_fill, Colors.green),
+    ('90s Hacker', CupertinoIcons.keyboard, Colors.green),
     ('Victorian Aristocrat', CupertinoIcons.star_fill, Colors.purple),
   ];
 
