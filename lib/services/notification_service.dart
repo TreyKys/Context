@@ -21,7 +21,7 @@ class NotificationService {
     tz.initializeTimeZones();
     try {
       final timeZoneName = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      tz.setLocalLocation(tz.getLocation(timeZoneName.identifier));
     } catch (e) {
       // Fallback
       tz.setLocalLocation(tz.getLocation('America/New_York'));
