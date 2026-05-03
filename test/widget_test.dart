@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:myapp/main.dart';
-import 'package:myapp/providers/vibe_provider.dart';
-import 'package:myapp/services/llm_service.dart';
-import 'package:myapp/models/vibe_result.dart';
+import 'package:context_dictionary/main.dart';
+import 'package:context_dictionary/providers/vibe_provider.dart';
+import 'package:context_dictionary/services/llm_service.dart';
+import 'package:context_dictionary/models/vibe_result.dart';
 
 class MockLLMService implements LLMService {
   @override
