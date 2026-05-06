@@ -355,12 +355,15 @@ class _ResultContent extends ConsumerWidget {
                   color: Colors.grey[600],
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  'Fact-checked against Wikipedia & Dictionary',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 10,
-                    letterSpacing: 0.3,
+                Flexible(
+                  child: Text(
+                    'Fact-checked against Wikipedia & Dictionary',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 10,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ],

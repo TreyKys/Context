@@ -97,12 +97,15 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
     return 'Good Evening';
   }
 
-  void _handleSearch() {
+  Future<void> _handleSearch() async {
     final input = _controller.text.trim();
     if (input.isEmpty) {
       HapticFeedback.heavyImpact();
       return;
     }
+
+    final vibeState = ref.read(vibeProvider);
+    if (vibeState.isLoading) return;
 
     HapticFeedback.lightImpact();
     FocusScope.of(context).unfocus();
@@ -111,7 +114,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
       _showHistory = false;
     });
 
-    HistoryService().addEntry(HistoryEntry(
+    await HistoryService().addEntry(HistoryEntry(
       word: input,
       mode: _selectedMode ?? 'Define',
       persona: _selectedContext ?? '',
@@ -379,7 +382,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                   ),
                   const SizedBox(width: 8),
                   Flexible(
-                      child: Text(item, overflow: TextOverflow.visible)),
+                      child: Text(item, overflow: TextOverflow.ellipsis)),
                 ],
               ),
             );

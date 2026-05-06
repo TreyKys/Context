@@ -207,7 +207,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             ),
             const SizedBox(height: 4),
             Text(
-              'From \$2.99/month · No ads · Full library',
+              'From \$4.99/month · No ads · Full library',
               style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
             ),
           ],
@@ -257,11 +257,13 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                     size: 18,
                   ),
                   const SizedBox(width: 8),
-                  Column(
+                  Expanded(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -270,9 +272,11 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                       ),
                       Text(
                         subtitle,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(color: Colors.grey[400], fontSize: 11),
                       ),
                     ],
+                  ),
                   ),
                 ],
               ),

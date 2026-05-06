@@ -138,9 +138,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 // Yearly — highlighted
                 _PlanCard(
                   label: 'Yearly',
-                  badge: 'Most Popular',
-                  price: yearly?.price ?? '\$14.99',
-                  detail: 'per year · saves ~58%',
+                  badge: 'Best Value · Save 50%',
+                  price: yearly?.price ?? '\$29.99',
+                  detail: '\$2.50/month · billed annually',
                   isHighlighted: true,
                   onTap: _isPurchasing ? null : () => _purchase(yearly),
                   isLoading: _isPurchasing,
@@ -148,8 +148,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 const SizedBox(height: 12),
                 _PlanCard(
                   label: 'Monthly',
-                  price: monthly?.price ?? '\$2.99',
-                  detail: 'per month',
+                  price: monthly?.price ?? '\$4.99',
+                  detail: 'per month · cancel anytime',
                   isHighlighted: false,
                   onTap: _isPurchasing ? null : () => _purchase(monthly),
                   isLoading: false,
@@ -220,7 +220,7 @@ class _FeatureRow extends StatelessWidget {
             child: Icon(icon, size: 18, color: Colors.white),
           ),
           const SizedBox(width: 14),
-          Text(text, style: const TextStyle(color: Color(0xFFDDDDDD), fontSize: 14)),
+          Flexible(child: Text(text, style: const TextStyle(color: Color(0xFFDDDDDD), fontSize: 14))),
         ],
       ),
     );

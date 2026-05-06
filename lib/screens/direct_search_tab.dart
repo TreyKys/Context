@@ -9,6 +9,42 @@ import '../services/quota_service.dart';
 import '../widgets/result_card.dart';
 import '../widgets/search_counter.dart';
 
+const List<String> _kDomainContexts = [
+  'General / All Topics',
+  'Internet & Memes',
+  'Gen Z & TikTok Slang',
+  'Medical & Clinical',
+  'Legal & Law',
+  'Finance & Investing',
+  'Crypto & Web3',
+  'Technology & Software',
+  'Food & Culinary',
+  'Gaming',
+  'Sports & Athletics',
+  'Academic & Research',
+  'Science & Biology',
+  'Business & Corporate',
+  'Fitness & Wellness',
+  'Social Media & Influencer',
+  'Pop Culture & Entertainment',
+  'Music & Hip-Hop',
+  'Film & Television',
+  'Fashion & Beauty',
+  'LGBTQ+ Culture',
+  'Politics & Government',
+  'Military & Defense',
+  'Religion & Spirituality',
+  'Environment & Climate',
+  'Philosophy & Ethics',
+  'History & Historical',
+  'Architecture & Design',
+  'Real Estate & Property',
+  'Mental Health & Psychology',
+  'Automotive & Cars',
+  'Travel & Tourism',
+  'Parenting & Family',
+];
+
 class DirectSearchTab extends ConsumerStatefulWidget {
   const DirectSearchTab({super.key});
 
@@ -22,11 +58,13 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
   String _lastSearchedWord = '';
   bool _showHistory = false;
   List<HistoryEntry> _history = [];
+  String _selectedContext = _kDomainContexts.first;
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(() {
+      if (!mounted) return;
       if (_focusNode.hasFocus) _loadHistory();
     });
   }
@@ -40,19 +78,22 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
 
   void _loadHistory() {
     final history = HistoryService().getHistory();
+    if (!mounted) return;
     setState(() {
       _history = history.where((e) => e.isDirectSearch).take(8).toList();
-      _showHistory =
-          history.isNotEmpty && _searchController.text.isEmpty;
+      _showHistory = history.isNotEmpty && _searchController.text.isEmpty;
     });
   }
 
-  void _performSearch() {
+  Future<void> _performSearch() async {
     final input = _searchController.text.trim();
     if (input.isEmpty) {
       HapticFeedback.heavyImpact();
       return;
     }
+
+    final vibeState = ref.read(directSearchProvider);
+    if (vibeState.isLoading) return;
 
     HapticFeedback.lightImpact();
     FocusScope.of(context).unfocus();
@@ -61,15 +102,18 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
       _showHistory = false;
     });
 
-    HistoryService().addEntry(HistoryEntry(
+    await HistoryService().addEntry(HistoryEntry(
       word: input,
       mode: '',
-      persona: '',
+      persona: _selectedContext,
       isDirectSearch: true,
       timestamp: DateTime.now(),
     ));
 
-    ref.read(directSearchProvider.notifier).directSearch(input);
+    ref.read(directSearchProvider.notifier).directSearch(
+      input,
+      domain: _selectedContext,
+    );
   }
 
   @override
@@ -145,6 +189,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => _performSearch(),
                     onChanged: (v) {
+                      if (!mounted) return;
                       setState(() {
                         _showHistory = v.isEmpty && _history.isNotEmpty;
                       });
@@ -152,6 +197,57 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Context dropdown
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0B0C10),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade800),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedContext,
+                isExpanded: true,
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                dropdownColor: const Color(0xFF111118),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedContext = val);
+                },
+                items: _kDomainContexts.map((ctx) {
+                  return DropdownMenuItem<String>(
+                    value: ctx,
+                    child: Row(
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (b) => const LinearGradient(
+                            colors: [Colors.purpleAccent, Colors.cyanAccent],
+                          ).createShader(b),
+                          child: const Icon(
+                            CupertinoIcons.tag_fill,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            ctx,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
 
@@ -195,10 +291,13 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                         Icon(CupertinoIcons.clock,
                             size: 11, color: Colors.grey[600]),
                         const SizedBox(width: 5),
-                        Text(
-                          entry.word,
-                          style: const TextStyle(
-                              color: Color(0xFFBBBBBB), fontSize: 12),
+                        Flexible(
+                          child: Text(
+                            entry.word,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Color(0xFFBBBBBB), fontSize: 12),
+                          ),
                         ),
                       ],
                     ),

@@ -227,12 +227,15 @@ class _LibraryCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        word.word,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                      Flexible(
+                        child: Text(
+                          word.word,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                       if (word.isVerified) ...[

@@ -18,7 +18,7 @@ class LLMService {
     _model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
   }
 
-  Future<VibeResult> directSearch(String input) async {
+  Future<VibeResult> directSearch(String input, {String? domain}) async {
     // Fetch reference data in parallel — silent fail if unavailable
     final results = await Future.wait([
       _wikipedia.getSummary(input),
@@ -30,9 +30,13 @@ class LLMService {
 
     final groundingBlock = _buildGroundingBlock(wikiSummary, dictDefinition);
 
+    final domainLine = (domain != null && domain != 'General / All Topics')
+        ? '\nDomain context: "$domain" — frame the definition and etymology specifically within this domain.'
+        : '';
+
     final prompt = '''
 You are a hyper-intelligent linguistic and cultural analyst. The user is searching for: '$input'.
-$groundingBlock
+$groundingBlock$domainLine
 Return a strict JSON object with no markdown backticks containing:
 1. literal_meaning: A sharp, strictly factual and objective dictionary definition. Do not use slang here.${isVerified ? ' Cross-reference the REFERENCE DATA above to ensure factual accuracy.' : ''}
 2. etymology_context: A breakdown of the word\'s origins, current cultural/professional usage, and its evolution.
@@ -101,6 +105,10 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
             .replaceAll(RegExp(r'```(?:json)?'), '')
             .replaceAll('```', '')
             .trim();
+
+        // Extract just the JSON object in case the model added surrounding text
+        final jsonMatch = RegExp(r'\{[\s\S]*\}').firstMatch(cleanJson);
+        if (jsonMatch != null) cleanJson = jsonMatch.group(0)!;
 
         final Map<String, dynamic> jsonMap = jsonDecode(cleanJson);
         return VibeResult.fromJson(

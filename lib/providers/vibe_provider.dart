@@ -41,6 +41,7 @@ class VibeNotifier extends Notifier<VibeState> {
   }
 
   Future<void> generateVibe(String input, String mode, String context) async {
+    if (state.isLoading) return;
     if (_quotaService.availableSearches <= 0) {
       state = VibeState.quotaLocked();
       return;
@@ -57,7 +58,8 @@ class VibeNotifier extends Notifier<VibeState> {
     }
   }
 
-  Future<void> directSearch(String input) async {
+  Future<void> directSearch(String input, {String? domain}) async {
+    if (state.isLoading) return;
     if (_quotaService.availableSearches <= 0) {
       state = VibeState.quotaLocked();
       return;
@@ -65,7 +67,7 @@ class VibeNotifier extends Notifier<VibeState> {
 
     state = VibeState.loading();
     try {
-      final result = await _llmService.directSearch(input);
+      final result = await _llmService.directSearch(input, domain: domain);
       await _quotaService.consumeSearch();
       state = VibeState.success(result);
       _postSearchUpdates();
