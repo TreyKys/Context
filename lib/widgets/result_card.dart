@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:share_plus/share_plus.dart';
 import '../models/vibe_result.dart';
 import '../providers/library_provider.dart';
 import 'paywall_card.dart';
@@ -117,7 +116,7 @@ class _ResultContent extends ConsumerWidget {
     );
   }
 
-  void _shareDefinition() {
+  void _shareDefinition(BuildContext context) {
     final word = searchWord ?? '';
     final text =
         '🧠 "$word" — via The Context Dictionary\n\n'
@@ -125,7 +124,14 @@ class _ResultContent extends ConsumerWidget {
         '${result.isDirectSearch ? '' : '${result.vibeTranslation}\n\n'}'
         '${result.tags.map((t) => t.startsWith('#') ? t : '#$t').join(' ')}';
     HapticFeedback.lightImpact();
-    SharePlus.instance.share(ShareParams(text: text));
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Copied & ready to share!'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Color(0xFF1A1A2E),
+      ),
+    );
   }
 
   @override
@@ -338,7 +344,7 @@ class _ResultContent extends ConsumerWidget {
                 icon: CupertinoIcons.share,
                 label: 'Share',
                 color: Colors.grey[500]!,
-                onTap: _shareDefinition,
+                onTap: () => _shareDefinition(context),
               ),
             ],
           ),
