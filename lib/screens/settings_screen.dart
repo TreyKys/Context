@@ -69,7 +69,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = ref.watch(isPremiumProvider).valueOrNull ??
+    final isPremium = ref.watch(isPremiumProvider).asData?.value ??
         ref.read(quotaServiceProvider).isPremium;
 
     return Scaffold(

@@ -56,7 +56,7 @@ void main() async {
           subscriptionServiceProvider.overrideWithValue(subscriptionService),
           // Seed the reactive quota counter with the real value at startup
           quotaCountProvider.overrideWith(
-            (ref) => quotaService.availableSearches,
+            () => QuotaCountNotifier(quotaService.availableSearches),
           ),
         ],
         child: ContextDictionaryApp(showOnboarding: !hasOnboarded),

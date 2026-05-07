@@ -80,18 +80,18 @@ class VibeNotifier extends Notifier<VibeState> {
     if (state.isQuotaLocked && _quotaService.availableSearches > 0) {
       state = VibeState.initial();
       // Quota was refreshed (ad watched or premium activated) — sync count
-      ref.read(quotaCountProvider.notifier).state = _quotaService.availableSearches;
+      ref.read(quotaCountProvider.notifier).set(_quotaService.availableSearches);
     }
   }
 
   void _postSearchUpdates() {
     // Sync reactive quota counter so both tabs show the updated count
-    ref.read(quotaCountProvider.notifier).state = _quotaService.availableSearches;
+    ref.read(quotaCountProvider.notifier).set(_quotaService.availableSearches);
 
     // Check if this is the 5th lifetime search → show rate-us prompt
     _quotaService.incrementAndCheckRating().then((shouldRate) {
       if (shouldRate) {
-        ref.read(showRatingPromptProvider.notifier).state = true;
+        ref.read(showRatingPromptProvider.notifier).set(true);
       }
     });
   }

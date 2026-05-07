@@ -32,7 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.listenManual(showRatingPromptProvider, (_, shouldShow) {
         if (shouldShow && mounted) {
           _showRatingSnackBar();
-          ref.read(showRatingPromptProvider.notifier).state = false;
+          ref.read(showRatingPromptProvider.notifier).set(false);
         }
       });
     });

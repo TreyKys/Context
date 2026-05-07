@@ -134,7 +134,7 @@ class _ResultContent extends ConsumerWidget {
     final savedAsync = word.isNotEmpty
         ? ref.watch(isWordSavedProvider(word.trim().toLowerCase()))
         : const AsyncData(false);
-    final isSaved = savedAsync.valueOrNull ?? false;
+    final isSaved = savedAsync.asData?.value ?? false;
 
     return Container(
       width: double.infinity,

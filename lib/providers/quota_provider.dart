@@ -1,9 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Reactive search quota count — updated by VibeNotifier after every search.
-/// UI reads this to show "X searches left today".
-final quotaCountProvider = StateProvider<int>((ref) => 3);
+class QuotaCountNotifier extends Notifier<int> {
+  QuotaCountNotifier([this._initial = 3]);
+  final int _initial;
 
-/// Fires true once after the user's 5th lifetime search, then resets to false.
-/// HomeScreen watches this and shows the rate-us SnackBar.
-final showRatingPromptProvider = StateProvider<bool>((ref) => false);
+  @override
+  int build() => _initial;
+
+  void set(int value) => state = value;
+}
+
+final quotaCountProvider =
+    NotifierProvider<QuotaCountNotifier, int>(QuotaCountNotifier.new);
+
+class ShowRatingPromptNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+final showRatingPromptProvider =
+    NotifierProvider<ShowRatingPromptNotifier, bool>(ShowRatingPromptNotifier.new);
