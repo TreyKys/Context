@@ -28,10 +28,14 @@ void main() async {
     await MobileAds.instance.initialize();
     await dotenv.load(fileName: '.env');
 
-    await Firebase.initializeApp();
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
-    );
+    try {
+      await Firebase.initializeApp();
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+      );
+    } catch (e) {
+      debugPrint('Firebase init failed: $e');
+    }
 
     final notificationService = NotificationService();
     await notificationService.init();
@@ -70,7 +74,8 @@ void main() async {
         child: ContextDictionaryApp(showOnboarding: !hasOnboarded),
       ),
     );
-  } catch (_) {
+  } catch (e, stackTrace) {
+    debugPrint('App failed to start: $e\n$stackTrace');
     runApp(
       MaterialApp(
         debugShowCheckedModeBanner: false,
