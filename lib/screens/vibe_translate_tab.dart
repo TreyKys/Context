@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibe_provider.dart';
 import '../providers/quota_provider.dart';
@@ -22,6 +23,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   String? _selectedContext = 'Gen Z / TikTok Slang';
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  Timer? _debounce;
   String _lastSearchedWord = '';
   bool _showHistory = false;
   List<HistoryEntry> _history = [];
@@ -69,6 +71,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -216,10 +219,16 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                       ),
                     ),
                     textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _handleSearch(),
+                    onSubmitted: (_) {
+                       _debounce?.cancel();
+                       _handleSearch();
+                    },
                     onChanged: (v) {
-                      setState(() {
-                        _showHistory = v.isEmpty && _history.isNotEmpty;
+                      if (_debounce?.isActive ?? false) _debounce!.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 500), () {
+                        setState(() {
+                          _showHistory = v.isEmpty && _history.isNotEmpty;
+                        });
                       });
                     },
                   ),

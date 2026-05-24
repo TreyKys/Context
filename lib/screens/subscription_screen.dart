@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../services/subscription_service.dart';
 import '../providers/subscription_provider.dart';
 
@@ -16,11 +16,19 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   bool _isPurchasing = false;
 
-  Future<void> _purchase(ProductDetails? product) async {
+  Future<void> _purchase(StoreProduct? product) async {
     if (product == null || _isPurchasing) return;
     setState(() => _isPurchasing = true);
     try {
-      await ref.read(subscriptionServiceProvider).purchase(product);
+      final success = await ref.read(subscriptionServiceProvider).purchase(product);
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Purchase failed or cancelled.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,8 +52,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final service = ref.watch(subscriptionServiceProvider);
-    final monthly = service.products.where((p) => p.id == kMonthlySubId).firstOrNull;
-    final yearly = service.products.where((p) => p.id == kYearlySubId).firstOrNull;
+    final monthly = service.products.where((p) => p.identifier == kMonthlySubId).firstOrNull;
+    final yearly = service.products.where((p) => p.identifier == kLifetimeSubId).firstOrNull;
 
     final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
 
@@ -135,12 +143,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               const SizedBox(height: 32),
 
               if (!isPremium) ...[
-                // Yearly — highlighted
+                // Lifetime — highlighted
                 _PlanCard(
-                  label: 'Yearly',
-                  badge: 'Best Value · Save 50%',
-                  price: yearly?.price ?? '\$29.99',
-                  detail: '\$2.50/month · billed annually',
+                  label: 'Lifetime',
+                  badge: 'Best Value · One Time',
+                  price: yearly?.priceString ?? '\$50.00',
+                  detail: 'One time payment · yours forever',
                   isHighlighted: true,
                   onTap: _isPurchasing ? null : () => _purchase(yearly),
                   isLoading: _isPurchasing,
@@ -148,7 +156,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 const SizedBox(height: 12),
                 _PlanCard(
                   label: 'Monthly',
-                  price: monthly?.price ?? '\$4.99',
+                  price: monthly?.priceString ?? '\$3.99',
                   detail: 'per month · cancel anytime',
                   isHighlighted: false,
                   onTap: _isPurchasing ? null : () => _purchase(monthly),

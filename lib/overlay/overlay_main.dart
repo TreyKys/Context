@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.
@@ -40,6 +42,14 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
   String? _result;
   String? _error;
   bool _expanded = false;
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _search() async {
     final input = _controller.text.trim();
@@ -54,6 +64,15 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
     });
 
     try {
+      final isPremium = await _isPremiumUser();
+      if (!isPremium) {
+        setState(() {
+           _error = 'Overlay search requires Premium. Open app to upgrade.';
+           _isLoading = false;
+        });
+        return;
+      }
+
       final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
       if (apiKey.isEmpty) {
         setState(() {
@@ -83,6 +102,19 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<bool> _isPremiumUser() async {
+    try {
+      final apiKey = dotenv.env['REVENUECAT_API_KEY'];
+      if (apiKey != null && apiKey.isNotEmpty) {
+        PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+        await Purchases.configure(configuration);
+        CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+        return customerInfo.entitlements.active.containsKey("pro_fluency");
+      }
+    } catch (_) {}
+    return false;
   }
 
   void _close() {
@@ -151,7 +183,18 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                         contentPadding: EdgeInsets.zero,
                       ),
                       textInputAction: TextInputAction.search,
-                      onSubmitted: (_) => _search(),
+                      onSubmitted: (_) {
+                         _debounce?.cancel();
+                         _search();
+                      },
+                      onChanged: (_) {
+                        if (_debounce?.isActive ?? false) _debounce!.cancel();
+                        _debounce = Timer(const Duration(milliseconds: 500), () {
+                          if (_controller.text.trim().isNotEmpty) {
+                             _search();
+                          }
+                        });
+                      },
                     ),
                   ),
                   if (_expanded)

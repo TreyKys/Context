@@ -15,7 +15,13 @@ class LLMService {
     if (apiKey == null) {
       throw Exception('GEMINI_API_KEY not found in .env');
     }
-    _model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
+    _model = GenerativeModel(
+      model: 'gemini-2.5-flash',
+      apiKey: apiKey,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+      ),
+    );
   }
 
   Future<VibeResult> directSearch(String input, {String? domain}) async {
