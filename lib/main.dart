@@ -25,8 +25,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await MobileAds.instance.initialize();
-    await dotenv.load(fileName: '.env');
+    try {
+      await MobileAds.instance.initialize();
+    } catch (e) {
+      debugPrint('MobileAds init failed: $e');
+    }
+
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (e) {
+      debugPrint('DotEnv load failed: $e');
+    }
 
     try {
       await Firebase.initializeApp();
