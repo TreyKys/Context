@@ -27,6 +27,8 @@
 -keep class io.flutter.plugins.sharedpreferences.** { *; }
 -dontwarn io.flutter.plugins.sharedpreferences.**
 
+-dontwarn com.google.android.play.core.**
+
 # Protect AndroidX/Core Libraries
 -keep class androidx.core.** { *; }
 -keep class androidx.lifecycle.** { *; }

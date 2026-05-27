@@ -11,7 +11,8 @@ final adServiceProvider = Provider<AdService>((ref) {
 class AdService {
   final QuotaService _quotaService;
 
-  // Standard Android AdMob Test ID for Rewarded Ads
+  // TODO: Replace with your real AdMob Rewarded Ad Unit ID from the Play Console before publishing.
+  // Current value is Google's standard test ID — real ads will NOT load with this in production.
   static const String rewardedAdUnitId =
       'ca-app-pub-3940256099942544/5224354917';
 

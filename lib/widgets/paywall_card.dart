@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/ad_service.dart';
-import '../providers/vibe_provider.dart'; // To clear quota lock if needed
+import '../providers/vibe_provider.dart';
+import '../screens/subscription_screen.dart';
 
 class PaywallCard extends ConsumerStatefulWidget {
   const PaywallCard({super.key});
@@ -71,10 +72,14 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+    );
+  }
+
+  void _openSubscription() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
     );
   }
 
@@ -84,8 +89,8 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0C10), // Obsidian
-        borderRadius: BorderRadius.circular(32), // Heavily rounded
+        color: const Color(0xFF0B0C10),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
@@ -94,64 +99,121 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             spreadRadius: 2.0,
             offset: const Offset(0, 4),
           ),
-          const BoxShadow(
-            color: Colors.redAccent,
-            blurRadius: 8.0,
-            spreadRadius: 0.0,
-          ),
-          const BoxShadow(
-            color: Colors.amber, // Subtle gold glow
-            blurRadius: 16.0,
-            spreadRadius: -4.0,
-          ),
+          const BoxShadow(color: Colors.redAccent, blurRadius: 8.0),
+          const BoxShadow(color: Colors.amber, blurRadius: 16.0, spreadRadius: -4.0),
         ],
       ),
       child: Column(
         children: [
-          const Icon(
-            CupertinoIcons.lock_shield_fill,
-            color: Colors.redAccent,
-            size: 48,
-          ),
+          const Icon(CupertinoIcons.lock_shield_fill, color: Colors.redAccent, size: 48),
           const SizedBox(height: 16),
           const Text(
-            'Neural Link Depleted\n(0 Searches Left)',
+            'Neural Link Depleted',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              height: 1.2,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            'The network requires more bandwidth. Recharge your connection.',
+            'You\'ve used your 3 free searches today.\nRecharge with an ad, or go unlimited.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[400], fontSize: 13, height: 1.5),
           ),
-          const SizedBox(height: 32),
-          _buildChargeButton(
-            title: 'Quick Charge',
-            subtitle: '(Watch 1 Ad = +1 Search)',
-            isLoading: _isLoadingQuick,
-            onTap: _handleQuickCharge,
-            colors: const [Colors.redAccent, Colors.red],
+          const SizedBox(height: 24),
+
+          // Go Premium — primary CTA
+          _buildPremiumButton(),
+          const SizedBox(height: 16),
+
+          // Divider
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.grey[800])),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'or watch an ad',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                ),
+              ),
+              Expanded(child: Divider(color: Colors.grey[800])),
+            ],
           ),
           const SizedBox(height: 16),
+
+          _buildChargeButton(
+            title: 'Quick Charge',
+            subtitle: 'Watch 1 Ad → +1 Search',
+            isLoading: _isLoadingQuick,
+            onTap: _handleQuickCharge,
+            colors: const [Color(0xFF3A0000), Color(0xFF2A0000)],
+            borderColor: Colors.redAccent.withValues(alpha: 0.4),
+          ),
+          const SizedBox(height: 12),
           _buildChargeButton(
             title: 'Super Charge',
-            subtitle: '(Watch 2 Ads = +3 Searches)',
+            subtitle: 'Watch 2 Ads → +3 Searches',
             isLoading: _isLoadingSuper,
             onTap: _handleSuperCharge,
-            colors: const [Colors.redAccent, Colors.red],
+            colors: const [Color(0xFF3A0000), Color(0xFF2A0000)],
+            borderColor: Colors.redAccent.withValues(alpha: 0.4),
           ),
         ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  Widget _buildPremiumButton() {
+    return InkWell(
+      onTap: _openSubscription,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF7B2FBE), Color(0xFF4A00E0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purpleAccent.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.bolt_fill, color: Colors.white, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  'Go Premium — Unlimited',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'From \$4.99/month · No ads · Full library',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildChargeButton({
@@ -160,56 +222,61 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
     required bool isLoading,
     required VoidCallback onTap,
     required List<Color> colors,
+    required Color borderColor,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: colors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.first.withValues(alpha: 0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16),
+          color: colors[0],
+          border: Border.all(color: borderColor),
         ),
         child: isLoading
             ? const Center(
                 child: SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 20,
+                  height: 20,
                   child: CircularProgressIndicator(
                     color: Colors.cyanAccent,
                     strokeWidth: 2,
                   ),
                 ),
               )
-            : Column(
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Icon(
+                    title.contains('Quick')
+                        ? CupertinoIcons.play_circle
+                        : CupertinoIcons.play_circle_fill,
+                    color: Colors.redAccent,
+                    size: 18,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: Colors.grey[400], fontSize: 11),
+                      ),
+                    ],
+                  ),
                   ),
                 ],
               ),

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myapp/models/vibe_result.dart';
+import 'package:context_dictionary/models/vibe_result.dart';
 
 void main() {
   group('VibeResult', () {
