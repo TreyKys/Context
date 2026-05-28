@@ -26,97 +26,87 @@ void main() async {
 
   try {
     await MobileAds.instance.initialize();
+  } catch (e) {
+    debugPrint('[STARTUP] MobileAds init failed: $e');
+  }
+
+  try {
     await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('[STARTUP] dotenv load failed: $e');
+  }
 
-    try {
-      await Firebase.initializeApp();
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-      );
-    } catch (e) {
-      debugPrint('Firebase init failed: $e');
-    }
+  try {
+    await Firebase.initializeApp();
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+    );
+  } catch (e) {
+    debugPrint('[STARTUP] Firebase init failed: $e');
+  }
 
-    final notificationService = NotificationService();
+  final notificationService = NotificationService();
+  try {
     await notificationService.init();
     await notificationService.requestPermissions();
     await notificationService.scheduleDailyNotifications();
-    final initialPayload = notificationService.initialPayload;
+  } catch (e) {
+    debugPrint('[STARTUP] NotificationService init failed: $e');
+  }
+  final initialPayload = notificationService.initialPayload;
 
-    final quotaService = QuotaService();
+  final quotaService = QuotaService();
+  try {
     // Assuming anonymous access, update when authenticated
     await quotaService.init('anonymous');
-
-    final libraryService = LibraryService();
-    await libraryService.init();
-
-    final historyService = HistoryService();
-    await historyService.init();
-
-    final subscriptionService = SubscriptionService();
-    await subscriptionService.init(quotaService);
-
-    final prefs = await SharedPreferences.getInstance();
-    final hasOnboarded = prefs.getBool('has_onboarded') ?? false;
-
-    runApp(
-      ProviderScope(
-        overrides: [
-          initialNotificationPayloadProvider.overrideWithValue(initialPayload),
-          quotaServiceProvider.overrideWithValue(quotaService),
-          libraryServiceProvider.overrideWithValue(libraryService),
-          subscriptionServiceProvider.overrideWithValue(subscriptionService),
-          // Seed the reactive quota counter with the real value at startup
-          quotaCountProvider.overrideWith(
-            () => QuotaCountNotifier(quotaService.availableSearches),
-          ),
-        ],
-        child: ContextDictionaryApp(showOnboarding: !hasOnboarded),
-      ),
-    );
-  } catch (e, stackTrace) {
-    debugPrint('App failed to start: $e\n$stackTrace');
-    runApp(
-      MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: const Color(0xFF0B0C10),
-          body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.wifi_off_rounded,
-                      color: Colors.redAccent,
-                      size: 64,
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Failed to Start',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Something went wrong during startup. Please restart the app.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[400], fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  } catch (e) {
+    debugPrint('[STARTUP] QuotaService init failed: $e');
   }
+
+  final libraryService = LibraryService();
+  try {
+    await libraryService.init();
+  } catch (e) {
+    debugPrint('[STARTUP] LibraryService init failed: $e');
+  }
+
+  final historyService = HistoryService();
+  try {
+    await historyService.init();
+  } catch (e) {
+    debugPrint('[STARTUP] HistoryService init failed: $e');
+  }
+
+  final subscriptionService = SubscriptionService();
+  try {
+    await subscriptionService.init(quotaService);
+  } catch (e) {
+    debugPrint('[STARTUP] SubscriptionService init failed: $e');
+  }
+
+  bool hasOnboarded = false;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    hasOnboarded = prefs.getBool('has_onboarded') ?? false;
+  } catch (e) {
+    debugPrint('[STARTUP] SharedPreferences init failed: $e');
+  }
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        initialNotificationPayloadProvider.overrideWithValue(initialPayload),
+        quotaServiceProvider.overrideWithValue(quotaService),
+        libraryServiceProvider.overrideWithValue(libraryService),
+        subscriptionServiceProvider.overrideWithValue(subscriptionService),
+        // Seed the reactive quota counter with the real value at startup
+        quotaCountProvider.overrideWith(
+          () => QuotaCountNotifier(quotaService.availableSearches),
+        ),
+      ],
+      child: ContextDictionaryApp(showOnboarding: !hasOnboarded),
+    ),
+  );
 }
 
 class ContextDictionaryApp extends StatelessWidget {
