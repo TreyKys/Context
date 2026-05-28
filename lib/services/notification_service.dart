@@ -20,11 +20,17 @@ class NotificationService {
     // Initialize Timezone
     tz.initializeTimeZones();
     try {
-      final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
+      final dynamic localTimezone = await FlutterTimezone.getLocalTimezone();
+      String tzIdentifier;
+      if (localTimezone is String) {
+        tzIdentifier = localTimezone;
+      } else {
+        tzIdentifier = localTimezone.identifier;
+      }
+      tz.setLocalLocation(tz.getLocation(tzIdentifier));
     } catch (e) {
       // Fallback
-      tz.setLocalLocation(tz.getLocation('America/New_York'));
+      tz.setLocalLocation(tz.getLocation('Africa/Lagos'));
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -102,7 +108,7 @@ class NotificationService {
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         i, // unique ID
-        '🔥 Word of the Day: \$word',
+        '🔥 Word of the Day: $word',
         'Tap to see the Vibe Translation!',
         scheduledDate,
         platformChannelDetails,
