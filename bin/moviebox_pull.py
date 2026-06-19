@@ -3,15 +3,25 @@
 moviebox_pull.py — Copy downloaded MovieBox episodes from Android to your laptop.
 
 Requirements:
-  - ADB (Android Debug Bridge) installed on your laptop
-  - USB debugging enabled on your phone (Settings → Developer Options → USB debugging)
-  - Phone connected via USB (or ADB over Wi-Fi — see --wifi flag)
+  - Linux environment enabled on your Chromebook (Settings → Advanced → Developers → Linux)
+  - ADB installed in Linux:  sudo apt update && sudo apt install adb python3
+  - Phone and Chromebook on the same Wi-Fi network
+
+Chromebook quick-start (Wi-Fi, recommended):
+  1. On your phone: Settings → About Phone → tap Build Number 7×
+  2. Developer Options → enable Wireless Debugging
+  3. Tap "Pair device with pairing code" — note the IP:port and 6-digit code
+  4. In your Linux terminal:
+       python3 moviebox_pull.py --pair 192.168.x.x:PORT
+     Enter the 6-digit code when prompted.
+  5. Back in Wireless Debugging, note the IP:port shown on the MAIN screen (different port).
+       python3 moviebox_pull.py --wifi 192.168.x.x:PORT
 
 Usage:
-  python moviebox_pull.py                     # interactive mode
-  python moviebox_pull.py --dest ~/Videos     # save to a specific folder
-  python moviebox_pull.py --wifi 192.168.x.x  # connect over Wi-Fi instead of USB
-  python moviebox_pull.py --list              # just list files, don't pull
+  python3 moviebox_pull.py --pair IP:PORT     # one-time pairing (Android 11+)
+  python3 moviebox_pull.py --wifi IP:PORT     # connect after pairing
+  python3 moviebox_pull.py --list             # list found files without pulling
+  python3 moviebox_pull.py --dest ~/Videos    # save to a specific folder
 """
 
 import subprocess
@@ -207,27 +217,56 @@ def pull_files(serial, files, dest):
     print("\n[Done]")
 
 
-def connect_wifi(ip):
-    port = 5555
-    if ":" in ip:
-        ip, port = ip.rsplit(":", 1)
-    print(f"[*] Connecting to {ip}:{port} over Wi-Fi…")
-    print("    (Make sure your phone is on the same network and ADB TCP mode is on)")
-    out = run(f"adb connect {ip}:{port}", check=False)
+def connect_wifi(addr):
+    """Connect to a previously paired device."""
+    if ":" not in addr:
+        addr = f"{addr}:5555"
+    print(f"[*] Connecting to {addr} over Wi-Fi…")
+    out = run(f"adb connect {addr}", check=False)
     print(f"    {out}")
+
+
+def pair_device(addr):
+    """Android 11+ wireless pairing flow using a one-time pairing code."""
+    if ":" not in addr:
+        print("[ERROR] --pair requires IP:PORT (e.g. 192.168.1.5:37489)")
+        sys.exit(1)
+    print(f"[*] Pairing with {addr}…")
+    print("    Enter the 6-digit code shown on your phone: ", end="", flush=True)
+    code = input().strip()
+    result = subprocess.run(
+        f"adb pair {addr} {code}",
+        shell=True, capture_output=True, text=True
+    )
+    output = (result.stdout + result.stderr).strip()
+    print(f"    {output}")
+    if result.returncode != 0 or "failed" in output.lower():
+        print(
+            "\n[HINT] Pairing failed. Make sure:\n"
+            "  • Phone and Chromebook are on the same Wi-Fi network\n"
+            "  • You used the port from 'Pair device with pairing code' (not the main Wireless Debugging port)\n"
+            "  • The 6-digit code is current (it refreshes every time you open that screen)\n"
+        )
+        sys.exit(1)
+    print("\n[OK] Paired! Now run with --wifi using the IP:PORT from the main Wireless Debugging screen.")
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Pull MovieBox downloaded episodes from Android to your laptop via ADB."
     )
-    parser.add_argument("--dest", default="~/Videos/MovieBox", help="Destination folder on your laptop (default: ~/Videos/MovieBox)")
-    parser.add_argument("--wifi", metavar="IP[:PORT]", help="Connect to phone over Wi-Fi (e.g. 192.168.1.42)")
+    parser.add_argument("--dest", default="~/Videos/MovieBox", help="Destination folder (default: ~/Videos/MovieBox)")
+    parser.add_argument("--wifi", metavar="IP:PORT", help="Connect to phone over Wi-Fi after pairing")
+    parser.add_argument("--pair", metavar="IP:PORT", help="One-time Wi-Fi pairing (Android 11+) — run this first")
     parser.add_argument("--list", action="store_true", help="List found files without pulling")
     parser.add_argument("--package", help="Override app package name (skip auto-detection)")
     args = parser.parse_args()
 
     check_adb()
+
+    if args.pair:
+        pair_device(args.pair)
+        sys.exit(0)
 
     if args.wifi:
         connect_wifi(args.wifi)
@@ -236,10 +275,16 @@ def main():
     if not devices:
         print(
             "\n[ERROR] No Android device detected.\n"
-            "  1. Connect your phone with a USB cable.\n"
-            "  2. Enable USB debugging: Settings → About Phone → tap Build Number 7× → Developer Options → USB Debugging.\n"
-            "  3. Accept the 'Allow USB debugging' prompt on your phone.\n"
-            "  4. Run this script again.\n"
+            "\nOn a Chromebook, Wi-Fi is the most reliable method:\n"
+            "  1. Phone: Settings → About Phone → tap Build Number 7×\n"
+            "  2. Phone: Developer Options → Wireless Debugging → enable it\n"
+            "  3. Phone: tap 'Pair device with pairing code' — note the IP:PORT and 6-digit code\n"
+            "  4. Chromebook Linux terminal:\n"
+            "       python3 moviebox_pull.py --pair 192.168.x.x:PAIR_PORT\n"
+            "  5. Enter the 6-digit code when prompted\n"
+            "  6. Back on phone: note the IP:PORT on the MAIN Wireless Debugging screen\n"
+            "  7. Chromebook Linux terminal:\n"
+            "       python3 moviebox_pull.py --wifi 192.168.x.x:CONNECT_PORT\n"
         )
         sys.exit(1)
 
