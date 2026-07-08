@@ -98,6 +98,15 @@ class NotificationService {
       android: androidDetails,
     );
 
+    // Check for exact alarms permission to prevent SecurityException on Android 14+
+    final androidImplementation = _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    final hasExactAlarms = await androidImplementation?.canScheduleExactNotifications();
+    final scheduleMode = (hasExactAlarms ?? false)
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+
     // Schedule the next 14 days of notifications at 10:00 AM
     for (int i = 0; i < 14; i++) {
       if (i >= shuffledWords.length) break;
@@ -112,7 +121,7 @@ class NotificationService {
         'Tap to see the Vibe Translation!',
         scheduledDate,
         platformChannelDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: scheduleMode,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         payload: word,

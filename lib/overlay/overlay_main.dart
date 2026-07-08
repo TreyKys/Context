@@ -5,17 +5,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_vertexai/firebase_vertexai.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import '../firebase_options.dart';
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.
 @pragma('vm:entry-point')
 void overlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Load env (assets are available in the overlay isolate)
+
   try {
-    await dotenv.load(fileName: '.env');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+    );
   } catch (_) {}
 
   runApp(
@@ -73,16 +81,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         return;
       }
 
-      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-      if (apiKey.isEmpty) {
-        setState(() {
-          _error = 'API key not configured.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
+      final model = FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.5-flash');
       final prompt =
           'Give a concise 1-2 sentence definition of "$input" suitable for '
           'quick reference. Include current cultural/slang usage if applicable. '
