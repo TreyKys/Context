@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_vertexai/firebase_vertexai.dart';
 import '../models/vibe_result.dart';
 import 'wikipedia_service.dart';
 import 'dictionary_service.dart';
@@ -11,13 +10,8 @@ class LLMService {
   final DictionaryService _dictionary = DictionaryService();
 
   LLMService() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null) {
-      throw Exception('GEMINI_API_KEY not found in .env');
-    }
-    _model = GenerativeModel(
+    _model = FirebaseVertexAI.instance.generativeModel(
       model: 'gemini-2.5-flash',
-      apiKey: apiKey,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
       ),
