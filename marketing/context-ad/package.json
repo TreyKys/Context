@@ -1,0 +1,22 @@
+{
+  "name": "context-dictionary-ad",
+  "version": "1.0.0",
+  "description": "Bright, Apple-style motion ad for The Context Dictionary (Remotion)",
+  "scripts": {
+    "start": "remotion studio",
+    "render": "remotion render ContextAd out/context-ad.mp4",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.2.10",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.5.4"
+  }
+}
