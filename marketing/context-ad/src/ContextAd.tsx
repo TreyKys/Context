@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Audio,
   Sequence,
   interpolate,
   useCurrentFrame,
@@ -712,6 +713,9 @@ export const ContextAd: React.FC = () => {
   useBricolage();
   return (
     <AbsoluteFill style={{ fontFamily, background: WHITE }}>
+      {/* Original ambient-tech score, keyed to the edit */}
+      <Audio src={staticFile("track.wav")} volume={0.9} />
+
       <Sequence from={0} durationInFrames={150}>
         <SceneFade life={150}>
           <Scene1 />

@@ -33,6 +33,18 @@ npx remotion render ContextAd out/context-ad.mp4 \
   --gl=swiftshader
 ```
 
+## Music
+The soundtrack is an **original, procedurally-synthesised "Ambient Tech" score**
+(`public/track.wav`) — no third-party samples, no licensing. Regenerate it with:
+```bash
+node tools/make-track.mjs
+```
+It's arranged to the edit: sparse Cmaj7 pad on the hook, a bell arpeggio + sub bass
+on the reveal, a soft kick pulse through the value/payoff beats, resolving to a
+Cadd9 shimmer on the brand close, with risers into the two key reveals. Swap in a
+different track by dropping a file in `public/` and updating the `<Audio>` src in
+`src/ContextAd.tsx`.
+
 ## Notes
 - The Bricolage Grotesque font (`public/BricolageGrotesque.woff2`, SIL Open Font
   License) is bundled locally so renders never depend on network fonts.
