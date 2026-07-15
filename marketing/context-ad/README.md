@@ -1,19 +1,33 @@
-# Context Dictionary — Motion Ad (Remotion)
+# Context Dictionary — Motion Ads (Remotion)
 
-A bright, Apple-style 4-scene motion ad for **The Context Dictionary** (NeuroDev Labs),
+Bright, Apple-style motion ads for **The Context Dictionary** (NeuroDev Labs),
 built with [Remotion](https://remotion.dev). Every scene is grounded in what the app
-actually does — the VibeTranslate home screen, the AI result card, the real brand
-colors (`#CE93D8` → `#00E5FF`) and Bricolage Grotesque type.
+actually does — real screens, the real brand colors (`#CE93D8` → `#00E5FF`) and
+Bricolage Grotesque type. Same visual identity across the campaign, different message
+per ad.
 
 - **Format:** 9:16 vertical (TikTok / IG Reels / X) · 1080×1920 · 30fps · ~21s
-- **Rendered file:** `out/context-ad.mp4`
+- **Compositions:** `ContextAd` (ad #1), `ContextAd2` (ad #2)
+- **Rendered files:** `out/context-ad.mp4`, `out/context-ad-2.mp4`
 
-## Scenes
-1. **Hook** — white screen, the social-anxiety pain point: *"You heard it. You nodded. You had no idea what it meant."*
+## Ad #1 — the social-slang angle (`ContextAd`)
+1. **Hook** — *"You heard it. You nodded. You had no idea what it meant."*
 2. **Reveal** — *"Now you always will."* + the VibeTranslate screen typing `delulu`.
 3. **Value stack** — `TRANSLATE. / DEFINE. / SAVE.` → *"Not just a dictionary. Cultural fluency, on demand."*
-4. **Payoff** — *"Your vocabulary. Fully decoded."* + the full result card (literal definition, vibe translation, tags, verified badge).
+4. **Payoff** — *"Your vocabulary. Fully decoded."* + the full result card.
 5. **Brand close** — gradient `Context` wordmark, Google Play badge, NeuroDev Labs, 3D-perspective phone.
+
+Music: `public/track.wav` (`tools/make-track.mjs`).
+
+## Ad #2 — the everyday plain-English angle (`ContextAd2`)
+Markets the problems anyone recognises — no jargon.
+1. **Hook** — *"You read it twice. Still didn't click." → "Now it will."*
+2. **Explain it simple** — *"When a word's too much, ask for it simple."* + the *Explain Like I'm 5* mode turning `escrow` into a plain-English sentence.
+3. **Trust** — *"Half of what you think words mean… isn't quite it."* + the glowing **Fact-checked** badge (real meaning, checked — not a guess).
+4. **Keep it** — *"Look it up once. Keep it for good."* + the My Library screen.
+5. **Brand close** — same identity; tagline *"Every word. In plain English."*
+
+Music: `public/track2.wav` (`tools/make-track2.mjs`).
 
 ## Develop / preview
 ```bash
@@ -23,7 +37,8 @@ npm start          # opens Remotion Studio
 
 ## Render
 ```bash
-npm run render
+npm run render                       # ad #1  → out/context-ad.mp4
+npx remotion render ContextAd2 out/context-ad-2.mp4   # ad #2
 ```
 In a headless/CI environment without a full Chrome, point Remotion at a
 headless shell and use the software renderer:
