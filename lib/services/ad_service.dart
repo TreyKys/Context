@@ -11,10 +11,15 @@ final adServiceProvider = Provider<AdService>((ref) {
 class AdService {
   final QuotaService _quotaService;
 
-  // TODO: Replace with your real AdMob Rewarded Ad Unit ID from the Play Console before publishing.
-  // Current value is Google's standard test ID — real ads will NOT load with this in production.
-  static const String rewardedAdUnitId =
-      'ca-app-pub-3940256099942544/5224354917';
+  // Supplied at build time so real account IDs never live in source:
+  //   flutter build appbundle --dart-define=ADMOB_REWARDED_ID=ca-app-pub-XXXX/YYYY
+  // Falls back to Google's official REWARDED *test* unit for dev builds so ads
+  // still work locally. A production release MUST pass the real ID (and set the
+  // matching real AdMob App ID in AndroidManifest.xml).
+  static const String rewardedAdUnitId = String.fromEnvironment(
+    'ADMOB_REWARDED_ID',
+    defaultValue: 'ca-app-pub-3940256099942544/5224354917',
+  );
 
   AdService(this._quotaService);
 

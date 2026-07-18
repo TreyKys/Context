@@ -184,10 +184,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           _SettingsTile(
+            icon: CupertinoIcons.mail_solid,
+            iconColor: Colors.grey,
+            title: 'Contact Support',
+            subtitle: 'support@neurodevlabs.com',
+            onTap: () => _openUrl(
+              'mailto:support@neurodevlabs.com?subject=The%20Context%20Dictionary%20Support',
+            ),
+          ),
+
+          const SizedBox(height: 8),
+          _SectionHeader(title: 'Legal'),
+
+          _SettingsTile(
             icon: CupertinoIcons.shield_fill,
             iconColor: Colors.grey,
             title: 'Privacy Policy',
-            onTap: () => _openUrl('https://neurodevlabs.com/privacy'),
+            onTap: () => _openUrl('https://neurodevlabs.com/context/privacy'),
+          ),
+          _SettingsTile(
+            icon: CupertinoIcons.doc_text_fill,
+            iconColor: Colors.grey,
+            title: 'Terms of Service',
+            onTap: () => _openUrl('https://neurodevlabs.com/context/terms'),
           ),
 
           const SizedBox(height: 8),

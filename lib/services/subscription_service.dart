@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/quota_service.dart';
 
 const String kMonthlySubId = 'context_monthly_sub';
 const String kLifetimeSubId = 'context_lifetime_unlock';
+
+/// RevenueCat public SDK key (Android, starts with `goog_`). It is a
+/// publishable key, but we still supply it at build time rather than commit it:
+///   flutter build appbundle --dart-define=REVENUECAT_API_KEY=goog_XXXXXXXX
+const String kRevenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
 
 class SubscriptionService {
   static final SubscriptionService _instance = SubscriptionService._internal();
@@ -25,8 +29,8 @@ class SubscriptionService {
     _quotaService = quotaService;
 
     try {
-      final apiKey = dotenv.env['REVENUECAT_API_KEY'];
-      if (apiKey != null && apiKey.isNotEmpty) {
+      const apiKey = kRevenueCatApiKey;
+      if (apiKey.isNotEmpty) {
         if (kDebugMode) {
           await Purchases.setLogLevel(LogLevel.debug);
         }
