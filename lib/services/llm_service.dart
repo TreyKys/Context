@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_ai/firebase_ai.dart';
 import '../models/vibe_result.dart';
+import 'ai_config.dart';
 import 'wikipedia_service.dart';
 import 'dictionary_service.dart';
 
@@ -15,7 +16,7 @@ class LLMService {
     // is no API key in the app. (Swap `.googleAI()` for `.vertexAI()` to use the
     // enterprise Vertex AI backend, which requires the Blaze plan.)
     _model = FirebaseAI.googleAI().generativeModel(
-      model: 'gemini-2.5-flash',
+      model: kGeminiModel,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
       ),

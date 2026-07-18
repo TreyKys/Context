@@ -10,6 +10,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../firebase_options.dart';
+import '../services/ai_config.dart';
 
 /// RevenueCat public SDK key, supplied via --dart-define (see SubscriptionService).
 const String _kRevenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
@@ -85,8 +86,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         return;
       }
 
-      final model =
-          FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash');
+      final model = FirebaseAI.googleAI().generativeModel(model: kGeminiModel);
       final prompt =
           'Give a concise 1-2 sentence definition of "$input" suitable for '
           'quick reference. Include current cultural/slang usage if applicable. '

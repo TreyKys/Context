@@ -36,23 +36,30 @@ flutter pub get
 - **[CODE ✓] Project `com-context-dict-v1` is now wired in:** real `lib/firebase_options.dart`,
   `android/app/google-services.json`, and the `com.google.gms.google-services` Gradle plugin applied.
   (If you re-provision or add iOS, re-run `flutterfire configure`.)
+- **[CODE ✓] No native Gradle deps to add by hand.** The Firebase console’s "add the SDK" step shows a
+  native `firebase-bom` / `firebase-ai` / `firebase-appcheck-debug` block — **skip it.** The FlutterFire
+  packages (`firebase_ai`, `firebase_app_check`) already bundle those native libraries; hand-adding the
+  BoM block causes version conflicts.
 - **[YOU]** still required in the Firebase console:
 1. In **Build → Firebase AI Logic**, enable it and choose the **Gemini Developer API** provider —
    this is **free, no billing/Blaze needed** (the app is coded for this backend via
    `FirebaseAI.googleAI()`). The free tier has rate limits; to raise them later, switch to Vertex AI
    (Blaze) and change `.googleAI()` → `.vertexAI()` in `lib/services/llm_service.dart` and
    `lib/overlay/overlay_main.dart` — no other code changes.
-2. **App Check:**
-   - Register **Play Integrity** for the Android app (Firebase → App Check).
-   - Add your app’s **SHA-256** fingerprints (both your upload key and Google Play App Signing key —
-     get the Play one from Play Console → Setup → App signing).
-   - Turn **enforcement ON** for the Firebase AI Logic / Vertex AI API.
-   - For local testing, run a debug build once, copy the **debug token** printed in logcat, and add it
-     under App Check → Apps → Manage debug tokens.
-6. Set a **budget alert / quota** on the project so AI usage can’t surprise-bill you.
+2. **App Check — now mandatory.** As of early July 2026, App Check is **auto-enforced** for Firebase AI
+   Logic, so AI lookups are **blocked** until it's satisfied. Confirm under **Security → App Check → APIs**
+   that **Firebase AI Logic** shows **Enforced**.
+   - **Release:** register **Play Integrity** for the Android app and add your app’s **SHA-256**
+     fingerprints — both your upload key and the **Google Play App Signing** key (Play Console → Setup →
+     App signing). The app already uses Play Integrity in release builds.
+   - **Local testing:** the app already installs the App Check **debug provider** in debug builds. Run a
+     debug build, find `Enter this debug secret into the allow list … : <token>` in logcat, then add it
+     under **App Check → Apps → (your app) → ⋮ → Manage debug tokens.** Keep that token private — never
+     commit it.
+3. (Optional) Set a **budget alert** if you later move to the Vertex/Blaze backend.
 
-> Sanity check: a release build on a real device should return AI results. If it fails, it’s almost
-> always App Check (missing SHA-256 or enforcement without a registered device).
+> Sanity check: a debug build on a registered device should return AI results. A failure is almost always
+> App Check — the debug token isn’t registered, or enforcement is on without a registered device/SHA-256.
 
 ## 2. RevenueCat (subscriptions) **[YOU]**
 
