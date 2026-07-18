@@ -36,40 +36,6 @@ class LibraryService {
         await db.execute('''
           CREATE INDEX idx_saved_words_word ON saved_words(word);
         ''');
-
-        await db.execute('''
-          CREATE VIRTUAL TABLE saved_words_fts USING fts5(
-            word,
-            literal_definition,
-            vibe_translation,
-            tags_json,
-            content='saved_words',
-            content_rowid='id'
-          );
-        ''');
-
-        await db.execute('''
-          CREATE TRIGGER saved_words_ai AFTER INSERT ON saved_words BEGIN
-            INSERT INTO saved_words_fts(rowid, word, literal_definition, vibe_translation, tags_json)
-            VALUES (new.id, new.word, new.literal_definition, new.vibe_translation, new.tags_json);
-          END;
-        ''');
-
-        await db.execute('''
-          CREATE TRIGGER saved_words_ad AFTER DELETE ON saved_words BEGIN
-            INSERT INTO saved_words_fts(saved_words_fts, rowid, word, literal_definition, vibe_translation, tags_json)
-            VALUES ('delete', old.id, old.word, old.literal_definition, old.vibe_translation, old.tags_json);
-          END;
-        ''');
-
-        await db.execute('''
-          CREATE TRIGGER saved_words_au AFTER UPDATE ON saved_words BEGIN
-            INSERT INTO saved_words_fts(saved_words_fts, rowid, word, literal_definition, vibe_translation, tags_json)
-            VALUES ('delete', old.id, old.word, old.literal_definition, old.vibe_translation, old.tags_json);
-            INSERT INTO saved_words_fts(rowid, word, literal_definition, vibe_translation, tags_json)
-            VALUES (new.id, new.word, new.literal_definition, new.vibe_translation, new.tags_json);
-          END;
-        ''');
       },
     );
   }
@@ -84,14 +50,19 @@ class LibraryService {
   Future<List<SavedWord>> searchLibrary(String query) async {
     final db = _db;
     if (db == null) return [];
-    final String ftsQuery = '$query*';
+    final q = query.trim();
+    if (q.isEmpty) return getSavedWords();
+    // Plain LIKE search across the saved fields. No FTS5 module required, so it
+    // works on every device. The library is small, so performance is a non-issue.
+    final like = '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
     final maps = await db.rawQuery('''
-      SELECT saved_words.*
-      FROM saved_words
-      JOIN saved_words_fts ON saved_words.id = saved_words_fts.rowid
-      WHERE saved_words_fts MATCH ?
-      ORDER BY saved_words.saved_at DESC
-    ''', [ftsQuery]);
+      SELECT * FROM saved_words
+      WHERE word LIKE ? ESCAPE '\\'
+         OR literal_definition LIKE ? ESCAPE '\\'
+         OR vibe_translation LIKE ? ESCAPE '\\'
+         OR tags_json LIKE ? ESCAPE '\\'
+      ORDER BY saved_at DESC
+    ''', [like, like, like, like]);
     return maps.map(SavedWord.fromMap).toList();
   }
 

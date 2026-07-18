@@ -52,24 +52,47 @@ void main() async {
       debugPrint('Firebase init failed: $e');
     }
 
+    // Each service is initialised independently so that one failure (e.g. a
+    // device without a given capability) degrades that feature instead of
+    // blanking the whole app on the "Failed to Start" screen.
     final notificationService = NotificationService();
-    await notificationService.init();
-    await notificationService.requestPermissions();
-    await notificationService.scheduleDailyNotifications();
+    try {
+      await notificationService.init();
+      await notificationService.requestPermissions();
+      await notificationService.scheduleDailyNotifications();
+    } catch (e) {
+      debugPrint('NotificationService init failed: $e');
+    }
     final initialPayload = notificationService.initialPayload;
 
     final quotaService = QuotaService();
-    // Assuming anonymous access, update when authenticated
-    await quotaService.init('anonymous');
+    try {
+      // Assuming anonymous access, update when authenticated
+      await quotaService.init('anonymous');
+    } catch (e) {
+      debugPrint('QuotaService init failed: $e');
+    }
 
     final libraryService = LibraryService();
-    await libraryService.init();
+    try {
+      await libraryService.init();
+    } catch (e) {
+      debugPrint('LibraryService init failed: $e');
+    }
 
     final historyService = HistoryService();
-    await historyService.init();
+    try {
+      await historyService.init();
+    } catch (e) {
+      debugPrint('HistoryService init failed: $e');
+    }
 
     final subscriptionService = SubscriptionService();
-    await subscriptionService.init(quotaService);
+    try {
+      await subscriptionService.init(quotaService);
+    } catch (e) {
+      debugPrint('SubscriptionService init failed: $e');
+    }
 
     final prefs = await SharedPreferences.getInstance();
     final hasOnboarded = prefs.getBool('has_onboarded') ?? false;
