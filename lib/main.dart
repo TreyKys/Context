@@ -9,6 +9,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/consent_service.dart';
 import 'services/notification_service.dart';
 import 'services/quota_service.dart';
 import 'services/library_service.dart';
@@ -26,6 +27,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Gather EEA/UK ad consent (UMP) before requesting ads. Bounded so a slow
+    // or stuck form can never freeze startup; no-op outside the EEA/UK.
+    try {
+      await ConsentService.instance
+          .gatherConsent()
+          .timeout(const Duration(seconds: 8));
+    } catch (_) {}
+
     await MobileAds.instance.initialize();
 
     try {

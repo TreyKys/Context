@@ -7,6 +7,7 @@ import '../providers/subscription_provider.dart';
 import '../services/quota_service.dart';
 import '../services/overlay_service.dart';
 import '../services/notification_service.dart';
+import '../services/consent_service.dart';
 import 'subscription_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -19,12 +20,19 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _appVersion = '';
   bool _overlayEnabled = false;
+  bool _privacyOptionsRequired = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
     _loadOverlayState();
+    _loadConsentState();
+  }
+
+  Future<void> _loadConsentState() async {
+    final required = await ConsentService.instance.isPrivacyOptionsRequired();
+    if (mounted) setState(() => _privacyOptionsRequired = required);
   }
 
   Future<void> _loadVersion() async {
@@ -208,6 +216,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Terms of Service',
             onTap: () => _openUrl('https://neurodevlabs.com/context/terms'),
           ),
+          if (_privacyOptionsRequired)
+            _SettingsTile(
+              icon: CupertinoIcons.slider_horizontal_3,
+              iconColor: Colors.grey,
+              title: 'Ad Privacy Options',
+              subtitle: 'Manage your ad consent choices',
+              onTap: () => ConsentService.instance.showPrivacyOptionsForm(),
+            ),
 
           const SizedBox(height: 8),
           _SectionHeader(title: 'About'),

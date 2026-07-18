@@ -31,20 +31,17 @@ flutter pub get
 
 ---
 
-## 1. Firebase (required — the app won’t do AI lookups without it) **[YOU]**
+## 1. Firebase (required — the app won’t do AI lookups without it)
 
-1. Create a project at <https://console.firebase.google.com>.
-2. **Upgrade to the Blaze (pay-as-you-go) plan.** Firebase AI Logic / Vertex requires it (Spark won’t work).
-3. In **Build → Firebase AI Logic**, enable it and pick the **Vertex AI** provider (or Gemini Developer
+- **[CODE ✓] Project `com-context-dict-v1` is now wired in:** real `lib/firebase_options.dart`,
+  `android/app/google-services.json`, and the `com.google.gms.google-services` Gradle plugin applied.
+  (If you re-provision or add iOS, re-run `flutterfire configure`.)
+- **[YOU]** still required in the Firebase console:
+1. **Upgrade to the Blaze (pay-as-you-go) plan.** Firebase AI Logic / Vertex requires it (Spark won’t work).
+2. In **Build → Firebase AI Logic**, enable it and pick the **Vertex AI** provider (or Gemini Developer
    API — if you switch, change `FirebaseAI.vertexAI()` → `FirebaseAI.googleAI()` in
    `lib/services/llm_service.dart` and `lib/overlay/overlay_main.dart`).
-4. From the project root, generate the real config (replaces the placeholder `lib/firebase_options.dart`
-   and installs `android/app/google-services.json`):
-   ```bash
-   dart pub global activate flutterfire_cli
-   flutterfire configure --project=<your-project-id>
-   ```
-5. **App Check:**
+3. **App Check:**
    - Register **Play Integrity** for the Android app (Firebase → App Check).
    - Add your app’s **SHA-256** fingerprints (both your upload key and Google Play App Signing key —
      get the Play one from Play Console → Setup → App signing).
@@ -139,8 +136,11 @@ Other declarations:
   (consider switching to inexact alarms if Play pushes back, since it’s cosmetic);
   `POST_NOTIFICATIONS`/`RECEIVE_BOOT_COMPLETED` → the daily reminder and rescheduling after reboot.
 - **Content rating** questionnaire, **Target audience** (not children), **News** = No, **COVID** = No.
-- **Ad consent (UMP):** if you target the EEA/UK, add Google’s User Messaging Platform consent flow
-  before requesting ads (not yet implemented — flag for a follow-up if you launch there).
+- **Ad consent (UMP):** **[CODE ✓]** the User Messaging Platform flow is implemented
+  (`lib/services/consent_service.dart`) — consent is gathered at startup, ad requests are gated on
+  `canRequestAds()`, and Settings shows an “Ad Privacy Options” entry when required. **[YOU]** in the
+  **AdMob console → Privacy & messaging**, create a **GDPR (EEA)** consent message (and optionally a
+  US-states message) and publish it — the app displays whatever you configure there.
 
 ## 8. Pre-launch test pass **[YOU]**
 
@@ -163,6 +163,6 @@ Other declarations:
 | Test AdMob App ID in manifest | ⚠️ **[YOU]** one-line swap in `AndroidManifest.xml` |
 | No privacy policy / terms | ✅ drafted — **[YOU]** host + fill `[CONFIRM]` |
 | No in-app support contact | ✅ added (Settings → Contact Support) |
-| Firebase config real values | ⚠️ **[YOU]** run `flutterfire configure` |
+| Firebase config real values | ✅ wired (project `com-context-dict-v1`) — **[YOU]** enable Blaze + App Check |
 | RevenueCat dashboard/products/key | ⚠️ **[YOU]** set up + supply key |
-| Ad consent (UMP) for EEA | ⚠️ **[YOU]** add if launching in EEA/UK |
+| Ad consent (UMP) for EEA | ✅ implemented — **[YOU]** publish a GDPR message in AdMob |

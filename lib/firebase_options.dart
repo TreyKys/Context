@@ -1,14 +1,7 @@
-// ⚠️  PLACEHOLDER — NOT A REAL FIREBASE CONFIG.
-//
-// These values are dummies so the project compiles. The app will NOT connect to
-// Firebase (and AI lookups will fail) until you replace this file with real
-// values by running, from the project root:
-//
-//     dart pub global activate flutterfire_cli
-//     flutterfire configure --project=<your-firebase-project-id>
-//
-// That command regenerates this file and installs android/app/google-services.json.
-// Commit the regenerated file (Firebase config is not a secret). See PUBLISHING.md.
+// Firebase configuration for project `com-context-dict-v1`.
+// Values mirror android/app/google-services.json. Firebase config is not a
+// secret (it's restricted by app package + App Check). If you add iOS or
+// re-provision, regenerate with `flutterfire configure`.
 //
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
@@ -38,12 +31,11 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Replace via `flutterfire configure`. These are placeholders.
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_ME_ANDROID_API_KEY',
-    appId: 'REPLACE_ME_ANDROID_APP_ID',
-    messagingSenderId: 'REPLACE_ME_SENDER_ID',
-    projectId: 'REPLACE_ME_PROJECT_ID',
-    storageBucket: 'REPLACE_ME_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyAzdakla_7_kO5DfEq_rAPcujnnv3m-b7s',
+    appId: '1:321903242851:android:30d6357277c16b2b8b5256',
+    messagingSenderId: '321903242851',
+    projectId: 'com-context-dict-v1',
+    storageBucket: 'com-context-dict-v1.firebasestorage.app',
   );
 }
