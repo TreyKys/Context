@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 import '../models/vibe_result.dart';
 import 'ai_config.dart';
@@ -122,6 +123,9 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
           isVerified: isVerified,
         );
       } catch (e) {
+        // Surface the real cause in debug logs (App Check rejection, model-not-
+        // found, permission denied, etc.) instead of only the generic message.
+        debugPrint('[LLMService] attempt $retries failed: $e');
         retries++;
         if (retries >= 3) {
           throw Exception(
