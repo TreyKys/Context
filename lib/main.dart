@@ -1,13 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/consent_service.dart';
 import 'services/notification_service.dart';
 import 'services/quota_service.dart';
 import 'services/library_service.dart';
@@ -25,13 +27,26 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Gather EEA/UK ad consent (UMP) before requesting ads. Bounded so a slow
+    // or stuck form can never freeze startup; no-op outside the EEA/UK.
+    try {
+      await ConsentService.instance
+          .gatherConsent()
+          .timeout(const Duration(seconds: 8));
+    } catch (_) {}
+
     await MobileAds.instance.initialize();
-    await dotenv.load(fileName: '.env');
 
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      // App Check protects the Firebase AI backend. Debug builds use the debug
+      // provider (register the printed debug token in the Firebase console);
+      // release builds use Play Integrity.
       await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
+        androidProvider:
+            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
       );
     } catch (e) {
       debugPrint('Firebase init failed: $e');

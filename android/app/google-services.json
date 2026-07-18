@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "321903242851",
+    "project_id": "com-context-dict-v1",
+    "storage_bucket": "com-context-dict-v1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:321903242851:android:30d6357277c16b2b8b5256",
+        "android_client_info": {
+          "package_name": "com.context.dict.v1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzdakla_7_kO5DfEq_rAPcujnnv3m-b7s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

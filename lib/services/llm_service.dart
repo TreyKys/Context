@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import '../models/vibe_result.dart';
+import 'ai_config.dart';
 import 'wikipedia_service.dart';
 import 'dictionary_service.dart';
 
@@ -11,13 +11,12 @@ class LLMService {
   final DictionaryService _dictionary = DictionaryService();
 
   LLMService() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null) {
-      throw Exception('GEMINI_API_KEY not found in .env');
-    }
-    _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: apiKey,
+    // Firebase AI Logic via the Gemini Developer API backend (free tier, no
+    // billing). The request is authenticated by Firebase + App Check, so there
+    // is no API key in the app. (Swap `.googleAI()` for `.vertexAI()` to use the
+    // enterprise Vertex AI backend, which requires the Blaze plan.)
+    _model = FirebaseAI.googleAI().generativeModel(
+      model: kGeminiModel,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
       ),

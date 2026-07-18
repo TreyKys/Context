@@ -1,21 +1,34 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import '../firebase_options.dart';
+import '../services/ai_config.dart';
+
+/// RevenueCat public SDK key, supplied via --dart-define (see SubscriptionService).
+const String _kRevenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.
 @pragma('vm:entry-point')
 void overlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Load env (assets are available in the overlay isolate)
+  // The overlay runs in its own engine, so Firebase must be initialised here too.
   try {
-    await dotenv.load(fileName: '.env');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+    );
   } catch (_) {}
 
   runApp(
@@ -73,16 +86,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         return;
       }
 
-      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-      if (apiKey.isEmpty) {
-        setState(() {
-          _error = 'API key not configured.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
+      final model = FirebaseAI.googleAI().generativeModel(model: kGeminiModel);
       final prompt =
           'Give a concise 1-2 sentence definition of "$input" suitable for '
           'quick reference. Include current cultural/slang usage if applicable. '
@@ -106,9 +110,9 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
 
   Future<bool> _isPremiumUser() async {
     try {
-      final apiKey = dotenv.env['REVENUECAT_API_KEY'];
-      if (apiKey != null && apiKey.isNotEmpty) {
-        PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+      if (_kRevenueCatApiKey.isNotEmpty) {
+        PurchasesConfiguration configuration =
+            PurchasesConfiguration(_kRevenueCatApiKey);
         await Purchases.configure(configuration);
         CustomerInfo customerInfo = await Purchases.getCustomerInfo();
         return customerInfo.entitlements.active.containsKey("pro_fluency");

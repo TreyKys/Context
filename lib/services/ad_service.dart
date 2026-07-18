@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'quota_service.dart';
+import 'consent_service.dart';
 
 final adServiceProvider = Provider<AdService>((ref) {
   final quotaService = ref.watch(quotaServiceProvider);
@@ -11,10 +12,15 @@ final adServiceProvider = Provider<AdService>((ref) {
 class AdService {
   final QuotaService _quotaService;
 
-  // TODO: Replace with your real AdMob Rewarded Ad Unit ID from the Play Console before publishing.
-  // Current value is Google's standard test ID — real ads will NOT load with this in production.
-  static const String rewardedAdUnitId =
-      'ca-app-pub-3940256099942544/5224354917';
+  // Supplied at build time so real account IDs never live in source:
+  //   flutter build appbundle --dart-define=ADMOB_REWARDED_ID=ca-app-pub-XXXX/YYYY
+  // Falls back to Google's official REWARDED *test* unit for dev builds so ads
+  // still work locally. A production release MUST pass the real ID (and set the
+  // matching real AdMob App ID in AndroidManifest.xml).
+  static const String rewardedAdUnitId = String.fromEnvironment(
+    'ADMOB_REWARDED_ID',
+    defaultValue: 'ca-app-pub-3940256099942544/5224354917',
+  );
 
   AdService(this._quotaService);
 
@@ -22,6 +28,11 @@ class AdService {
     required VoidCallback onCompleted,
     required VoidCallback onFailed,
   }) async {
+    // UMP: don't request ads if consent hasn't been granted (EEA/UK).
+    if (!await ConsentService.instance.canRequestAds()) {
+      onFailed();
+      return;
+    }
     await _loadRewardedAd(
       onAdLoaded: (ad) {
         bool earnedReward = false;
@@ -57,6 +68,11 @@ class AdService {
     required VoidCallback onFailed,
     required VoidCallback onFallback,
   }) async {
+    // UMP: don't request ads if consent hasn't been granted (EEA/UK).
+    if (!await ConsentService.instance.canRequestAds()) {
+      onFailed();
+      return;
+    }
     await _loadRewardedAd(
       onAdLoaded: (ad1) {
         bool earnedReward1 = false;
