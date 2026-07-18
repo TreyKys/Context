@@ -37,11 +37,12 @@ flutter pub get
   `android/app/google-services.json`, and the `com.google.gms.google-services` Gradle plugin applied.
   (If you re-provision or add iOS, re-run `flutterfire configure`.)
 - **[YOU]** still required in the Firebase console:
-1. **Upgrade to the Blaze (pay-as-you-go) plan.** Firebase AI Logic / Vertex requires it (Spark won’t work).
-2. In **Build → Firebase AI Logic**, enable it and pick the **Vertex AI** provider (or Gemini Developer
-   API — if you switch, change `FirebaseAI.vertexAI()` → `FirebaseAI.googleAI()` in
-   `lib/services/llm_service.dart` and `lib/overlay/overlay_main.dart`).
-3. **App Check:**
+1. In **Build → Firebase AI Logic**, enable it and choose the **Gemini Developer API** provider —
+   this is **free, no billing/Blaze needed** (the app is coded for this backend via
+   `FirebaseAI.googleAI()`). The free tier has rate limits; to raise them later, switch to Vertex AI
+   (Blaze) and change `.googleAI()` → `.vertexAI()` in `lib/services/llm_service.dart` and
+   `lib/overlay/overlay_main.dart` — no other code changes.
+2. **App Check:**
    - Register **Play Integrity** for the Android app (Firebase → App Check).
    - Add your app’s **SHA-256** fingerprints (both your upload key and Google Play App Signing key —
      get the Play one from Play Console → Setup → App signing).
@@ -163,6 +164,6 @@ Other declarations:
 | Test AdMob App ID in manifest | ⚠️ **[YOU]** one-line swap in `AndroidManifest.xml` |
 | No privacy policy / terms | ✅ drafted — **[YOU]** host + fill `[CONFIRM]` |
 | No in-app support contact | ✅ added (Settings → Contact Support) |
-| Firebase config real values | ✅ wired (project `com-context-dict-v1`) — **[YOU]** enable Blaze + App Check |
+| Firebase config real values | ✅ wired (project `com-context-dict-v1`) — **[YOU]** enable Gemini Developer API (free) + App Check |
 | RevenueCat dashboard/products/key | ⚠️ **[YOU]** set up + supply key |
 | Ad consent (UMP) for EEA | ✅ implemented — **[YOU]** publish a GDPR message in AdMob |

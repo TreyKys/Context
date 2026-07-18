@@ -86,7 +86,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
       }
 
       final model =
-          FirebaseAI.vertexAI().generativeModel(model: 'gemini-2.5-flash');
+          FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash');
       final prompt =
           'Give a concise 1-2 sentence definition of "$input" suitable for '
           'quick reference. Include current cultural/slang usage if applicable. '

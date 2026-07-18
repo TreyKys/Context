@@ -10,10 +10,11 @@ class LLMService {
   final DictionaryService _dictionary = DictionaryService();
 
   LLMService() {
-    // Firebase AI Logic — the request is authenticated by Firebase + App Check,
-    // so there is no API key in the app. (Swap `.vertexAI()` for `.googleAI()`
-    // to use the Gemini Developer API backend instead of Vertex AI.)
-    _model = FirebaseAI.vertexAI().generativeModel(
+    // Firebase AI Logic via the Gemini Developer API backend (free tier, no
+    // billing). The request is authenticated by Firebase + App Check, so there
+    // is no API key in the app. (Swap `.googleAI()` for `.vertexAI()` to use the
+    // enterprise Vertex AI backend, which requires the Blaze plan.)
+    _model = FirebaseAI.googleAI().generativeModel(
       model: 'gemini-2.5-flash',
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
