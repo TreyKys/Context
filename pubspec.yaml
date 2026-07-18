@@ -15,9 +15,7 @@ dependencies:
   flutter_animate: ^4.5.2
   # Firebase AI Logic (formerly "Vertex AI in Firebase"). Replaces the direct
   # google_generative_ai SDK so no Gemini API key ships in the app.
-  # If `flutter pub get` fails version-solving against firebase_core, run
-  # `flutter pub add firebase_ai` to let pub pick the compatible version.
-  firebase_ai: ^2.4.0
+  firebase_ai: ^3.12.1
   flutter_riverpod: ^3.2.1
   animated_text_kit: ^4.3.0
   google_fonts: ^8.0.2
