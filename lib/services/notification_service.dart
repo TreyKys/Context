@@ -102,7 +102,7 @@ class NotificationService {
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         i, // unique ID
-        '🔥 Word of the Day: \$word',
+        '🔥 Word of the Day: $word',
         'Tap to see the Vibe Translation!',
         scheduledDate,
         platformChannelDetails,

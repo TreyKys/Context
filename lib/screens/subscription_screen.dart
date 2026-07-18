@@ -53,7 +53,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   Widget build(BuildContext context) {
     final service = ref.watch(subscriptionServiceProvider);
     final monthly = service.products.where((p) => p.identifier == kMonthlySubId).firstOrNull;
-    final yearly = service.products.where((p) => p.identifier == kLifetimeSubId).firstOrNull;
+    final yearly = service.products.where((p) => p.identifier == kYearlySubId).firstOrNull;
 
     final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
 
@@ -143,12 +143,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               const SizedBox(height: 32),
 
               if (!isPremium) ...[
-                // Lifetime — highlighted
+                // Annual — highlighted
                 _PlanCard(
-                  label: 'Lifetime',
-                  badge: 'Best Value · One Time',
-                  price: yearly?.priceString ?? '\$50.00',
-                  detail: 'One time payment · yours forever',
+                  label: 'Annual',
+                  badge: 'Best Value · Save 37%',
+                  price: yearly?.priceString ?? '\$29.99',
+                  detail: 'billed yearly · cancel anytime',
                   isHighlighted: true,
                   onTap: _isPurchasing ? null : () => _purchase(yearly),
                   isLoading: _isPurchasing,
@@ -207,7 +207,7 @@ const _features = [
   (CupertinoIcons.book_fill, 'Unlimited word library'),
   (CupertinoIcons.square_stack_fill, 'Floating overlay search — from any app'),
   (CupertinoIcons.xmark_circle_fill, 'No ads, ever'),
-  (CupertinoIcons.checkmark_shield_fill, 'AI fact-checked against Wikipedia & Dictionary'),
+  (CupertinoIcons.heart_fill, 'Support an independent studio'),
 ];
 
 class _FeatureRow extends StatelessWidget {

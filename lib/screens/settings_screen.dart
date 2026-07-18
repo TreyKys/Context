@@ -195,9 +195,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: CupertinoIcons.mail_solid,
             iconColor: Colors.grey,
             title: 'Contact Support',
-            subtitle: 'support@neurodevlabs.com',
+            subtitle: 'hello@neurodevlabs.cloud',
             onTap: () => _openUrl(
-              'mailto:support@neurodevlabs.com?subject=The%20Context%20Dictionary%20Support',
+              'mailto:hello@neurodevlabs.cloud?subject=The%20Context%20Dictionary%20Support',
             ),
           ),
 
@@ -234,6 +234,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'The Context Dictionary',
             subtitle: _appVersion.isNotEmpty ? 'Version $_appVersion' : '',
           ),
+
+          // Debug-only: exercise premium features (overlay, unlimited) without a
+          // real purchase. kDebugMode is false in release, so this never ships.
+          if (kDebugMode) ...[
+            const SizedBox(height: 8),
+            _SectionHeader(title: 'Developer (debug only)'),
+            _SettingsTile(
+              icon: CupertinoIcons.hammer_fill,
+              iconColor: Colors.orange,
+              title: 'Premium override',
+              subtitle: 'Test premium features without a purchase',
+              trailing: Switch(
+                value: isPremium,
+                activeColor: Colors.orange,
+                onChanged: (v) async {
+                  await ref.read(quotaServiceProvider).setPremium(v);
+                  ref.invalidate(isPremiumProvider);
+                  if (mounted) setState(() {});
+                },
+              ),
+            ),
+          ],
 
           const SizedBox(height: 32),
 

@@ -4,7 +4,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../services/quota_service.dart';
 
 const String kMonthlySubId = 'context_monthly_sub';
-const String kLifetimeSubId = 'context_lifetime_unlock';
+const String kYearlySubId = 'context_yearly_sub';
 
 /// RevenueCat public SDK key (Android, starts with `goog_`). It is a
 /// publishable key, but we still supply it at build time rather than commit it:

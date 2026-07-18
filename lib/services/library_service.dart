@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/saved_word.dart';
@@ -14,10 +15,24 @@ class LibraryService {
   Future<void> init() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'context_library.db');
+    try {
+      _db = await _open(path);
+    } catch (e) {
+      // The on-device DB is a local cache. If it can't be opened (e.g. a
+      // corrupt or incompatible file left over from an older schema), delete
+      // it and start clean rather than blocking the Library screen.
+      debugPrint('LibraryService: recreating DB after open error: $e');
+      try {
+        await deleteDatabase(path);
+      } catch (_) {}
+      _db = await _open(path);
+    }
+  }
 
-    _db = await openDatabase(
+  Future<Database> _open(String path) {
+    return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE saved_words (
@@ -37,14 +52,27 @@ class LibraryService {
           CREATE INDEX idx_saved_words_word ON saved_words(word);
         ''');
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // v1 → v2: drop the legacy FTS5 virtual table and its triggers, which
+        // crashed on devices without the fts5 module. Search now uses LIKE.
+        await db.execute('DROP TRIGGER IF EXISTS saved_words_ai');
+        await db.execute('DROP TRIGGER IF EXISTS saved_words_ad');
+        await db.execute('DROP TRIGGER IF EXISTS saved_words_au');
+        await db.execute('DROP TABLE IF EXISTS saved_words_fts');
+      },
     );
   }
 
   Future<List<SavedWord>> getSavedWords() async {
     final db = _db;
     if (db == null) return [];
-    final maps = await db.query('saved_words', orderBy: 'saved_at DESC');
-    return maps.map(SavedWord.fromMap).toList();
+    try {
+      final maps = await db.query('saved_words', orderBy: 'saved_at DESC');
+      return maps.map(SavedWord.fromMap).toList();
+    } catch (e) {
+      debugPrint('LibraryService.getSavedWords failed: $e');
+      return [];
+    }
   }
 
   Future<List<SavedWord>> searchLibrary(String query) async {
@@ -55,15 +83,20 @@ class LibraryService {
     // Plain LIKE search across the saved fields. No FTS5 module required, so it
     // works on every device. The library is small, so performance is a non-issue.
     final like = '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
-    final maps = await db.rawQuery('''
-      SELECT * FROM saved_words
-      WHERE word LIKE ? ESCAPE '\\'
-         OR literal_definition LIKE ? ESCAPE '\\'
-         OR vibe_translation LIKE ? ESCAPE '\\'
-         OR tags_json LIKE ? ESCAPE '\\'
-      ORDER BY saved_at DESC
-    ''', [like, like, like, like]);
-    return maps.map(SavedWord.fromMap).toList();
+    try {
+      final maps = await db.rawQuery('''
+        SELECT * FROM saved_words
+        WHERE word LIKE ? ESCAPE '\\'
+           OR literal_definition LIKE ? ESCAPE '\\'
+           OR vibe_translation LIKE ? ESCAPE '\\'
+           OR tags_json LIKE ? ESCAPE '\\'
+        ORDER BY saved_at DESC
+      ''', [like, like, like, like]);
+      return maps.map(SavedWord.fromMap).toList();
+    } catch (e) {
+      debugPrint('LibraryService.searchLibrary failed: $e');
+      return [];
+    }
   }
 
   Future<bool> isWordSaved(String word) async {
