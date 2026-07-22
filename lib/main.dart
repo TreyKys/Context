@@ -35,7 +35,11 @@ void main() async {
           .timeout(const Duration(seconds: 8));
     } catch (_) {}
 
-    await MobileAds.instance.initialize();
+    try {
+      await MobileAds.instance.initialize();
+    } catch (e) {
+      debugPrint('MobileAds init failed: $e');
+    }
 
     try {
       await Firebase.initializeApp(
