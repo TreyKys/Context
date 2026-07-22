@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,15 +13,16 @@ final adServiceProvider = Provider<AdService>((ref) {
 class AdService {
   final QuotaService _quotaService;
 
-  // Supplied at build time so real account IDs never live in source:
-  //   flutter build appbundle --dart-define=ADMOB_REWARDED_ID=ca-app-pub-XXXX/YYYY
-  // Falls back to Google's official REWARDED *test* unit for dev builds so ads
-  // still work locally. A production release MUST pass the real ID (and set the
-  // matching real AdMob App ID in AndroidManifest.xml).
-  static const String rewardedAdUnitId = String.fromEnvironment(
-    'ADMOB_REWARDED_ID',
-    defaultValue: 'ca-app-pub-3940256099942544/5224354917',
-  );
+  // Real rewarded ad unit in release; Google's official REWARDED *test* unit in
+  // debug, so you never accidentally click a live ad while developing (which can
+  // get an AdMob account flagged for invalid traffic). Ad-unit IDs are not
+  // secret — they are visible in the shipped app either way.
+  static const String _realRewardedAdUnitId =
+      'ca-app-pub-6864344458492366/4992609826';
+  static const String _testRewardedAdUnitId =
+      'ca-app-pub-3940256099942544/5224354917';
+  static const String rewardedAdUnitId =
+      kDebugMode ? _testRewardedAdUnitId : _realRewardedAdUnitId;
 
   AdService(this._quotaService);
 

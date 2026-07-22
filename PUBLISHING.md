@@ -19,7 +19,9 @@ Google/Firebase/RevenueCat accounts — I can’t do those in code. Items marked
 - **[CODE ✓] App Check** is initialised in both the main app and the overlay isolate — Play Integrity
   for release, debug provider for debug builds.
 - **[CODE ✓] Release signing** reads `android/key.properties` (falls back to debug keys if absent).
-- **[CODE ✓] AdMob rewarded unit ID** comes from `--dart-define=ADMOB_REWARDED_ID=…` (test ID fallback).
+- **[CODE ✓] AdMob is wired with the real IDs** — App ID `ca-app-pub-6864344458492366~8945518466` in
+  the manifest; the rewarded unit is real in release builds and Google's test unit in debug (no
+  dart-define needed).
 - **[CODE ✓] Legal pages** drafted in `legal/` and linked from Settings.
 - **[CODE ✓]** Removed the obsolete `bin/test_api.dart` dev script.
 
@@ -80,13 +82,10 @@ The code already uses RevenueCat; you just need the dashboard + key.
 
 1. Create the app (package **`com.context.dict.v1`**), complete the store listing (title, short/full
    description, screenshots, feature graphic, icon).
-2. **Subscriptions / in-app products:** create `context_monthly_sub` (subscription) and
-   `context_lifetime_unlock` (one-time product) with prices in each market.
-3. **AdMob:** create the app + a **Rewarded** ad unit at <https://apps.admob.com>. Then:
-   - Pass the rewarded unit ID via `--dart-define=ADMOB_REWARDED_ID=…` (§6).
-   - Put the real **AdMob App ID** in `android/app/src/main/AndroidManifest.xml` (replace the
-     `ca-app-pub-3940256099942544~3347511713` test value in the `APPLICATION_ID` meta-data).
-   - Link the AdMob app to the Play listing; complete AdMob’s app-ads.txt if you use it.
+2. **Subscriptions:** create `context_monthly_sub` (monthly) and `context_yearly_sub` (annual)
+   subscriptions with prices in each market.
+3. **AdMob:** ✅ already wired in code (App ID + real rewarded unit). Just **link the AdMob app to the
+   Play listing** once published (AdMob → App settings → link), and complete app-ads.txt if you use it.
 
 ## 4. Release signing **[YOU]**
 
@@ -116,11 +115,11 @@ The code already uses RevenueCat; you just need the dashboard + key.
 ## 6. Build commands (with the config injected)
 
 ```bash
+# AdMob is baked in. Add the RevenueCat key once you have it (until then,
+# premium simply stays locked — the rest of the app works):
 flutter build appbundle --release \
-  --dart-define=REVENUECAT_API_KEY=goog_XXXXXXXXXXXX \
-  --dart-define=ADMOB_REWARDED_ID=ca-app-pub-REAL/REWARDED
+  --dart-define=REVENUECAT_API_KEY=goog_XXXXXXXXXXXX
 ```
-Tip: put these in a `--dart-define-from-file=prod.json` (git-ignored) so you don’t retype them.
 The output bundle is `build/app/outputs/bundle/release/app-release.aab`.
 
 ## 7. Play Console → App content (Data Safety & declarations) **[YOU]**
@@ -167,8 +166,8 @@ Other declarations:
 | --- | --- |
 | Gemini API key shipped in APK | ✅ fixed (Firebase AI Logic; `.env` removed) |
 | Release signed with debug keystore | ✅ code ready — **[YOU]** supply `key.properties` |
-| Test AdMob rewarded unit ID | ✅ now a `--dart-define` — **[YOU]** supply real ID |
-| Test AdMob App ID in manifest | ⚠️ **[YOU]** one-line swap in `AndroidManifest.xml` |
+| AdMob rewarded unit ID | ✅ real ID baked in (release), test unit in debug |
+| AdMob App ID in manifest | ✅ real App ID set |
 | No privacy policy / terms | ✅ drafted — **[YOU]** host + fill `[CONFIRM]` |
 | No in-app support contact | ✅ added (Settings → Contact Support) |
 | Firebase config real values | ✅ wired (project `com-context-dict-v1`) — **[YOU]** enable Gemini Developer API (free) + App Check |

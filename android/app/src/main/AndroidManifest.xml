@@ -50,11 +50,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
-        <!-- TODO: Replace with your real AdMob App ID before publishing -->
+        <!-- Real AdMob App ID (NeuroDev Labs / The Context Dictionary) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-6864344458492366~8945518466"/>
 
         <!-- flutter_overlay_window service -->
         <service
