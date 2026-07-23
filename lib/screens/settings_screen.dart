@@ -218,13 +218,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: CupertinoIcons.shield_fill,
             iconColor: context.colors.inkSoft,
             title: 'Privacy Policy',
-            onTap: () => _openUrl('https://neurodevlabs.com/context/privacy'),
+            onTap: () => _openUrl('https://neurodevlabs.cloud/context/privacy'),
           ),
           _SettingsTile(
             icon: CupertinoIcons.doc_text_fill,
             iconColor: context.colors.inkSoft,
             title: 'Terms of Service',
-            onTap: () => _openUrl('https://neurodevlabs.com/context/terms'),
+            onTap: () => _openUrl('https://neurodevlabs.cloud/context/terms'),
           ),
           if (_privacyOptionsRequired)
             _SettingsTile(
