@@ -47,12 +47,23 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       // App Check protects the Firebase AI backend. Debug builds use the debug
-      // provider (register the printed debug token in the Firebase console);
-      // release builds use Play Integrity.
-      await FirebaseAppCheck.instance.activate(
-        androidProvider:
-            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      );
+      // provider; release builds use Play Integrity.
+      //
+      // A *sideloaded* release APK can't pass Play Integrity ("App attestation
+      // failed"), which breaks AI calls. For local testing on a sideloaded
+      // build, skip App Check with:
+      //   --dart-define=ENABLE_APP_CHECK=false
+      // and make sure the AI API is set to UNENFORCED in the Firebase console.
+      // Production (installed from Google Play) must keep this ON + enforced.
+      const appCheckEnabled =
+          bool.fromEnvironment('ENABLE_APP_CHECK', defaultValue: true);
+      if (appCheckEnabled) {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: kDebugMode
+              ? AndroidProvider.debug
+              : AndroidProvider.playIntegrity,
+        );
+      }
     } catch (e) {
       debugPrint('Firebase init failed: $e');
     }
