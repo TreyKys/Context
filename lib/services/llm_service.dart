@@ -97,6 +97,7 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
     required bool isVerified,
   }) async {
     int retries = 0;
+    Object? lastError;
     while (retries < 3) {
       try {
         final content = [Content.text(prompt)];
@@ -126,15 +127,18 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
         // Surface the real cause in debug logs (App Check rejection, model-not-
         // found, permission denied, etc.) instead of only the generic message.
         debugPrint('[LLMService] attempt $retries failed: $e');
+        lastError = e;
         retries++;
         if (retries >= 3) {
           throw Exception(
-            'Decryption Failed: Signal Lost or High Network Traffic.',
+            'Decryption Failed: Signal Lost or High Network Traffic.\n\nDebug: $lastError',
           );
         }
         await Future.delayed(Duration(seconds: retries == 1 ? 2 : 4));
       }
     }
-    throw Exception('Decryption Failed: Signal Lost or High Network Traffic.');
+    throw Exception(
+      'Decryption Failed: Signal Lost or High Network Traffic.\n\nDebug: $lastError',
+    );
   }
 }

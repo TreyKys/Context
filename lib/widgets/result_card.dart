@@ -98,6 +98,21 @@ class ResultCard extends ConsumerWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            // TEMP diagnostic: show the raw underlying error so it can be read
+            // directly on-device (no adb/emulator needed). Remove before the
+            // final public release once search issues are resolved.
+            if (error!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                error!,
+                style: TextStyle(
+                  color: context.colors.inkSoft,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
