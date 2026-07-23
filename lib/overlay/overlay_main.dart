@@ -34,8 +34,10 @@ void overlayMain() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
+      theme: ThemeData.light().copyWith(
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
+          ThemeData.light().textTheme,
+        ),
       ),
       home: const _OverlaySearchWidget(),
     ),
@@ -141,12 +143,12 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F0F1A),
+          color: const Color(0xFFFBF6EC),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.4), width: 1),
+          border: Border.all(color: Color(0xFFB07A47).withValues(alpha: 0.4), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.purpleAccent.withValues(alpha: 0.15),
+              color: Color(0xFFB07A47).withValues(alpha: 0.15),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -162,12 +164,12 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                 children: [
                   ShaderMask(
                     shaderCallback: (b) => const LinearGradient(
-                      colors: [Colors.purpleAccent, Colors.cyanAccent],
+                      colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                     ).createShader(b),
                     child: const Icon(
                       CupertinoIcons.sparkles,
                       size: 16,
-                      color: Colors.white,
+                      color: Color(0xFF2A2521),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -176,7 +178,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                       controller: _controller,
                       autofocus: false,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF2A2521),
                         fontSize: 14,
                       ),
                       decoration: const InputDecoration(
@@ -219,13 +221,13 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Colors.purpleAccent, Colors.cyanAccent],
+                          colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         CupertinoIcons.arrow_right,
-                        color: Colors.white,
+                        color: Color(0xFF2A2521),
                         size: 14,
                       ),
                     ),
@@ -256,7 +258,7 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                       width: 12,
                       height: 12,
                       child: CircularProgressIndicator(
-                        color: Colors.cyanAccent,
+                        color: Color(0xFFCDA15F),
                         strokeWidth: 1.5,
                       ),
                     ),
@@ -282,12 +284,12 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Divider(color: Color(0xFF1E1E2E), height: 1),
+                    const Divider(color: Color(0xFFE2D8C4), height: 1),
                     const SizedBox(height: 8),
                     Text(
                       _result!,
                       style: const TextStyle(
-                        color: Color(0xFFDDDDDD),
+                        color: Color(0xFF2A2521),
                         fontSize: 12,
                         height: 1.5,
                       ),

@@ -82,17 +82,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ref.read(quotaServiceProvider).isPremium;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0C10),
+      backgroundColor: const Color(0xFFF2EBDD),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B0C10),
+        backgroundColor: const Color(0xFFF2EBDD),
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(CupertinoIcons.back, color: Colors.white),
+          child: const Icon(CupertinoIcons.back, color: Color(0xFF2A2521)),
         ),
         title: const Text(
           'Settings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF2A2521), fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
@@ -102,7 +102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _SectionHeader(title: 'Account'),
           _SettingsTile(
             icon: isPremium ? CupertinoIcons.bolt_fill : CupertinoIcons.bolt,
-            iconColor: isPremium ? Colors.cyanAccent : Colors.grey,
+            iconColor: isPremium ? Color(0xFFCDA15F) : Colors.grey,
             title: isPremium ? 'Premium Active' : 'Free Plan',
             subtitle: isPremium
                 ? 'Unlimited searches & library'
@@ -122,7 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Overlay toggle
           _SettingsTile(
             icon: CupertinoIcons.square_stack_fill,
-            iconColor: _overlayEnabled ? Colors.purpleAccent : Colors.grey,
+            iconColor: _overlayEnabled ? Color(0xFFB07A47) : Colors.grey,
             title: 'Floating Search Bubble',
             subtitle: isPremium
                 ? 'Search from any app without opening Context'
@@ -135,13 +135,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.purpleAccent.withValues(alpha: 0.15),
+                      color: Color(0xFFB07A47).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: const Text(
                       'Premium',
                       style: TextStyle(
-                        color: Colors.purpleAccent,
+                        color: Color(0xFFB07A47),
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -150,9 +150,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Switch(
                   value: _overlayEnabled && isPremium,
                   onChanged: (v) => _toggleOverlay(v, isPremium),
-                  activeColor: Colors.purpleAccent,
+                  activeColor: Color(0xFFB07A47),
                   inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey.shade800,
+                  inactiveTrackColor: Color(0xFFE2D8C4),
                 ),
               ],
             ),
@@ -161,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Notifications
           _SettingsTile(
             icon: CupertinoIcons.bell_fill,
-            iconColor: Colors.cyanAccent,
+            iconColor: Color(0xFFCDA15F),
             title: 'Daily Word of the Day',
             subtitle: 'Sent at 10:00 AM · 14 days pre-scheduled',
             trailing: _PillButton(
@@ -172,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Notifications rescheduled for 14 days'),
-                      backgroundColor: Color(0xFF1A1A2E),
+                      backgroundColor: Color(0xFFEAE0CE),
                     ),
                   );
                 }
@@ -263,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // NeuroDev Labs footer
           Column(
             children: [
-              const Divider(color: Color(0xFF1A1A2E)),
+              const Divider(color: Color(0xFFEAE0CE)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -274,7 +274,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
-                        colors: [Colors.purpleAccent, Colors.cyanAccent],
+                        colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                       ),
                     ),
                   ),
@@ -282,7 +282,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const Text(
                     'NeuroDev Labs',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF2A2521),
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -354,9 +354,9 @@ class _SettingsTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF111118),
+          color: const Color(0xFFFBF6EC),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF1E1E2E)),
+          border: Border.all(color: const Color(0xFFE2D8C4)),
         ),
         child: Row(
           children: [
@@ -377,7 +377,7 @@ class _SettingsTile extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF2A2521),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -414,14 +414,14 @@ class _PillButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.purpleAccent.withValues(alpha: 0.15),
+          color: Color(0xFFB07A47).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.4)),
+          border: Border.all(color: Color(0xFFB07A47).withValues(alpha: 0.4)),
         ),
         child: Text(
           label,
           style: const TextStyle(
-            color: Colors.purpleAccent,
+            color: Color(0xFFB07A47),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),

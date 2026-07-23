@@ -37,7 +37,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           const Text(
             'My Library',
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 32,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -53,9 +53,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           // Search bar
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF111118),
+              color: const Color(0xFFFBF6EC),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF1E1E2E)),
+              border: Border.all(color: const Color(0xFFE2D8C4)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             child: Row(
@@ -65,7 +65,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Search your library...',
                       hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
@@ -95,7 +95,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           Expanded(
             child: libraryAsync.when(
               loading: () => const Center(
-                child: CircularProgressIndicator(color: Colors.cyanAccent, strokeWidth: 2),
+                child: CircularProgressIndicator(color: Color(0xFFCDA15F), strokeWidth: 2),
               ),
               error: (_, __) => const Center(
                 child: Text('Failed to load library', style: TextStyle(color: Colors.grey)),
@@ -150,7 +150,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0B0C10),
+      backgroundColor: const Color(0xFFF2EBDD),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -179,7 +179,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               Text(
                 word.word,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFF2A2521),
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -214,9 +214,9 @@ class _LibraryCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF111118),
+          color: const Color(0xFFFBF6EC),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFF1E1E2E)),
+          border: Border.all(color: const Color(0xFFE2D8C4)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +232,7 @@ class _LibraryCard extends StatelessWidget {
                           word.word,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF2A2521),
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -262,7 +262,7 @@ class _LibraryCard extends StatelessWidget {
                       return Text(
                         tag.startsWith('#') ? tag : '#$tag',
                         style: TextStyle(
-                          color: Colors.purpleAccent.withValues(alpha: 0.7),
+                          color: Color(0xFFB07A47).withValues(alpha: 0.7),
                           fontSize: 10,
                         ),
                       );
@@ -304,7 +304,7 @@ class _EmptyLibrary extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             isFiltered ? 'No results found' : 'Your library is empty',
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Color(0xFF2A2521), fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(

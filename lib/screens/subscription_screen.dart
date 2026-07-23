@@ -58,7 +58,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0C10),
+      backgroundColor: const Color(0xFFF2EBDD),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -73,7 +73,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: Color(0xFF2A2521).withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(CupertinoIcons.xmark, color: Colors.grey, size: 16),
@@ -85,12 +85,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               // Hero
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Colors.purpleAccent, Colors.cyanAccent],
+                  colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                 ).createShader(bounds),
                 child: const Icon(
                   CupertinoIcons.bolt_fill,
                   size: 56,
-                  color: Colors.white,
+                  color: Color(0xFF2A2521),
                 ),
               ).animate().fadeIn(duration: 500.ms).scale(),
               const SizedBox(height: 16),
@@ -99,7 +99,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 const Text(
                   'You\'re Premium ⚡',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF2A2521),
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -115,7 +115,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   'Unlock Neural Link\nPremium',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF2A2521),
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -223,12 +223,12 @@ class _FeatureRow extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.purpleAccent, Colors.cyanAccent],
+              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
             ).createShader(b),
-            child: Icon(icon, size: 18, color: Colors.white),
+            child: Icon(icon, size: 18, color: Color(0xFF2A2521)),
           ),
           const SizedBox(width: 14),
-          Flexible(child: Text(text, style: const TextStyle(color: Color(0xFFDDDDDD), fontSize: 14))),
+          Flexible(child: Text(text, style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14))),
         ],
       ),
     );
@@ -266,16 +266,16 @@ class _PlanCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           gradient: isHighlighted
               ? const LinearGradient(
-                  colors: [Color(0xFF2D0063), Color(0xFF1A0040)],
+                  colors: [Color(0xFFEAE0CE), Color(0xFFE0D2B6)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isHighlighted ? null : const Color(0xFF141420),
+          color: isHighlighted ? null : const Color(0xFFFBF6EC),
           border: Border.all(
             color: isHighlighted
-                ? Colors.purpleAccent.withValues(alpha: 0.6)
-                : Colors.grey.shade800,
+                ? Color(0xFFB07A47).withValues(alpha: 0.6)
+                : Color(0xFFE2D8C4),
             width: isHighlighted ? 1.5 : 1,
           ),
         ),
@@ -285,7 +285,7 @@ class _PlanCard extends StatelessWidget {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                    color: Colors.cyanAccent,
+                    color: Color(0xFFCDA15F),
                     strokeWidth: 2,
                   ),
                 ),
@@ -301,7 +301,7 @@ class _PlanCard extends StatelessWidget {
                             Text(
                               label,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: Color(0xFF2A2521),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -314,16 +314,16 @@ class _PlanCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.cyanAccent.withValues(alpha: 0.15),
+                                  color: Color(0xFFCDA15F).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(100),
                                   border: Border.all(
-                                    color: Colors.cyanAccent.withValues(alpha: 0.4),
+                                    color: Color(0xFFCDA15F).withValues(alpha: 0.4),
                                   ),
                                 ),
                                 child: Text(
                                   badge!,
                                   style: const TextStyle(
-                                    color: Colors.cyanAccent,
+                                    color: Color(0xFFCDA15F),
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -343,7 +343,7 @@ class _PlanCard extends StatelessWidget {
                   Text(
                     price,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF2A2521),
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),

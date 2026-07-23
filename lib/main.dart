@@ -122,7 +122,7 @@ void main() async {
       MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          backgroundColor: const Color(0xFF0B0C10),
+          backgroundColor: const Color(0xFFF2EBDD),
           body: SafeArea(
             child: Center(
               child: Padding(
@@ -139,7 +139,7 @@ void main() async {
                     const Text(
                       'Failed to Start',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF2A2521),
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -169,23 +169,28 @@ class ContextDictionaryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'The Context Dictionary',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF030305),
+      theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: const Color(0xFFF2EBDD),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF030305),
+          backgroundColor: Color(0xFFF2EBDD),
+          foregroundColor: Color(0xFF2A2521),
           elevation: 0,
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF030305),
-          selectedItemColor: Color(0xFF00FFD1),
-          unselectedItemColor: Colors.grey,
+          backgroundColor: Color(0xFFFBF6EC),
+          selectedItemColor: Color(0xFFB07A47),
+          unselectedItemColor: Color(0xFF8A7F6E),
           elevation: 0,
         ),
-        textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFA855F7),
-          secondary: Color(0xFF00FFD1),
-          surface: Color(0xFF030305),
+        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
+          ThemeData.light().textTheme,
+        ),
+        colorScheme: ColorScheme.light(
+          primary: const Color(0xFFB07A47),
+          onPrimary: const Color(0xFFFBF6EC),
+          secondary: const Color(0xFFB07A47),
+          surface: const Color(0xFFFBF6EC),
+          onSurface: const Color(0xFF2A2521),
         ),
       ),
       home: showOnboarding ? const _OnboardingGate() : const HomeScreen(),

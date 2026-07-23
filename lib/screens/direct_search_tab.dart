@@ -132,7 +132,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
           const Text(
             'Direct Search',
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 32,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -148,20 +148,14 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
           // Search bar
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0B0C10),
+              color: const Color(0xFFFBF6EC),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.grey.shade800),
+              border: Border.all(color: const Color(0xFFE2D8C4)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 15.0,
-                  spreadRadius: 2.0,
-                  offset: const Offset(0, 4),
-                ),
-                BoxShadow(
-                  color: Colors.purpleAccent.withValues(alpha: 0.2),
-                  blurRadius: 8.0,
-                  spreadRadius: 0.0,
+                  color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+                  blurRadius: 16.0,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -174,7 +168,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                   child: TextField(
                     controller: _searchController,
                     focusNode: _focusNode,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Color(0xFF2A2521)),
                     maxLength: 100,
                     decoration: InputDecoration(
                       hintText: 'Search for a definition...',
@@ -184,7 +178,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                       suffixIcon: IconButton(
                         icon: const Icon(
                           CupertinoIcons.arrow_right_circle_fill,
-                          color: Colors.purpleAccent,
+                          color: Color(0xFFB07A47),
                         ),
                         onPressed: _performSearch,
                       ),
@@ -216,17 +210,17 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF0B0C10),
+              color: const Color(0xFFF2EBDD),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade800),
+              border: Border.all(color: Color(0xFFE2D8C4)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedContext,
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                dropdownColor: const Color(0xFF111118),
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+                dropdownColor: const Color(0xFFFBF6EC),
+                style: const TextStyle(color: Color(0xFF2A2521), fontSize: 13),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedContext = val);
                 },
@@ -237,12 +231,12 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                       children: [
                         ShaderMask(
                           shaderCallback: (b) => const LinearGradient(
-                            colors: [Colors.purpleAccent, Colors.cyanAccent],
+                            colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                           ).createShader(b),
                           child: const Icon(
                             CupertinoIcons.tag_fill,
                             size: 14,
-                            color: Colors.white,
+                            color: Color(0xFF2A2521),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -290,9 +284,9 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF111118),
+                      color: const Color(0xFFFBF6EC),
                       borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: const Color(0xFF2A2A3E)),
+                      border: Border.all(color: const Color(0xFFE2D8C4)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -305,7 +299,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                             entry.word,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                color: Color(0xFFBBBBBB), fontSize: 12),
+                                color: Color(0xFF8A7F6E), fontSize: 12),
                           ),
                         ),
                       ],

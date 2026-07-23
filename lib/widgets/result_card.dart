@@ -33,20 +33,14 @@ class ResultCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF0B0C10),
+          color: const Color(0xFFFBF6EC),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: Colors.grey.shade800, width: 1),
+          border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
-              blurRadius: 15.0,
-              spreadRadius: 2.0,
-              offset: const Offset(0, 4),
-            ),
-            BoxShadow(
-              color: const Color(0xFFA855F7).withValues(alpha: 0.3), // Ultra-Violet glowing pulse
-              blurRadius: 15.0,
-              spreadRadius: 2.0,
+              color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+              blurRadius: 18.0,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -54,7 +48,7 @@ class ResultCard extends ConsumerWidget {
           children: [
             const SizedBox(height: 20),
             const CircularProgressIndicator(
-              color: Color(0xFF00FFD1), // Electric Cyan
+              color: Color(0xFFB07A47), // Electric Cyan
               strokeWidth: 2,
             ),
             const SizedBox(height: 16),
@@ -70,7 +64,7 @@ class ResultCard extends ConsumerWidget {
           ],
         ),
       ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-       .shimmer(duration: 1500.ms, color: const Color(0xFFA855F7).withValues(alpha: 0.1))
+       .shimmer(duration: 1500.ms, color: const Color(0xFFB07A47).withValues(alpha: 0.1))
        .fade(begin: 0.7, end: 1.0, duration: 800.ms);
     }
 
@@ -79,7 +73,7 @@ class ResultCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A0000),
+          color: const Color(0xFFF2DAD3),
           borderRadius: BorderRadius.circular(32),
           border: Border.all(
             color: Colors.redAccent.withValues(alpha: 0.5),
@@ -97,7 +91,7 @@ class ResultCard extends ConsumerWidget {
             const Text(
               'Decryption Failed: Signal Lost or High Network Traffic.',
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFF2A2521),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -132,7 +126,7 @@ class _ResultContent extends ConsumerWidget {
       const SnackBar(
         content: Text('Copied to clipboard'),
         duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFF1A1A2E),
+        backgroundColor: Color(0xFFEAE0CE),
       ),
     );
   }
@@ -150,7 +144,7 @@ class _ResultContent extends ConsumerWidget {
       const SnackBar(
         content: Text('Copied & ready to share!'),
         duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFF1A1A2E),
+        backgroundColor: Color(0xFFEAE0CE),
       ),
     );
   }
@@ -167,20 +161,14 @@ class _ResultContent extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0C10),
+        color: const Color(0xFFFBF6EC),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
+        border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 15.0,
-            spreadRadius: 2.0,
-            offset: const Offset(0, 4),
-          ),
-          const BoxShadow(
-            color: Colors.purpleAccent,
-            blurRadius: 8.0,
-            spreadRadius: 0.0,
+            color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+            blurRadius: 18.0,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -207,7 +195,7 @@ class _ResultContent extends ConsumerWidget {
               TypewriterAnimatedText(
                 result.literalDefinition,
                 textStyle: const TextStyle(
-                  color: Color(0xFFE0E0E0),
+                  color: Color(0xFF2A2521),
                   fontSize: 16,
                   height: 1.4,
                 ),
@@ -221,7 +209,7 @@ class _ResultContent extends ConsumerWidget {
           Text(
             result.isDirectSearch ? 'ETYMOLOGY & CONTEXT' : 'VIBE TRANSLATION',
             style: const TextStyle(
-              color: Colors.purpleAccent,
+              color: Color(0xFFB07A47),
               fontSize: 10,
               letterSpacing: 2.0,
               fontWeight: FontWeight.bold,
@@ -238,8 +226,8 @@ class _ResultContent extends ConsumerWidget {
                 result.vibeTranslation,
                 textStyle: TextStyle(
                   color: result.isDirectSearch
-                      ? const Color(0xFFE0E0E0)
-                      : Colors.cyanAccent,
+                      ? const Color(0xFF2A2521)
+                      : Color(0xFFCDA15F),
                   fontSize: result.isDirectSearch ? 16 : 24,
                   fontWeight: result.isDirectSearch
                       ? FontWeight.normal
@@ -259,10 +247,10 @@ class _ResultContent extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
+                color: Color(0xFF2A2521).withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(20),
                 border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    Border.all(color: Color(0xFF2A2521).withValues(alpha: 0.1)),
               ),
               child: AnimatedTextKit(
                 key: ValueKey('example_${result.exampleSentence}'),
@@ -273,7 +261,7 @@ class _ResultContent extends ConsumerWidget {
                   TypewriterAnimatedText(
                     result.exampleSentence,
                     textStyle: const TextStyle(
-                      color: Colors.white70,
+                      color: Color(0xB32A2521),
                       fontStyle: FontStyle.italic,
                       fontSize: 15,
                       height: 1.5,
@@ -296,7 +284,7 @@ class _ResultContent extends ConsumerWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
                   gradient: const LinearGradient(
-                    colors: [Colors.purpleAccent, Color(0xFF0B0C10)],
+                    colors: [Color(0xFFB07A47), Color(0xFFF2EBDD)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -307,7 +295,7 @@ class _ResultContent extends ConsumerWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0B0C10),
+                    color: const Color(0xFFF2EBDD),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
@@ -324,7 +312,7 @@ class _ResultContent extends ConsumerWidget {
           ),
 
           const SizedBox(height: 20),
-          const Divider(color: Color(0xFF1E1E2E), thickness: 1),
+          const Divider(color: Color(0xFFE2D8C4), thickness: 1),
           const SizedBox(height: 12),
 
           // Action Row: Save | Copy | Share
@@ -336,7 +324,7 @@ class _ResultContent extends ConsumerWidget {
                     ? CupertinoIcons.bookmark_fill
                     : CupertinoIcons.bookmark,
                 label: isSaved ? 'Saved' : 'Save',
-                color: isSaved ? Colors.cyanAccent : Colors.grey[500]!,
+                color: isSaved ? Color(0xFFCDA15F) : Colors.grey[500]!,
                 onTap: word.isEmpty
                     ? null
                     : () async {
@@ -405,11 +393,11 @@ class _ResultContent extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0B0C10),
+        backgroundColor: const Color(0xFFF2EBDD),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Library Full',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Color(0xFF2A2521)),
         ),
         content: Text(
           'Free accounts can save up to 10 words. Upgrade to Premium for unlimited library access.',
@@ -427,7 +415,7 @@ class _ResultContent extends ConsumerWidget {
             },
             child: const Text(
               'Go Premium',
-              style: TextStyle(color: Colors.purpleAccent),
+              style: TextStyle(color: Color(0xFFB07A47)),
             ),
           ),
         ],

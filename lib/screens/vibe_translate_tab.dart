@@ -168,7 +168,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFE3E3E3),
+                color: Color(0xFF2A2521),
                 letterSpacing: -0.5,
               ),
             ),
@@ -179,20 +179,14 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF0B0C10),
+                color: const Color(0xFFFBF6EC),
                 borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: Colors.grey.shade800, width: 1),
+                border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    blurRadius: 15.0,
-                    spreadRadius: 2.0,
-                    offset: const Offset(0, 4),
-                  ),
-                  const BoxShadow(
-                    color: Colors.purpleAccent,
-                    blurRadius: 8.0,
-                    spreadRadius: 0.0,
+                    color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+                    blurRadius: 16.0,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -202,7 +196,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                   TextField(
                     controller: _controller,
                     focusNode: _focusNode,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 18),
                     maxLength: 100,
                     decoration: InputDecoration(
                       hintText: 'Enter a word or phrase...',
@@ -213,7 +207,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                       suffixIcon: IconButton(
                         icon: const Icon(
                           CupertinoIcons.arrow_right_circle_fill,
-                          color: Colors.cyanAccent,
+                          color: Color(0xFFCDA15F),
                         ),
                         onPressed: _handleSearch,
                       ),
@@ -286,9 +280,9 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF111118),
+                        color: const Color(0xFFFBF6EC),
                         borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: const Color(0xFF2A2A3E)),
+                        border: Border.all(color: const Color(0xFFE2D8C4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -299,7 +293,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                           Text(
                             entry.word,
                             style: const TextStyle(
-                              color: Color(0xFFBBBBBB),
+                              color: Color(0xFF8A7F6E),
                               fontSize: 12,
                             ),
                           ),
@@ -362,17 +356,17 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0C10),
+        color: const Color(0xFFF2EBDD),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade800),
+        border: Border.all(color: Color(0xFFE2D8C4)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          dropdownColor: const Color(0xFF0B0C10),
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          dropdownColor: const Color(0xFFF2EBDD),
+          style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14),
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
@@ -382,12 +376,12 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                   ShaderMask(
                     shaderCallback: (Rect bounds) {
                       return const LinearGradient(
-                        colors: [Colors.purpleAccent, Color(0xFF0B0C10)],
+                        colors: [Color(0xFFB07A47), Color(0xFFF2EBDD)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ).createShader(bounds);
                     },
-                    child: Icon(icon, size: 16, color: Colors.white),
+                    child: Icon(icon, size: 16, color: Color(0xFF2A2521)),
                   ),
                   const SizedBox(width: 8),
                   Flexible(

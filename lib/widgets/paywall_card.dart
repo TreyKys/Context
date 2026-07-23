@@ -89,18 +89,15 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0C10),
+        color: const Color(0xFFFBF6EC),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 15.0,
-            spreadRadius: 2.0,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+            blurRadius: 18.0,
+            offset: const Offset(0, 8),
           ),
-          const BoxShadow(color: Colors.redAccent, blurRadius: 8.0),
-          const BoxShadow(color: Colors.amber, blurRadius: 16.0, spreadRadius: -4.0),
         ],
       ),
       child: Column(
@@ -111,7 +108,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             'Neural Link Depleted',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -149,7 +146,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             subtitle: 'Watch 1 Ad → +1 Search',
             isLoading: _isLoadingQuick,
             onTap: _handleQuickCharge,
-            colors: const [Color(0xFF3A0000), Color(0xFF2A0000)],
+            colors: const [Color(0xFFEBCFC6), Color(0xFFF2DAD3)],
             borderColor: Colors.redAccent.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
@@ -158,7 +155,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             subtitle: 'Watch 2 Ads → +3 Searches',
             isLoading: _isLoadingSuper,
             onTap: _handleSuperCharge,
-            colors: const [Color(0xFF3A0000), Color(0xFF2A0000)],
+            colors: const [Color(0xFFEBCFC6), Color(0xFFF2DAD3)],
             borderColor: Colors.redAccent.withValues(alpha: 0.4),
           ),
         ],
@@ -176,13 +173,13 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [Color(0xFF7B2FBE), Color(0xFF4A00E0)],
+            colors: [Color(0xFFB07A47), Color(0xFF8A5A34)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.purpleAccent.withValues(alpha: 0.3),
+              color: Color(0xFFB07A47).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -193,12 +190,12 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                Icon(CupertinoIcons.bolt_fill, color: Colors.white, size: 16),
+                Icon(CupertinoIcons.bolt_fill, color: Color(0xFF2A2521), size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Go Premium — Unlimited',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF2A2521),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -208,7 +205,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             const SizedBox(height: 4),
             Text(
               'From \$4.99/month · No ads · Full library',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
+              style: TextStyle(color: Color(0xFF2A2521).withValues(alpha: 0.75), fontSize: 12),
             ),
           ],
         ),
@@ -241,7 +238,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: Colors.cyanAccent,
+                    color: Color(0xFFCDA15F),
                     strokeWidth: 2,
                   ),
                 ),
@@ -265,7 +262,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                         title,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF2A2521),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),

@@ -34,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0C10),
+      backgroundColor: const Color(0xFFF2EBDD),
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: active ? Colors.purpleAccent : Colors.grey[700],
+                          color: active ? Color(0xFFB07A47) : Colors.grey[700],
                         ),
                       );
                     }),
@@ -104,13 +104,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF7B2FBE), Color(0xFF00BCD4)],
+                          colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.purpleAccent.withValues(alpha: 0.3),
+                            color: Color(0xFFB07A47).withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 6),
                           ),
@@ -120,7 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Text(
                           _currentPage < 2 ? 'Next' : 'Get Started',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF2A2521),
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -151,12 +151,12 @@ class _OnboardPage1 extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.purpleAccent, Colors.cyanAccent],
+              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
             ).createShader(b),
             child: const Icon(
               CupertinoIcons.sparkles,
               size: 72,
-              color: Colors.white,
+              color: Color(0xFF2A2521),
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 32),
@@ -164,7 +164,7 @@ class _OnboardPage1 extends StatelessWidget {
             'Welcome to\nThe Context Dictionary',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 30,
               fontWeight: FontWeight.bold,
               height: 1.15,
@@ -218,12 +218,12 @@ class _OnboardPage2 extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.cyanAccent, Colors.purpleAccent],
+              colors: [Color(0xFFCDA15F), Color(0xFFB07A47)],
             ).createShader(b),
             child: const Icon(
               CupertinoIcons.person_2_fill,
               size: 60,
-              color: Colors.white,
+              color: Color(0xFF2A2521),
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 28),
@@ -231,7 +231,7 @@ class _OnboardPage2 extends StatelessWidget {
             '25 Unique Perspectives',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 28,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -295,12 +295,12 @@ class _OnboardPage3 extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.purpleAccent, Colors.cyanAccent],
+              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
             ).createShader(b),
             child: const Icon(
               CupertinoIcons.book_fill,
               size: 60,
-              color: Colors.white,
+              color: Color(0xFF2A2521),
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 28),
@@ -308,7 +308,7 @@ class _OnboardPage3 extends StatelessWidget {
             'Build Your\nWord Library',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white,
+              color: Color(0xFF2A2521),
               fontSize: 28,
               fontWeight: FontWeight.bold,
               height: 1.15,
@@ -331,11 +331,11 @@ class _OnboardPage3 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
                 children: [
-                  Icon(item.$1, color: Colors.cyanAccent, size: 16),
+                  Icon(item.$1, color: Color(0xFFCDA15F), size: 16),
                   const SizedBox(width: 12),
                   Text(
                     item.$2,
-                    style: const TextStyle(color: Color(0xFFDDDDDD), fontSize: 13),
+                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 13),
                   ),
                 ],
               ),

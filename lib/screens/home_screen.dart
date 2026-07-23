@@ -41,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showRatingSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: const Color(0xFFEAE0CE),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -53,14 +53,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Expanded(
               child: Text(
                 'Enjoying Context? A quick rating really helps us!',
-                style: TextStyle(color: Colors.white, fontSize: 13),
+                style: TextStyle(color: Color(0xFF2A2521), fontSize: 13),
               ),
             ),
           ],
         ),
         action: SnackBarAction(
           label: 'Rate Us',
-          textColor: Colors.cyanAccent,
+          textColor: Color(0xFFCDA15F),
           onPressed: () {
             launchUrl(
               Uri.parse(
@@ -84,9 +84,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0C10),
+      backgroundColor: const Color(0xFFF2EBDD),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B0C10),
+        backgroundColor: const Color(0xFFF2EBDD),
         elevation: 0,
         automaticallyImplyLeading: false,
         actions: [
@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(height: 1, color: Colors.grey.shade900),
+          Divider(height: 1, color: Color(0xFFE2D8C4)),
           Theme(
             data: Theme.of(context).copyWith(
               splashColor: Colors.transparent,
@@ -115,8 +115,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: (index) => setState(() => _currentIndex = index),
-              backgroundColor: const Color(0xFF0B0C10),
-              selectedItemColor: Colors.white,
+              backgroundColor: const Color(0xFFF2EBDD),
+              selectedItemColor: Color(0xFF2A2521),
               unselectedItemColor: Colors.grey.shade700,
               showSelectedLabels: true,
               showUnselectedLabels: false,
@@ -147,12 +147,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return ShaderMask(
         shaderCallback: (Rect bounds) {
           return const LinearGradient(
-            colors: [Colors.purpleAccent, Colors.cyanAccent],
+            colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ).createShader(bounds);
         },
-        child: Icon(iconData, size: 26, color: Colors.white),
+        child: Icon(iconData, size: 26, color: Color(0xFF2A2521)),
       );
     }
     return Icon(iconData, size: 22);
