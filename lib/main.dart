@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
+import 'theme/app_theme.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/consent_service.dart';
@@ -98,6 +99,8 @@ void main() async {
       debugPrint('SubscriptionService init failed: $e');
     }
 
+    await ThemeModeNotifier.load();
+
     final prefs = await SharedPreferences.getInstance();
     final hasOnboarded = prefs.getBool('has_onboarded') ?? false;
 
@@ -161,38 +164,17 @@ void main() async {
   }
 }
 
-class ContextDictionaryApp extends StatelessWidget {
+class ContextDictionaryApp extends ConsumerWidget {
   final bool showOnboarding;
   const ContextDictionaryApp({super.key, this.showOnboarding = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'The Context Dictionary',
-      theme: ThemeData.light().copyWith(
-        scaffoldBackgroundColor: const Color(0xFFF2EBDD),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFF2EBDD),
-          foregroundColor: Color(0xFF2A2521),
-          elevation: 0,
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFFFBF6EC),
-          selectedItemColor: Color(0xFFB07A47),
-          unselectedItemColor: Color(0xFF8A7F6E),
-          elevation: 0,
-        ),
-        textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
-          ThemeData.light().textTheme,
-        ),
-        colorScheme: ColorScheme.light(
-          primary: const Color(0xFFB07A47),
-          onPrimary: const Color(0xFFFBF6EC),
-          secondary: const Color(0xFFB07A47),
-          surface: const Color(0xFFFBF6EC),
-          onSurface: const Color(0xFF2A2521),
-        ),
-      ),
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: ref.watch(themeModeProvider),
       home: showOnboarding ? const _OnboardingGate() : const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );

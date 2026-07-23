@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/quota_provider.dart';
@@ -15,7 +16,7 @@ class SearchCounter extends ConsumerWidget {
     final count = ref.watch(quotaCountProvider);
     if (count >= 999) return const SizedBox.shrink(); // Safety guard
 
-    final color = count <= 1 ? Colors.redAccent : Colors.grey[600]!;
+    final color = count <= 1 ? Colors.redAccent : context.colors.inkSoft!;
     final icon = count <= 1
         ? Icons.battery_1_bar_rounded
         : count == 2

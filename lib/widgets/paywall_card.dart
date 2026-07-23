@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,7 +56,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       onFallback: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Second ad failed. Awarded 1 search for the first ad.'),
               backgroundColor: Colors.orangeAccent,
             ),
@@ -89,12 +90,12 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF6EC),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
+        border: Border.all(color: context.colors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+            color: context.colors.ink.withValues(alpha: 0.06),
             blurRadius: 18.0,
             offset: const Offset(0, 8),
           ),
@@ -102,13 +103,13 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       ),
       child: Column(
         children: [
-          const Icon(CupertinoIcons.lock_shield_fill, color: Colors.redAccent, size: 48),
+          Icon(CupertinoIcons.lock_shield_fill, color: Colors.redAccent, size: 48),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Neural Link Depleted',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -117,7 +118,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
           Text(
             'You\'ve used your 3 free searches today.\nRecharge with an ad, or go unlimited.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[400], fontSize: 13, height: 1.5),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 24),
 
@@ -128,15 +129,15 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
           // Divider
           Row(
             children: [
-              Expanded(child: Divider(color: Colors.grey[800])),
+              Expanded(child: Divider(color: context.colors.inkSoft)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   'or watch an ad',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                  style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
                 ),
               ),
-              Expanded(child: Divider(color: Colors.grey[800])),
+              Expanded(child: Divider(color: context.colors.inkSoft)),
             ],
           ),
           const SizedBox(height: 16),
@@ -146,7 +147,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             subtitle: 'Watch 1 Ad → +1 Search',
             isLoading: _isLoadingQuick,
             onTap: _handleQuickCharge,
-            colors: const [Color(0xFFEBCFC6), Color(0xFFF2DAD3)],
+            colors: [context.colors.surfaceAlt, context.colors.surfaceAlt],
             borderColor: Colors.redAccent.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
@@ -155,7 +156,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             subtitle: 'Watch 2 Ads → +3 Searches',
             isLoading: _isLoadingSuper,
             onTap: _handleSuperCharge,
-            colors: const [Color(0xFFEBCFC6), Color(0xFFF2DAD3)],
+            colors: [context.colors.surfaceAlt, context.colors.surfaceAlt],
             borderColor: Colors.redAccent.withValues(alpha: 0.4),
           ),
         ],
@@ -172,14 +173,14 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFB07A47), Color(0xFF8A5A34)],
+          gradient: LinearGradient(
+            colors: [context.colors.accent, context.colors.accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFB07A47).withValues(alpha: 0.3),
+              color: context.colors.accent.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -189,13 +190,13 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.bolt_fill, color: Color(0xFF2A2521), size: 16),
+              children: [
+                Icon(CupertinoIcons.bolt_fill, color: context.colors.ink, size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Go Premium — Unlimited',
                   style: TextStyle(
-                    color: Color(0xFF2A2521),
+                    color: context.colors.ink,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -205,7 +206,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             const SizedBox(height: 4),
             Text(
               'From \$4.99/month · No ads · Full library',
-              style: TextStyle(color: Color(0xFF2A2521).withValues(alpha: 0.75), fontSize: 12),
+              style: TextStyle(color: context.colors.ink.withValues(alpha: 0.75), fontSize: 12),
             ),
           ],
         ),
@@ -233,12 +234,12 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
           border: Border.all(color: borderColor),
         ),
         child: isLoading
-            ? const Center(
+            ? Center(
                 child: SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: Color(0xFFCDA15F),
+                    color: context.colors.accent2,
                     strokeWidth: 2,
                   ),
                 ),
@@ -261,8 +262,8 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                       Text(
                         title,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF2A2521),
+                        style: TextStyle(
+                          color: context.colors.ink,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -270,7 +271,7 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                       Text(
                         subtitle,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 11),
+                        style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
                       ),
                     ],
                   ),

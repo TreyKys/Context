@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -156,19 +157,19 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
             // Greeting
             Text(
               greeting,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
+                color: context.colors.inkSoft,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'What would you like to know?',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2A2521),
+                color: context.colors.ink,
                 letterSpacing: -0.5,
               ),
             ),
@@ -179,12 +180,12 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFFBF6EC),
+                color: context.colors.surface,
                 borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
+                border: Border.all(color: context.colors.border, width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+                    color: context.colors.ink.withValues(alpha: 0.06),
                     blurRadius: 16.0,
                     offset: const Offset(0, 6),
                   ),
@@ -196,18 +197,18 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                   TextField(
                     controller: _controller,
                     focusNode: _focusNode,
-                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 18),
+                    style: TextStyle(color: context.colors.ink, fontSize: 18),
                     maxLength: 100,
                     decoration: InputDecoration(
                       hintText: 'Enter a word or phrase...',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: context.colors.inkSoft),
                       border: InputBorder.none,
                       counterText: '',
                       contentPadding: EdgeInsets.zero,
                       suffixIcon: IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           CupertinoIcons.arrow_right_circle_fill,
-                          color: Color(0xFFCDA15F),
+                          color: context.colors.accent2,
                         ),
                         onPressed: _handleSearch,
                       ),
@@ -263,7 +264,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               Text(
                 'RECENT',
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: context.colors.inkSoft,
                   fontSize: 10,
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.bold,
@@ -280,20 +281,20 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFBF6EC),
+                        color: context.colors.surface,
                         borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: const Color(0xFFE2D8C4)),
+                        border: Border.all(color: context.colors.border),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(CupertinoIcons.clock,
-                              size: 11, color: Colors.grey[600]),
+                              size: 11, color: context.colors.inkSoft),
                           const SizedBox(width: 5),
                           Text(
                             entry.word,
-                            style: const TextStyle(
-                              color: Color(0xFF8A7F6E),
+                            style: TextStyle(
+                              color: context.colors.inkSoft,
                               fontSize: 12,
                             ),
                           ),
@@ -315,12 +316,12 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                 child: Column(
                   children: [
                     Icon(CupertinoIcons.sparkles,
-                        size: 32, color: Colors.grey[800]),
+                        size: 32, color: context.colors.inkSoft),
                     const SizedBox(height: 12),
                     Text(
                       'Try  "rizz",  "HODL",  or  "synergy"',
                       style:
-                          TextStyle(color: Colors.grey[700], fontSize: 13),
+                          TextStyle(color: context.colors.inkSoft, fontSize: 13),
                     ),
                   ],
                 ),
@@ -356,17 +357,17 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2EBDD),
+        color: context.colors.bg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Color(0xFFE2D8C4)),
+        border: Border.all(color: context.colors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          dropdownColor: const Color(0xFFF2EBDD),
-          style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14),
+          icon: Icon(Icons.arrow_drop_down, color: context.colors.inkSoft),
+          dropdownColor: context.colors.bg,
+          style: TextStyle(color: context.colors.ink, fontSize: 14),
           onChanged: onChanged,
           items: items.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
@@ -375,13 +376,13 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                 children: [
                   ShaderMask(
                     shaderCallback: (Rect bounds) {
-                      return const LinearGradient(
-                        colors: [Color(0xFFB07A47), Color(0xFFF2EBDD)],
+                      return LinearGradient(
+                        colors: [context.colors.accent, context.colors.bg],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ).createShader(bounds);
                     },
-                    child: Icon(icon, size: 16, color: Color(0xFF2A2521)),
+                    child: Icon(icon, size: 16, color: context.colors.ink),
                   ),
                   const SizedBox(width: 8),
                   Flexible(

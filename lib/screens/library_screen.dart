@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -34,10 +35,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'My Library',
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 32,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -46,29 +47,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           const SizedBox(height: 4),
           Text(
             'Your saved words & definitions',
-            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
           ),
           const SizedBox(height: 20),
 
           // Search bar
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFFBF6EC),
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2D8C4)),
+              border: Border.all(color: context.colors.border),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             child: Row(
               children: [
-                Icon(CupertinoIcons.search, color: Colors.grey[600], size: 16),
+                Icon(CupertinoIcons.search, color: context.colors.inkSoft, size: 16),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14),
+                    style: TextStyle(color: context.colors.ink, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Search your library...',
-                      hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      hintStyle: TextStyle(color: context.colors.inkSoft, fontSize: 14),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -83,7 +84,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       setState(() => _query = '');
                     },
                     child: Icon(CupertinoIcons.xmark_circle_fill,
-                        color: Colors.grey[600], size: 16),
+                        color: context.colors.inkSoft, size: 16),
                   ),
               ],
             ),
@@ -94,11 +95,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           // List
           Expanded(
             child: libraryAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: Color(0xFFCDA15F), strokeWidth: 2),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: context.colors.accent2, strokeWidth: 2),
               ),
-              error: (_, __) => const Center(
-                child: Text('Failed to load library', style: TextStyle(color: Colors.grey)),
+              error: (_, __) => Center(
+                child: Text('Failed to load library', style: TextStyle(color: context.colors.inkSoft)),
               ),
               data: (words) {
                 final filtered = _query.isEmpty
@@ -150,7 +151,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFF2EBDD),
+      backgroundColor: context.colors.bg,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -171,15 +172,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.grey[700],
+                    color: context.colors.inkSoft,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               Text(
                 word.word,
-                style: const TextStyle(
-                  color: Color(0xFF2A2521),
+                style: TextStyle(
+                  color: context.colors.ink,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -214,9 +215,9 @@ class _LibraryCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF6EC),
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE2D8C4)),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,8 +232,8 @@ class _LibraryCard extends StatelessWidget {
                         child: Text(
                           word.word,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color(0xFF2A2521),
+                          style: TextStyle(
+                            color: context.colors.ink,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -243,7 +244,7 @@ class _LibraryCard extends StatelessWidget {
                         Icon(
                           CupertinoIcons.checkmark_shield_fill,
                           size: 12,
-                          color: Colors.grey[600],
+                          color: context.colors.inkSoft,
                         ),
                       ],
                     ],
@@ -253,7 +254,7 @@ class _LibraryCard extends StatelessWidget {
                     word.literalDefinition.length > 70
                         ? '${word.literalDefinition.substring(0, 70)}...'
                         : word.literalDefinition,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12, height: 1.4),
+                    style: TextStyle(color: context.colors.inkSoft, fontSize: 12, height: 1.4),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -262,7 +263,7 @@ class _LibraryCard extends StatelessWidget {
                       return Text(
                         tag.startsWith('#') ? tag : '#$tag',
                         style: TextStyle(
-                          color: Color(0xFFB07A47).withValues(alpha: 0.7),
+                          color: context.colors.accent.withValues(alpha: 0.7),
                           fontSize: 10,
                         ),
                       );
@@ -278,7 +279,7 @@ class _LibraryCard extends StatelessWidget {
                 padding: const EdgeInsets.all(4),
                 child: Icon(
                   CupertinoIcons.trash,
-                  color: Colors.grey[700],
+                  color: context.colors.inkSoft,
                   size: 16,
                 ),
               ),
@@ -300,11 +301,11 @@ class _EmptyLibrary extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.book, size: 48, color: Colors.grey[700]),
+          Icon(CupertinoIcons.book, size: 48, color: context.colors.inkSoft),
           const SizedBox(height: 16),
           Text(
             isFiltered ? 'No results found' : 'Your library is empty',
-            style: const TextStyle(color: Color(0xFF2A2521), fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
@@ -312,7 +313,7 @@ class _EmptyLibrary extends StatelessWidget {
                 ? 'Try a different search term'
                 : 'Search for words and tap the bookmark icon to save them here.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
           ),
         ],
       ),

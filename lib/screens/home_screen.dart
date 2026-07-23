@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +19,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = const [
+  final List<Widget> _tabs = [
     VibeTranslateTab(),
     DirectSearchTab(),
     LibraryScreen(),
@@ -41,26 +42,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showRatingSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFFEAE0CE),
+        backgroundColor: context.colors.surfaceAlt,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         duration: const Duration(seconds: 5),
         content: Row(
           children: [
-            const Text('⭐', style: TextStyle(fontSize: 18)),
+            Text('⭐', style: TextStyle(fontSize: 18)),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Text(
                 'Enjoying Context? A quick rating really helps us!',
-                style: TextStyle(color: Color(0xFF2A2521), fontSize: 13),
+                style: TextStyle(color: context.colors.ink, fontSize: 13),
               ),
             ),
           ],
         ),
         action: SnackBarAction(
           label: 'Rate Us',
-          textColor: Color(0xFFCDA15F),
+          textColor: context.colors.accent2,
           onPressed: () {
             launchUrl(
               Uri.parse(
@@ -84,16 +85,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2EBDD),
+      backgroundColor: context.colors.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF2EBDD),
+        backgroundColor: context.colors.bg,
         elevation: 0,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               CupertinoIcons.gear_alt_fill,
-              color: Colors.grey,
+              color: context.colors.inkSoft,
               size: 22,
             ),
             onPressed: _openSettings,
@@ -106,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(height: 1, color: Color(0xFFE2D8C4)),
+          Divider(height: 1, color: context.colors.border),
           Theme(
             data: Theme.of(context).copyWith(
               splashColor: Colors.transparent,
@@ -115,9 +116,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: (index) => setState(() => _currentIndex = index),
-              backgroundColor: const Color(0xFFF2EBDD),
-              selectedItemColor: Color(0xFF2A2521),
-              unselectedItemColor: Colors.grey.shade700,
+              backgroundColor: context.colors.bg,
+              selectedItemColor: context.colors.ink,
+              unselectedItemColor: context.colors.inkSoft,
               showSelectedLabels: true,
               showUnselectedLabels: false,
               elevation: 0,
@@ -146,13 +147,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_currentIndex == index) {
       return ShaderMask(
         shaderCallback: (Rect bounds) {
-          return const LinearGradient(
-            colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+          return LinearGradient(
+            colors: [context.colors.accent, context.colors.accent2],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ).createShader(bounds);
         },
-        child: Icon(iconData, size: 26, color: Color(0xFF2A2521)),
+        child: Icon(iconData, size: 26, color: context.colors.ink),
       );
     }
     return Icon(iconData, size: 22);

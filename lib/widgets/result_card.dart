@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,12 +34,12 @@ class ResultCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF6EC),
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
+          border: Border.all(color: context.colors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+              color: context.colors.ink.withValues(alpha: 0.06),
               blurRadius: 18.0,
               offset: const Offset(0, 8),
             ),
@@ -47,15 +48,15 @@ class ResultCard extends ConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            const CircularProgressIndicator(
-              color: Color(0xFFB07A47), // Electric Cyan
+            CircularProgressIndicator(
+              color: context.colors.accent, // Electric Cyan
               strokeWidth: 2,
             ),
             const SizedBox(height: 16),
             Text(
               'Cross-referencing sources...',
               style: TextStyle(
-                color: Colors.grey[400],
+                color: context.colors.inkSoft,
                 fontSize: 12,
                 letterSpacing: 0.5,
               ),
@@ -64,7 +65,7 @@ class ResultCard extends ConsumerWidget {
           ],
         ),
       ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-       .shimmer(duration: 1500.ms, color: const Color(0xFFB07A47).withValues(alpha: 0.1))
+       .shimmer(duration: 1500.ms, color: context.colors.accent.withValues(alpha: 0.1))
        .fade(begin: 0.7, end: 1.0, duration: 800.ms);
     }
 
@@ -73,7 +74,7 @@ class ResultCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2DAD3),
+          color: context.colors.surfaceAlt,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(
             color: Colors.redAccent.withValues(alpha: 0.5),
@@ -82,16 +83,16 @@ class ResultCard extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               CupertinoIcons.exclamationmark_triangle_fill,
               color: Colors.redAccent,
               size: 40,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Decryption Failed: Signal Lost or High Network Traffic.',
               style: TextStyle(
-                color: Color(0xFF2A2521),
+                color: context.colors.ink,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -123,10 +124,10 @@ class _ResultContent extends ConsumerWidget {
     Clipboard.setData(ClipboardData(text: text));
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Copied to clipboard'),
         duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFFEAE0CE),
+        backgroundColor: context.colors.surfaceAlt,
       ),
     );
   }
@@ -141,10 +142,10 @@ class _ResultContent extends ConsumerWidget {
     HapticFeedback.lightImpact();
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Copied & ready to share!'),
         duration: Duration(seconds: 2),
-        backgroundColor: Color(0xFFEAE0CE),
+        backgroundColor: context.colors.surfaceAlt,
       ),
     );
   }
@@ -161,12 +162,12 @@ class _ResultContent extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF6EC),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFE2D8C4), width: 1),
+        border: Border.all(color: context.colors.border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+            color: context.colors.ink.withValues(alpha: 0.06),
             blurRadius: 18.0,
             offset: const Offset(0, 8),
           ),
@@ -179,7 +180,7 @@ class _ResultContent extends ConsumerWidget {
           Text(
             'LITERAL DEFINITION',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: context.colors.inkSoft,
               fontSize: 10,
               letterSpacing: 2.0,
               fontWeight: FontWeight.bold,
@@ -194,8 +195,8 @@ class _ResultContent extends ConsumerWidget {
             animatedTexts: [
               TypewriterAnimatedText(
                 result.literalDefinition,
-                textStyle: const TextStyle(
-                  color: Color(0xFF2A2521),
+                textStyle: TextStyle(
+                  color: context.colors.ink,
                   fontSize: 16,
                   height: 1.4,
                 ),
@@ -208,8 +209,8 @@ class _ResultContent extends ConsumerWidget {
           // Vibe Translation / Etymology Header
           Text(
             result.isDirectSearch ? 'ETYMOLOGY & CONTEXT' : 'VIBE TRANSLATION',
-            style: const TextStyle(
-              color: Color(0xFFB07A47),
+            style: TextStyle(
+              color: context.colors.accent,
               fontSize: 10,
               letterSpacing: 2.0,
               fontWeight: FontWeight.bold,
@@ -226,8 +227,8 @@ class _ResultContent extends ConsumerWidget {
                 result.vibeTranslation,
                 textStyle: TextStyle(
                   color: result.isDirectSearch
-                      ? const Color(0xFF2A2521)
-                      : Color(0xFFCDA15F),
+                      ? context.colors.ink
+                      : context.colors.accent2,
                   fontSize: result.isDirectSearch ? 16 : 24,
                   fontWeight: result.isDirectSearch
                       ? FontWeight.normal
@@ -247,10 +248,10 @@ class _ResultContent extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Color(0xFF2A2521).withValues(alpha: 0.03),
+                color: context.colors.ink.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(20),
                 border:
-                    Border.all(color: Color(0xFF2A2521).withValues(alpha: 0.1)),
+                    Border.all(color: context.colors.ink.withValues(alpha: 0.1)),
               ),
               child: AnimatedTextKit(
                 key: ValueKey('example_${result.exampleSentence}'),
@@ -260,8 +261,8 @@ class _ResultContent extends ConsumerWidget {
                 animatedTexts: [
                   TypewriterAnimatedText(
                     result.exampleSentence,
-                    textStyle: const TextStyle(
-                      color: Color(0xB32A2521),
+                    textStyle: TextStyle(
+                      color: context.colors.ink.withValues(alpha: 0.7),
                       fontStyle: FontStyle.italic,
                       fontSize: 15,
                       height: 1.5,
@@ -283,8 +284,8 @@ class _ResultContent extends ConsumerWidget {
                 padding: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFB07A47), Color(0xFFF2EBDD)],
+                  gradient: LinearGradient(
+                    colors: [context.colors.accent, context.colors.bg],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -295,13 +296,13 @@ class _ResultContent extends ConsumerWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2EBDD),
+                    color: context.colors.bg,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Text(
                     tag.startsWith('#') ? tag : '#$tag',
                     style: TextStyle(
-                      color: Colors.grey[200],
+                      color: context.colors.inkSoft,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -312,7 +313,7 @@ class _ResultContent extends ConsumerWidget {
           ),
 
           const SizedBox(height: 20),
-          const Divider(color: Color(0xFFE2D8C4), thickness: 1),
+          Divider(color: context.colors.border, thickness: 1),
           const SizedBox(height: 12),
 
           // Action Row: Save | Copy | Share
@@ -324,7 +325,7 @@ class _ResultContent extends ConsumerWidget {
                     ? CupertinoIcons.bookmark_fill
                     : CupertinoIcons.bookmark,
                 label: isSaved ? 'Saved' : 'Save',
-                color: isSaved ? Color(0xFFCDA15F) : Colors.grey[500]!,
+                color: isSaved ? context.colors.accent2 : context.colors.inkSoft!,
                 onTap: word.isEmpty
                     ? null
                     : () async {
@@ -346,13 +347,13 @@ class _ResultContent extends ConsumerWidget {
               _ActionButton(
                 icon: CupertinoIcons.doc_on_clipboard,
                 label: 'Copy',
-                color: Colors.grey[500]!,
+                color: context.colors.inkSoft!,
                 onTap: () => _copyToClipboard(context),
               ),
               _ActionButton(
                 icon: CupertinoIcons.share,
                 label: 'Share',
-                color: Colors.grey[500]!,
+                color: context.colors.inkSoft!,
                 onTap: () => _shareDefinition(context),
               ),
             ],
@@ -367,7 +368,7 @@ class _ResultContent extends ConsumerWidget {
                 Icon(
                   CupertinoIcons.checkmark_shield_fill,
                   size: 11,
-                  color: Colors.grey[600],
+                  color: context.colors.inkSoft,
                 ),
                 const SizedBox(width: 4),
                 Flexible(
@@ -375,7 +376,7 @@ class _ResultContent extends ConsumerWidget {
                     'Fact-checked against Wikipedia & Dictionary',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: context.colors.inkSoft,
                       fontSize: 10,
                       letterSpacing: 0.3,
                     ),
@@ -393,29 +394,29 @@ class _ResultContent extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFFF2EBDD),
+        backgroundColor: context.colors.bg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Library Full',
-          style: TextStyle(color: Color(0xFF2A2521)),
+          style: TextStyle(color: context.colors.ink),
         ),
         content: Text(
           'Free accounts can save up to 10 words. Upgrade to Premium for unlimited library access.',
-          style: TextStyle(color: Colors.grey[400]),
+          style: TextStyle(color: context.colors.inkSoft),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Maybe Later', style: TextStyle(color: Colors.grey)),
+            child: Text('Maybe Later', style: TextStyle(color: context.colors.inkSoft)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               // SubscriptionScreen push handled by caller if needed
             },
-            child: const Text(
+            child: Text(
               'Go Premium',
-              style: TextStyle(color: Color(0xFFB07A47)),
+              style: TextStyle(color: context.colors.accent),
             ),
           ),
         ],

@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -34,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2EBDD),
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -49,7 +50,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Text(
                           'Skip',
                           style: TextStyle(
-                            color: Colors.grey[500],
+                            color: context.colors.inkSoft,
                             fontSize: 14,
                           ),
                         ),
@@ -63,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView(
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _currentPage = i),
-                children: const [
+                children: [
                   _OnboardPage1(),
                   _OnboardPage2(),
                   _OnboardPage3(),
@@ -88,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: active ? Color(0xFFB07A47) : Colors.grey[700],
+                          color: active ? context.colors.accent : context.colors.inkSoft,
                         ),
                       );
                     }),
@@ -103,14 +104,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+                        gradient: LinearGradient(
+                          colors: [context.colors.accent, context.colors.accent2],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0xFFB07A47).withValues(alpha: 0.3),
+                            color: context.colors.accent.withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 6),
                           ),
@@ -119,8 +120,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Center(
                         child: Text(
                           _currentPage < 2 ? 'Next' : 'Get Started',
-                          style: const TextStyle(
-                            color: Color(0xFF2A2521),
+                          style: TextStyle(
+                            color: context.colors.ink,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -150,21 +151,21 @@ class _OnboardPage1 extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+            shaderCallback: (b) => LinearGradient(
+              colors: [context.colors.accent, context.colors.accent2],
             ).createShader(b),
-            child: const Icon(
+            child: Icon(
               CupertinoIcons.sparkles,
               size: 72,
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             'Welcome to\nThe Context Dictionary',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 30,
               fontWeight: FontWeight.bold,
               height: 1.15,
@@ -176,7 +177,7 @@ class _OnboardPage1 extends StatelessWidget {
             'Words have context. Now you do too.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[400],
+              color: context.colors.inkSoft,
               fontSize: 16,
               height: 1.5,
             ),
@@ -186,7 +187,7 @@ class _OnboardPage1 extends StatelessWidget {
             'AI-powered definitions that go beyond the dictionary — cultural context, slang, and real usage across 25 unique perspectives.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: context.colors.inkSoft,
               fontSize: 13,
               height: 1.6,
             ),
@@ -217,21 +218,21 @@ class _OnboardPage2 extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [Color(0xFFCDA15F), Color(0xFFB07A47)],
+            shaderCallback: (b) => LinearGradient(
+              colors: [context.colors.accent2, context.colors.accent],
             ).createShader(b),
-            child: const Icon(
+            child: Icon(
               CupertinoIcons.person_2_fill,
               size: 60,
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 28),
-          const Text(
+          Text(
             '25 Unique Perspectives',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 28,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -241,7 +242,7 @@ class _OnboardPage2 extends StatelessWidget {
           Text(
             'Same word, completely different energy depending on who\'s explaining it.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14, height: 1.5),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 14, height: 1.5),
           ).animate().fadeIn(delay: 350.ms),
           const SizedBox(height: 24),
           Wrap(
@@ -294,21 +295,21 @@ class _OnboardPage3 extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+            shaderCallback: (b) => LinearGradient(
+              colors: [context.colors.accent, context.colors.accent2],
             ).createShader(b),
-            child: const Icon(
+            child: Icon(
               CupertinoIcons.book_fill,
               size: 60,
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
             ),
           ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 28),
-          const Text(
+          Text(
             'Build Your\nWord Library',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 28,
               fontWeight: FontWeight.bold,
               height: 1.15,
@@ -319,7 +320,7 @@ class _OnboardPage3 extends StatelessWidget {
           Text(
             'Save any definition with one tap. Your personal glossary of every word that ever made you pause.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14, height: 1.5),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 14, height: 1.5),
           ).animate().fadeIn(delay: 350.ms),
           const SizedBox(height: 28),
           ...[
@@ -331,11 +332,11 @@ class _OnboardPage3 extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
                 children: [
-                  Icon(item.$1, color: Color(0xFFCDA15F), size: 16),
+                  Icon(item.$1, color: context.colors.accent2, size: 16),
                   const SizedBox(width: 12),
                   Text(
                     item.$2,
-                    style: const TextStyle(color: Color(0xFF2A2521), fontSize: 13),
+                    style: TextStyle(color: context.colors.ink, fontSize: 13),
                   ),
                 ],
               ),
@@ -346,7 +347,7 @@ class _OnboardPage3 extends StatelessWidget {
             'NeuroDev Labs — Building tools for curious minds.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[700],
+              color: context.colors.inkSoft,
               fontSize: 11,
               letterSpacing: 0.5,
             ),

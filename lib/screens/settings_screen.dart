@@ -9,6 +9,8 @@ import '../services/quota_service.dart';
 import '../services/overlay_service.dart';
 import '../services/notification_service.dart';
 import '../services/consent_service.dart';
+import '../providers/theme_provider.dart';
+import '../theme/app_theme.dart';
 import 'subscription_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -82,17 +84,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ref.read(quotaServiceProvider).isPremium;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2EBDD),
+      backgroundColor: context.colors.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF2EBDD),
+        backgroundColor: context.colors.bg,
         elevation: 0,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(CupertinoIcons.back, color: Color(0xFF2A2521)),
+          child: Icon(CupertinoIcons.back, color: context.colors.ink),
         ),
-        title: const Text(
+        title: Text(
           'Settings',
-          style: TextStyle(color: Color(0xFF2A2521), fontWeight: FontWeight.bold),
+          style: TextStyle(color: context.colors.ink, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
@@ -102,7 +104,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _SectionHeader(title: 'Account'),
           _SettingsTile(
             icon: isPremium ? CupertinoIcons.bolt_fill : CupertinoIcons.bolt,
-            iconColor: isPremium ? Color(0xFFCDA15F) : Colors.grey,
+            iconColor: isPremium ? context.colors.accent2 : context.colors.inkSoft,
             title: isPremium ? 'Premium Active' : 'Free Plan',
             subtitle: isPremium
                 ? 'Unlimited searches & library'
@@ -117,12 +119,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const SizedBox(height: 8),
+          _SectionHeader(title: 'Appearance'),
+          _ThemeSelector(
+            current: ref.watch(themeModeProvider),
+            onSelect: (m) => ref.read(themeModeProvider.notifier).set(m),
+          ),
+
+          const SizedBox(height: 8),
           _SectionHeader(title: 'Features'),
 
           // Overlay toggle
           _SettingsTile(
             icon: CupertinoIcons.square_stack_fill,
-            iconColor: _overlayEnabled ? Color(0xFFB07A47) : Colors.grey,
+            iconColor: _overlayEnabled ? context.colors.accent : context.colors.inkSoft,
             title: 'Floating Search Bubble',
             subtitle: isPremium
                 ? 'Search from any app without opening Context'
@@ -135,13 +144,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Color(0xFFB07A47).withValues(alpha: 0.15),
+                      color: context.colors.accent.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Premium',
                       style: TextStyle(
-                        color: Color(0xFFB07A47),
+                        color: context.colors.accent,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -150,9 +159,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Switch(
                   value: _overlayEnabled && isPremium,
                   onChanged: (v) => _toggleOverlay(v, isPremium),
-                  activeColor: Color(0xFFB07A47),
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Color(0xFFE2D8C4),
+                  activeColor: context.colors.accent,
+                  inactiveThumbColor: context.colors.inkSoft,
+                  inactiveTrackColor: context.colors.border,
                 ),
               ],
             ),
@@ -161,7 +170,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Notifications
           _SettingsTile(
             icon: CupertinoIcons.bell_fill,
-            iconColor: Color(0xFFCDA15F),
+            iconColor: context.colors.accent2,
             title: 'Daily Word of the Day',
             subtitle: 'Sent at 10:00 AM · 14 days pre-scheduled',
             trailing: _PillButton(
@@ -170,9 +179,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 await NotificationService().scheduleDailyNotifications(force: true);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Notifications rescheduled for 14 days'),
-                      backgroundColor: Color(0xFFEAE0CE),
+                      backgroundColor: context.colors.surfaceAlt,
                     ),
                   );
                 }
@@ -194,7 +203,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _SettingsTile(
             icon: CupertinoIcons.mail_solid,
-            iconColor: Colors.grey,
+            iconColor: context.colors.inkSoft,
             title: 'Contact Support',
             subtitle: 'hello@neurodevlabs.cloud',
             onTap: () => _openUrl(
@@ -207,20 +216,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _SettingsTile(
             icon: CupertinoIcons.shield_fill,
-            iconColor: Colors.grey,
+            iconColor: context.colors.inkSoft,
             title: 'Privacy Policy',
             onTap: () => _openUrl('https://neurodevlabs.com/context/privacy'),
           ),
           _SettingsTile(
             icon: CupertinoIcons.doc_text_fill,
-            iconColor: Colors.grey,
+            iconColor: context.colors.inkSoft,
             title: 'Terms of Service',
             onTap: () => _openUrl('https://neurodevlabs.com/context/terms'),
           ),
           if (_privacyOptionsRequired)
             _SettingsTile(
               icon: CupertinoIcons.slider_horizontal_3,
-              iconColor: Colors.grey,
+              iconColor: context.colors.inkSoft,
               title: 'Ad Privacy Options',
               subtitle: 'Manage your ad consent choices',
               onTap: () => ConsentService.instance.showPrivacyOptionsForm(),
@@ -231,7 +240,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           _SettingsTile(
             icon: CupertinoIcons.info_circle_fill,
-            iconColor: Colors.grey,
+            iconColor: context.colors.inkSoft,
             title: 'The Context Dictionary',
             subtitle: _appVersion.isNotEmpty ? 'Version $_appVersion' : '',
           ),
@@ -263,7 +272,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // NeuroDev Labs footer
           Column(
             children: [
-              const Divider(color: Color(0xFFEAE0CE)),
+              Divider(color: context.colors.surfaceAlt),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -273,16 +282,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     height: 6,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+                      gradient: LinearGradient(
+                        colors: [context.colors.accent, context.colors.accent2],
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'NeuroDev Labs',
                     style: TextStyle(
-                      color: Color(0xFF2A2521),
+                      color: context.colors.ink,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -294,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 'Building tools for curious minds.',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: context.colors.inkSoft,
                   fontSize: 11,
                   letterSpacing: 0.3,
                 ),
@@ -319,7 +328,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: Colors.grey[600],
+          color: context.colors.inkSoft,
           fontSize: 10,
           letterSpacing: 2,
           fontWeight: FontWeight.bold,
@@ -354,9 +363,9 @@ class _SettingsTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF6EC),
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2D8C4)),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           children: [
@@ -376,8 +385,8 @@ class _SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Color(0xFF2A2521),
+                    style: TextStyle(
+                      color: context.colors.ink,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -386,7 +395,7 @@ class _SettingsTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
                     ),
                   ],
                 ],
@@ -394,7 +403,7 @@ class _SettingsTile extends StatelessWidget {
             ),
             if (trailing != null) trailing!,
             if (trailing == null && onTap != null)
-              Icon(CupertinoIcons.chevron_right, color: Colors.grey[700], size: 14),
+              Icon(CupertinoIcons.chevron_right, color: context.colors.inkSoft, size: 14),
           ],
         ),
       ),
@@ -414,18 +423,84 @@ class _PillButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: Color(0xFFB07A47).withValues(alpha: 0.15),
+          color: context.colors.accent.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: Color(0xFFB07A47).withValues(alpha: 0.4)),
+          border: Border.all(color: context.colors.accent.withValues(alpha: 0.4)),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFB07A47),
+          style: TextStyle(
+            color: context.colors.accent,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ThemeSelector extends StatelessWidget {
+  final ThemeMode current;
+  final ValueChanged<ThemeMode> onSelect;
+  const _ThemeSelector({required this.current, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    const options = [
+      (ThemeMode.system, CupertinoIcons.circle_lefthalf_fill, 'System'),
+      (ThemeMode.light, CupertinoIcons.sun_max_fill, 'Light'),
+      (ThemeMode.dark, CupertinoIcons.moon_fill, 'Dark'),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.colors.border),
+      ),
+      child: Row(
+        children: options.map((o) {
+          final selected = current == o.$1;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onSelect(o.$1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? context.colors.accent.withValues(alpha: 0.15)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected
+                        ? context.colors.accent.withValues(alpha: 0.5)
+                        : Colors.transparent,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      o.$2,
+                      size: 18,
+                      color: selected ? context.colors.accent : context.colors.inkSoft,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      o.$3,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        color: selected ? context.colors.accent : context.colors.inkSoft,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -23,7 +24,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       final success = await ref.read(subscriptionServiceProvider).purchase(product);
       if (!success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Purchase failed or cancelled.'),
             backgroundColor: Colors.redAccent,
           ),
@@ -32,7 +33,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Purchase failed. Please try again.'),
             backgroundColor: Colors.redAccent,
           ),
@@ -58,7 +59,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2EBDD),
+      backgroundColor: context.colors.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -73,10 +74,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Color(0xFF2A2521).withValues(alpha: 0.08),
+                      color: context.colors.ink.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(CupertinoIcons.xmark, color: Colors.grey, size: 16),
+                    child: Icon(CupertinoIcons.xmark, color: context.colors.inkSoft, size: 16),
                   ),
                 ),
               ),
@@ -84,22 +85,22 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
               // Hero
               ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [context.colors.accent, context.colors.accent2],
                 ).createShader(bounds),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.bolt_fill,
                   size: 56,
-                  color: Color(0xFF2A2521),
+                  color: context.colors.ink,
                 ),
               ).animate().fadeIn(duration: 500.ms).scale(),
               const SizedBox(height: 16),
 
               if (isPremium) ...[
-                const Text(
+                Text(
                   'You\'re Premium ⚡',
                   style: TextStyle(
-                    color: Color(0xFF2A2521),
+                    color: context.colors.ink,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -108,14 +109,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Enjoy unlimited access to everything.',
-                  style: TextStyle(color: Colors.grey[400], fontSize: 15),
+                  style: TextStyle(color: context.colors.inkSoft, fontSize: 15),
                 ),
               ] else ...[
-                const Text(
+                Text(
                   'Unlock Neural Link\nPremium',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF2A2521),
+                    color: context.colors.ink,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -126,7 +127,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 Text(
                   'Words have context. Now you do too — everywhere.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                  style: TextStyle(color: context.colors.inkSoft, fontSize: 14),
                 ),
               ],
 
@@ -165,7 +166,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Cancel anytime · Billed via Google Play',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                  style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
                 ),
                 const SizedBox(height: 24),
                 GestureDetector(
@@ -173,10 +174,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   child: Text(
                     'Restore Purchases',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: context.colors.inkSoft,
                       fontSize: 13,
                       decoration: TextDecoration.underline,
-                      decorationColor: Colors.grey[500],
+                      decorationColor: context.colors.inkSoft,
                     ),
                   ),
                 ),
@@ -188,7 +189,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               Text(
                 'NeuroDev Labs',
                 style: TextStyle(
-                  color: Colors.grey[700],
+                  color: context.colors.inkSoft,
                   fontSize: 11,
                   letterSpacing: 1.5,
                   fontWeight: FontWeight.w600,
@@ -222,13 +223,13 @@ class _FeatureRow extends StatelessWidget {
       child: Row(
         children: [
           ShaderMask(
-            shaderCallback: (b) => const LinearGradient(
-              colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+            shaderCallback: (b) => LinearGradient(
+              colors: [context.colors.accent, context.colors.accent2],
             ).createShader(b),
-            child: Icon(icon, size: 18, color: Color(0xFF2A2521)),
+            child: Icon(icon, size: 18, color: context.colors.ink),
           ),
           const SizedBox(width: 14),
-          Flexible(child: Text(text, style: const TextStyle(color: Color(0xFF2A2521), fontSize: 14))),
+          Flexible(child: Text(text, style: TextStyle(color: context.colors.ink, fontSize: 14))),
         ],
       ),
     );
@@ -265,27 +266,27 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: isHighlighted
-              ? const LinearGradient(
-                  colors: [Color(0xFFEAE0CE), Color(0xFFE0D2B6)],
+              ? LinearGradient(
+                  colors: [context.colors.surfaceAlt, context.colors.surfaceAlt],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isHighlighted ? null : const Color(0xFFFBF6EC),
+          color: isHighlighted ? null : context.colors.surface,
           border: Border.all(
             color: isHighlighted
-                ? Color(0xFFB07A47).withValues(alpha: 0.6)
-                : Color(0xFFE2D8C4),
+                ? context.colors.accent.withValues(alpha: 0.6)
+                : context.colors.border,
             width: isHighlighted ? 1.5 : 1,
           ),
         ),
         child: isLoading
-            ? const Center(
+            ? Center(
                 child: SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                    color: Color(0xFFCDA15F),
+                    color: context.colors.accent2,
                     strokeWidth: 2,
                   ),
                 ),
@@ -300,8 +301,8 @@ class _PlanCard extends StatelessWidget {
                           children: [
                             Text(
                               label,
-                              style: const TextStyle(
-                                color: Color(0xFF2A2521),
+                              style: TextStyle(
+                                color: context.colors.ink,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -314,16 +315,16 @@ class _PlanCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFCDA15F).withValues(alpha: 0.15),
+                                  color: context.colors.accent2.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(100),
                                   border: Border.all(
-                                    color: Color(0xFFCDA15F).withValues(alpha: 0.4),
+                                    color: context.colors.accent2.withValues(alpha: 0.4),
                                   ),
                                 ),
                                 child: Text(
                                   badge!,
-                                  style: const TextStyle(
-                                    color: Color(0xFFCDA15F),
+                                  style: TextStyle(
+                                    color: context.colors.accent2,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -335,15 +336,15 @@ class _PlanCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           detail,
-                          style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                          style: TextStyle(color: context.colors.inkSoft, fontSize: 12),
                         ),
                       ],
                     ),
                   ),
                   Text(
                     price,
-                    style: const TextStyle(
-                      color: Color(0xFF2A2521),
+                    style: TextStyle(
+                      color: context.colors.ink,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),

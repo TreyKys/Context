@@ -1,3 +1,4 @@
+import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -129,10 +130,10 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Direct Search',
             style: TextStyle(
-              color: Color(0xFF2A2521),
+              color: context.colors.ink,
               fontSize: 32,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
@@ -141,19 +142,19 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
           const SizedBox(height: 4),
           Text(
             'Objective definitions with etymology & context',
-            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
           ),
           const SizedBox(height: 24),
 
           // Search bar
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFFBF6EC),
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: const Color(0xFFE2D8C4)),
+              border: Border.all(color: context.colors.border),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2A2521).withValues(alpha: 0.06),
+                  color: context.colors.ink.withValues(alpha: 0.06),
                   blurRadius: 16.0,
                   offset: const Offset(0, 6),
                 ),
@@ -162,23 +163,23 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
-                const Icon(CupertinoIcons.search, color: Colors.grey),
+                Icon(CupertinoIcons.search, color: context.colors.inkSoft),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _searchController,
                     focusNode: _focusNode,
-                    style: const TextStyle(color: Color(0xFF2A2521)),
+                    style: TextStyle(color: context.colors.ink),
                     maxLength: 100,
                     decoration: InputDecoration(
                       hintText: 'Search for a definition...',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: context.colors.inkSoft),
                       border: InputBorder.none,
                       counterText: '',
                       suffixIcon: IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           CupertinoIcons.arrow_right_circle_fill,
-                          color: Color(0xFFB07A47),
+                          color: context.colors.accent,
                         ),
                         onPressed: _performSearch,
                       ),
@@ -210,17 +211,17 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2EBDD),
+              color: context.colors.bg,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Color(0xFFE2D8C4)),
+              border: Border.all(color: context.colors.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedContext,
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                dropdownColor: const Color(0xFFFBF6EC),
-                style: const TextStyle(color: Color(0xFF2A2521), fontSize: 13),
+                icon: Icon(Icons.arrow_drop_down, color: context.colors.inkSoft),
+                dropdownColor: context.colors.surface,
+                style: TextStyle(color: context.colors.ink, fontSize: 13),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedContext = val);
                 },
@@ -230,13 +231,13 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     child: Row(
                       children: [
                         ShaderMask(
-                          shaderCallback: (b) => const LinearGradient(
-                            colors: [Color(0xFFB07A47), Color(0xFFCDA15F)],
+                          shaderCallback: (b) => LinearGradient(
+                            colors: [context.colors.accent, context.colors.accent2],
                           ).createShader(b),
-                          child: const Icon(
+                          child: Icon(
                             CupertinoIcons.tag_fill,
                             size: 14,
-                            color: Color(0xFF2A2521),
+                            color: context.colors.ink,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -263,7 +264,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             Text(
               'RECENT',
               style: TextStyle(
-                color: Colors.grey[700],
+                color: context.colors.inkSoft,
                 fontSize: 10,
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.bold,
@@ -284,22 +285,22 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFBF6EC),
+                      color: context.colors.surface,
                       borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: const Color(0xFFE2D8C4)),
+                      border: Border.all(color: context.colors.border),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(CupertinoIcons.clock,
-                            size: 11, color: Colors.grey[600]),
+                            size: 11, color: context.colors.inkSoft),
                         const SizedBox(width: 5),
                         Flexible(
                           child: Text(
                             entry.word,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: Color(0xFF8A7F6E), fontSize: 12),
+                            style: TextStyle(
+                                color: context.colors.inkSoft, fontSize: 12),
                           ),
                         ),
                       ],
@@ -319,11 +320,11 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             Center(
               child: Column(
                 children: [
-                  Icon(CupertinoIcons.search, size: 32, color: Colors.grey[800]),
+                  Icon(CupertinoIcons.search, size: 32, color: context.colors.inkSoft),
                   const SizedBox(height: 12),
                   Text(
                     'Try  "sonder",  "liminal",  or  "gaslighting"',
-                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                    style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
                   ),
                 ],
               ),
