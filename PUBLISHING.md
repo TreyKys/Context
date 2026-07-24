@@ -70,7 +70,7 @@ The code already uses RevenueCat; you just need the dashboard + key.
 1. Create the app in <https://app.revenuecat.com>, linked to Google Play (upload a Play service-account
    JSON so RevenueCat can validate purchases).
 2. Create the two products **in Play Console first** (see §3), then add them in RevenueCat.
-   - The code expects product IDs **`context_monthly_sub`** and **`context_lifetime_unlock`**
+   - The code expects product IDs **`context_monthly_sub`** and **`context_yearly_sub`**
      (see `lib/services/subscription_service.dart`) and an **entitlement named `pro_fluency`**.
    - Create an **Offering** whose packages map to those products (the paywall reads
      `offerings.current.monthly` / `.annual` style packages via `products`).
