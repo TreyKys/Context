@@ -139,9 +139,10 @@ Answer the **Data safety** form to match how the app actually behaves:
 Other declarations:
 - **Ads:** “Contains ads” = **Yes**.
 - **Permissions justification** (Play will ask): `SYSTEM_ALERT_WINDOW` → the optional premium floating
-  search bubble; `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM` → the daily “Word of the Day” reminder
-  (consider switching to inexact alarms if Play pushes back, since it’s cosmetic);
-  `POST_NOTIFICATIONS`/`RECEIVE_BOOT_COMPLETED` → the daily reminder and rescheduling after reboot.
+  search bubble; `POST_NOTIFICATIONS`/`RECEIVE_BOOT_COMPLETED` → the daily “Word of the Day” reminder
+  and rescheduling after reboot. (`SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM` were removed — the reminder
+  now uses inexact scheduling, since exact-alarm eligibility requires the app's core function to be an
+  alarm clock or calendar, which this app isn't.)
 - **Content rating** questionnaire, **Target audience** (not children), **News** = No, **COVID** = No.
 - **Ad consent (UMP):** **[CODE ✓]** the User Messaging Platform flow is implemented
   (`lib/services/consent_service.dart`) — consent is gathered at startup, ad requests are gated on
