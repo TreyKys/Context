@@ -53,8 +53,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final service = ref.watch(subscriptionServiceProvider);
-    final monthly = service.products.where((p) => p.identifier == kMonthlySubId).firstOrNull;
-    final yearly = service.products.where((p) => p.identifier == kYearlySubId).firstOrNull;
+    // Play Billing subscriptions v2 (base plans) can return the identifier as
+    // either the bare product ID or `productId:basePlanId` — match either form.
+    final monthly = service.products
+        .where((p) => p.identifier.startsWith(kMonthlySubId))
+        .firstOrNull;
+    final yearly = service.products
+        .where((p) => p.identifier.startsWith(kYearlySubId))
+        .firstOrNull;
 
     final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
 
