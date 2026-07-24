@@ -1,4 +1,4 @@
-package com.context.dict.v1
+package com.context.dictv1
 
 import io.flutter.embedding.android.FlutterActivity
 

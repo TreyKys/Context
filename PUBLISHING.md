@@ -80,7 +80,7 @@ The code already uses RevenueCat; you just need the dashboard + key.
 
 ## 3. Google Play Console — products & app setup **[YOU]**
 
-1. Create the app (package **`com.context.dict.v1`**), complete the store listing (title, short/full
+1. Create the app (package **`com.context.dictv1`**), complete the store listing (title, short/full
    description, screenshots, feature graphic, icon).
 2. **Subscriptions:** create `context_monthly_sub` (monthly) and `context_yearly_sub` (annual)
    subscriptions with prices in each market.

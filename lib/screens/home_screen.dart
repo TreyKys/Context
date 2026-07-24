@@ -65,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onPressed: () {
             launchUrl(
               Uri.parse(
-                'https://play.google.com/store/apps/details?id=com.context.dict.v1',
+                'https://play.google.com/store/apps/details?id=com.context.dictv1',
               ),
               mode: LaunchMode.externalApplication,
             );

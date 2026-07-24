@@ -198,7 +198,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Rate The Context Dictionary',
             subtitle: 'Your review helps others find us',
             onTap: () => _openUrl(
-              'https://play.google.com/store/apps/details?id=com.context.dict.v1',
+              'https://play.google.com/store/apps/details?id=com.context.dictv1',
             ),
           ),
           _SettingsTile(
