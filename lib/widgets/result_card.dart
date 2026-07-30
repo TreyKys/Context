@@ -1,5 +1,6 @@
 import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +9,11 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import '../models/vibe_result.dart';
 import '../providers/library_provider.dart';
 import 'paywall_card.dart';
+
+/// Whether to render the raw exception text under the friendly error message.
+/// On in debug builds; opt-in for release via `--dart-define=SHOW_DEBUG_ERRORS=true`.
+const bool _showRawError =
+    kDebugMode || bool.fromEnvironment('SHOW_DEBUG_ERRORS');
 
 class ResultCard extends ConsumerWidget {
   final VibeResult? result;
@@ -98,10 +104,20 @@ class ResultCard extends ConsumerWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            // TEMP diagnostic: show the raw underlying error so it can be read
-            // directly on-device (no adb/emulator needed). Remove before the
-            // final public release once search issues are resolved.
-            if (error!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again.',
+              style: TextStyle(
+                color: context.colors.inkSoft,
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            // Raw error text is for diagnosis only — never shown to real users.
+            // Debug builds always show it; a release build can opt in with
+            //   --dart-define=SHOW_DEBUG_ERRORS=true
+            // to read failures on-device without adb.
+            if (_showRawError && error!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
                 error!,

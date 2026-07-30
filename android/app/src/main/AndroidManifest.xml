@@ -1,9 +1,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.context.dictv1">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- flutter_local_notifications declares the exact-alarm permissions in its
+         OWN plugin manifest, which the manifest merger would otherwise fold into
+         our final AAB — and Play scans the MERGED manifest. USE_EXACT_ALARM is
+         restricted to apps whose core function is an alarm clock or calendar
+         (this app is neither), so Play rejects builds that carry it. The daily
+         "Word of the Day" reminder uses inexact scheduling
+         (AndroidScheduleMode.inexactAllowWhileIdle), so neither is needed.
+         These remove-directives are what actually keeps them out of the bundle. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
+        tools:node="remove" />
 
     <application
         android:label="The Context Dictionary"

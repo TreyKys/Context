@@ -38,12 +38,9 @@ class AdService {
     await _loadRewardedAd(
       onAdLoaded: (ad) {
         bool earnedReward = false;
-        ad.show(
-          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-            _quotaService.addBonusSearches(1);
-            earnedReward = true;
-          },
-        );
+        // The callback must be attached BEFORE show() — otherwise the dismissal
+        // event can fire before it is registered, leaving the caller's loading
+        // state stuck forever.
         ad.fullScreenContentCallback = FullScreenContentCallback(
           onAdDismissedFullScreenContent: (ad) {
             ad.dispose();
@@ -56,6 +53,12 @@ class AdService {
           onAdFailedToShowFullScreenContent: (ad, error) {
             ad.dispose();
             onFailed();
+          },
+        );
+        ad.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+            _quotaService.addBonusSearches(1);
+            earnedReward = true;
           },
         );
       },
@@ -78,12 +81,7 @@ class AdService {
     await _loadRewardedAd(
       onAdLoaded: (ad1) {
         bool earnedReward1 = false;
-        ad1.show(
-          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-            // First ad watched. Load second ad immediately.
-            earnedReward1 = true;
-          },
-        );
+        // Attach before show() — see watchOneAd.
         ad1.fullScreenContentCallback = FullScreenContentCallback(
           onAdDismissedFullScreenContent: (ad) {
             ad.dispose();
@@ -96,6 +94,12 @@ class AdService {
           onAdFailedToShowFullScreenContent: (ad, error) {
             ad.dispose();
             onFailed();
+          },
+        );
+        ad1.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+            // First ad watched. Load second ad immediately.
+            earnedReward1 = true;
           },
         );
       },
@@ -113,12 +117,7 @@ class AdService {
     await _loadRewardedAd(
       onAdLoaded: (ad2) {
         bool earnedReward2 = false;
-        ad2.show(
-          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-            _quotaService.addBonusSearches(3);
-            earnedReward2 = true;
-          },
-        );
+        // Attach before show() — see watchOneAd.
         ad2.fullScreenContentCallback = FullScreenContentCallback(
           onAdDismissedFullScreenContent: (ad) {
             ad.dispose();
@@ -136,6 +135,12 @@ class AdService {
             _quotaService.addBonusSearches(1);
             onFallback();
             onCompleted();
+          },
+        );
+        ad2.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+            _quotaService.addBonusSearches(3);
+            earnedReward2 = true;
           },
         );
       },
