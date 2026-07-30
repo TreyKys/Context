@@ -2,7 +2,11 @@ name: context_dictionary
 description: "The Context Dictionary — AI-powered cultural and contextual word definitions."
 publish_to: 'none'
 
-version: 1.0.0+1
+# <versionName>+<versionCode>. The build number after the "+" is the Play
+# version code: it must increase with EVERY upload and can never be reused,
+# even for releases that were rejected, discarded, or deleted. Bump it before
+# each new AAB you upload.
+version: 1.0.0+2
 
 environment:
   sdk: ^3.9.0
