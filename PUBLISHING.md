@@ -48,9 +48,31 @@ flutter pub get
    `FirebaseAI.googleAI()`). The free tier has rate limits; to raise them later, switch to Vertex AI
    (Blaze) and change `.googleAI()` → `.vertexAI()` in `lib/services/llm_service.dart` and
    `lib/overlay/overlay_main.dart` — no other code changes.
-2. **App Check — now mandatory.** As of early July 2026, App Check is **auto-enforced** for Firebase AI
-   Logic, so AI lookups are **blocked** until it's satisfied. Confirm under **Security → App Check → APIs**
-   that **Firebase AI Logic** shows **Enforced**.
+2. **App Check — currently DISABLED in the client (`kAppCheckEnabled` defaults to false).**
+
+   > **Why:** activating App Check makes the AI call throw *client side* during token fetch whenever
+   > attestation fails. Setting the API to **Unenforced** does **not** prevent this — "unenforced"
+   > governs how the server treats an unverified request, not whether the client SDK throws. While the
+   > API is unenforced, App Check therefore buys **no protection at all** (every request is accepted
+   > either way) while being a hard dependency that breaks search for **every** user. Symptom seen in
+   > testing: `[firebase_app_check/unknown] … 403 App attestation failed`, and **zero** requests
+   > reaching the API in App Check metrics — the call dies before it leaves the device.
+
+   **To turn it back on — in this order, verifying each step:**
+   1. **App Check → Apps →** register **`com.context.dictv1`** for **Play Integrity**.
+      ⚠️ The older `com.context.dict.v1` entry is a *different app*; registering it does nothing here.
+   2. Add the **Play App Signing SHA-256** (Play Console → **Test and release → Setup → App signing**).
+      Play strips your upload signature and re-signs with its own key, so the upload key fingerprint
+      alone is **not** sufficient for anything installed from Play.
+   3. Google Cloud console → **APIs & Services → Library → Play Integrity API → Enable** on
+      `com-context-dict-v1`. (This is *not* the same as the "Play Integrity API" settings page in Play
+      Console — those 7 toggles are optional *verdict fields* that App Check does not use. Enabling
+      them does not help.)
+   4. Build with `--dart-define=ENABLE_APP_CHECK=true`, install **from Play** (a sideloaded build can
+      never pass Play Integrity), and confirm **App Check → APIs → Firebase AI Logic** shows
+      **verified** requests.
+   5. Only once verified: set the API to **Enforced** and flip the default in `lib/services/ai_config.dart`
+      back to `true`.
    - **Release:** register **Play Integrity** for the Android app and add your app’s **SHA-256**
      fingerprints — both your upload key and the **Google Play App Signing** key (Play Console → Setup →
      App signing). The app already uses Play Integrity in release builds.
