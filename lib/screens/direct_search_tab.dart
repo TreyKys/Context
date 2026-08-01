@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibe_provider.dart';
+import '../providers/process_text_provider.dart';
 import '../providers/quota_provider.dart';
 import '../services/history_service.dart';
 import '../services/quota_service.dart';
@@ -70,6 +71,23 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
       if (!mounted) return;
       if (_focusNode.hasFocus) _loadHistory();
     });
+
+    // Text selected in another app ("Define" in the selection menu) arrives
+    // here. Handle whatever is already pending, then keep watching for more.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _consumePendingLookup(ref.read(pendingLookupProvider));
+      ref.listenManual<String?>(pendingLookupProvider, (_, next) {
+        _consumePendingLookup(next);
+      });
+    });
+  }
+
+  void _consumePendingLookup(String? text) {
+    if (text == null || text.trim().isEmpty || !mounted) return;
+    // Clear it first so re-entering this tab doesn't re-run the same lookup.
+    ref.read(pendingLookupProvider.notifier).state = null;
+    _searchController.text = text;
+    _performSearch();
   }
 
   @override

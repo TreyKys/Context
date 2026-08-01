@@ -57,12 +57,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (value) {
       await OverlayService().requestPermission(context);
       final granted = await OverlayService().isPermissionGranted();
+      if (!mounted) return;
       setState(() => _overlayEnabled = granted);
-      if (granted) OverlayService().showOverlay();
+      if (granted) {
+        OverlayService().showOverlay();
+        // On MIUI/ColorOS/FuntouchOS the system permission alone isn't enough —
+        // the bubble silently never draws until a second, vendor-specific
+        // toggle is enabled by hand. Tell the user instead of leaving them
+        // with a switch that looks on but does nothing.
+        if (await OverlayService().needsVendorOverlayPermission()) {
+          if (mounted) _showVendorPermissionNotice();
+        }
+      }
     } else {
       OverlayService().hideOverlay();
       setState(() => _overlayEnabled = false);
     }
+  }
+
+  void _showVendorPermissionNotice() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.colors.surface,
+        title: Text('One more step on this phone',
+            style: TextStyle(color: context.colors.ink, fontSize: 18)),
+        content: Text(
+          'Your phone needs one extra permission before the bubble can appear '
+          'over other apps.\n\n'
+          'Open App info → Permissions → and enable '
+          '"Display pop-up windows while running in background".',
+          style: TextStyle(color: context.colors.inkSoft, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Later',
+                style: TextStyle(color: context.colors.inkSoft)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              OverlayService().openAppSettings();
+            },
+            child: Text('Open settings',
+                style: TextStyle(color: context.colors.accent)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openSubscription() {

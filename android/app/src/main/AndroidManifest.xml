@@ -55,6 +55,16 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Puts "Context Dictionary" in the text-selection menu of every
+                 app. Requires no permission and works even inside FLAG_SECURE
+                 apps, where the floating overlay is blocked by the OS.
+                 android:label is what the user sees in that menu, so keep it
+                 short — long labels get pushed into the overflow "⋮". -->
+            <intent-filter android:label="Define">
+                <action android:name="android.intent.action.PROCESS_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

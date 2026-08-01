@@ -12,12 +12,14 @@ import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/ai_config.dart';
 import 'services/consent_service.dart';
+import 'services/process_text_service.dart';
 import 'services/notification_service.dart';
 import 'services/quota_service.dart';
 import 'services/library_service.dart';
 import 'services/history_service.dart';
 import 'services/subscription_service.dart';
 import 'providers/library_provider.dart';
+import 'providers/process_text_provider.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/quota_provider.dart';
 // Overlay entry point — must be imported so the compiler includes it
@@ -111,6 +113,15 @@ void main() async {
 
     await ThemeModeNotifier.load();
 
+    // If the app was launched from another app's text-selection menu, this is
+    // the selected text; null on a normal launch.
+    String? initialLookup;
+    try {
+      initialLookup = await ProcessTextService.instance.start();
+    } catch (e) {
+      debugPrint('ProcessTextService init failed: $e');
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final hasOnboarded = prefs.getBool('has_onboarded') ?? false;
 
@@ -118,6 +129,7 @@ void main() async {
       ProviderScope(
         overrides: [
           initialNotificationPayloadProvider.overrideWithValue(initialPayload),
+          pendingLookupProvider.overrideWith((ref) => initialLookup),
           quotaServiceProvider.overrideWithValue(quotaService),
           libraryServiceProvider.overrideWithValue(libraryService),
           subscriptionServiceProvider.overrideWithValue(subscriptionService),

@@ -1,9 +1,12 @@
+import 'dart:async';
 import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/quota_provider.dart';
+import '../providers/process_text_provider.dart';
+import '../services/process_text_service.dart';
 import 'vibe_translate_tab.dart';
 import 'direct_search_tab.dart';
 import 'library_screen.dart';
@@ -25,9 +28,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     LibraryScreen(),
   ];
 
+  StreamSubscription<String>? _selectionSub;
+
   @override
   void initState() {
     super.initState();
+    // Launched from another app's selection menu — land on Direct Search so the
+    // pending lookup is visible as it runs.
+    if (ref.read(pendingLookupProvider) != null) _currentIndex = 1;
+
+    // Selections that arrive while the app is already open.
+    _selectionSub = ProcessTextService.instance.textStream.listen((text) {
+      if (!mounted) return;
+      setState(() => _currentIndex = 1);
+      ref.read(pendingLookupProvider.notifier).state = text;
+    });
+
     // Listen for rating prompt after build completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.listenManual(showRatingPromptProvider, (_, shouldShow) {
@@ -37,6 +53,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _selectionSub?.cancel();
+    super.dispose();
   }
 
   void _showRatingSnackBar() {
