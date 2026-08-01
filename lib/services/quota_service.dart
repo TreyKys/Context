@@ -21,6 +21,11 @@ class QuotaService {
 
   Future<void> init(String appUserId) async {
     _prefs = await SharedPreferences.getInstance();
+    // Premium was previously memory-only, so a cold start (and the overlay's
+    // separate Flutter engine, which never runs SubscriptionService) always
+    // saw isPremium == false. Seed from the cached value; RevenueCat still
+    // overwrites it with the authoritative entitlement as soon as it responds.
+    _isPremium = _prefs?.getBool(_premiumKey) ?? false;
     await _checkDailyReset(appUserId);
   }
 
@@ -56,6 +61,10 @@ class QuotaService {
 
   Future<void> setPremium(bool value) async {
     _isPremium = value;
+    // Cache it so the overlay engine and the next cold start know, before
+    // RevenueCat has had a chance to answer. The entitlement remains the
+    // source of truth — this is only a cache.
+    await _prefs?.setBool(_premiumKey, value);
   }
 
   int get availableSearches {

@@ -16,11 +16,15 @@ final isWordSavedProvider = FutureProvider.family<bool, String>((ref, word) asyn
 });
 
 class LibraryNotifier extends AsyncNotifier<List<SavedWord>> {
-  late final LibraryService _service;
+  // NOT `late final`: build() re-runs on the same notifier instance after
+  // ref.invalidateSelf(), and re-assigning a `late final` throws
+  // LateInitializationError — which silently put the whole library into an
+  // error state the moment a word was saved, until the app was restarted.
+  LibraryService get _service => ref.read(libraryServiceProvider);
 
   @override
   Future<List<SavedWord>> build() async {
-    _service = ref.watch(libraryServiceProvider);
+    ref.watch(libraryServiceProvider);
     return _service.getSavedWords();
   }
 

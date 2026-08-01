@@ -4,16 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import '../firebase_options.dart';
 import '../services/ai_config.dart';
+import '../services/quota_service.dart';
 
-/// RevenueCat public SDK key, supplied via --dart-define (see SubscriptionService).
-const String _kRevenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.
@@ -61,11 +58,9 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
   String? _result;
   String? _error;
   bool _expanded = false;
-  Timer? _debounce;
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -83,11 +78,15 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
     });
 
     try {
-      final isPremium = await _isPremiumUser();
-      if (!isPremium) {
+      // The overlay is free to use — each lookup draws on the same daily quota
+      // as the main app (premium is unlimited). Gating it behind premium meant
+      // nobody ever experienced the feature that best sells the upgrade.
+      final quota = QuotaService();
+      await quota.init('anonymous');
+      if (quota.availableSearches <= 0) {
         setState(() {
-           _error = 'Overlay search requires Premium. Open app to upgrade.';
-           _isLoading = false;
+          _error = 'Out of free searches today. Open the app to get more.';
+          _isLoading = false;
         });
         return;
       }
@@ -102,6 +101,9 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
           .generateContent([Content.text(prompt)])
           .timeout(const Duration(seconds: 10));
 
+      // Only bill the user once the lookup actually succeeded.
+      await quota.consumeSearch();
+
       setState(() {
         _result = response.text?.trim() ?? 'No result.';
         _isLoading = false;
@@ -112,19 +114,6 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<bool> _isPremiumUser() async {
-    try {
-      if (_kRevenueCatApiKey.isNotEmpty) {
-        PurchasesConfiguration configuration =
-            PurchasesConfiguration(_kRevenueCatApiKey);
-        await Purchases.configure(configuration);
-        CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-        return customerInfo.entitlements.active.containsKey("pro_fluency");
-      }
-    } catch (_) {}
-    return false;
   }
 
   void _close() {
@@ -193,18 +182,11 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
                         contentPadding: EdgeInsets.zero,
                       ),
                       textInputAction: TextInputAction.search,
-                      onSubmitted: (_) {
-                         _debounce?.cancel();
-                         _search();
-                      },
-                      onChanged: (_) {
-                        if (_debounce?.isActive ?? false) _debounce!.cancel();
-                        _debounce = Timer(const Duration(milliseconds: 500), () {
-                          if (_controller.text.trim().isNotEmpty) {
-                             _search();
-                          }
-                        });
-                      },
+                      // Search only on an explicit submit / button tap. This
+                      // used to auto-fire 500ms after typing stopped, which
+                      // now that lookups draw on the daily quota would burn
+                      // searches on half-typed words.
+                      onSubmitted: (_) => _search(),
                     ),
                   ),
                   if (_expanded)

@@ -17,8 +17,21 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   bool _isPurchasing = false;
 
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+    );
+  }
+
   Future<void> _purchase(StoreProduct? product) async {
-    if (product == null || _isPurchasing) return;
+    if (_isPurchasing) return;
+    if (product == null) {
+      // Previously a silent `return` — the button simply did nothing and the
+      // user had no idea why.
+      _toast('That plan isn\'t available right now. Please try again.');
+      return;
+    }
     setState(() => _isPurchasing = true);
     try {
       final success = await ref.read(subscriptionServiceProvider).purchase(product);
@@ -52,13 +65,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final service = ref.watch(subscriptionServiceProvider);
+    final productsAsync = ref.watch(subscriptionProductsProvider);
+    final products = productsAsync.asData?.value ?? const <StoreProduct>[];
     // Play Billing subscriptions v2 (base plans) can return the identifier as
     // either the bare product ID or `productId:basePlanId` — match either form.
-    final monthly = service.products
+    final monthly = products
         .where((p) => p.identifier.startsWith(kMonthlySubId))
         .firstOrNull;
-    final yearly = service.products
+    final yearly = products
         .where((p) => p.identifier.startsWith(kYearlySubId))
         .firstOrNull;
 
@@ -150,30 +164,48 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               const SizedBox(height: 32),
 
               if (!isPremium) ...[
-                // Annual — highlighted
-                _PlanCard(
-                  label: 'Annual',
-                  badge: 'Best Value · Save 37%',
-                  price: yearly?.priceString ?? '\$29.99',
-                  detail: 'billed yearly · cancel anytime',
-                  isHighlighted: true,
-                  onTap: _isPurchasing ? null : () => _purchase(yearly),
-                  isLoading: _isPurchasing,
-                ),
-                const SizedBox(height: 12),
-                _PlanCard(
-                  label: 'Monthly',
-                  price: monthly?.priceString ?? '\$3.99',
-                  detail: 'per month · cancel anytime',
-                  isHighlighted: false,
-                  onTap: _isPurchasing ? null : () => _purchase(monthly),
-                  isLoading: false,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Cancel anytime · Billed via Google Play',
-                  style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
-                ),
+                // Only render plan buttons once the store actually returned
+                // products — otherwise show why, with a retry.
+                if (productsAsync.isLoading)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    child: CircularProgressIndicator(
+                      color: context.colors.accent2,
+                      strokeWidth: 2,
+                    ),
+                  )
+                else if (productsAsync.hasError)
+                  _StoreUnavailable(
+                    message: _storeErrorMessage(productsAsync.error),
+                    onRetry: () => ref.invalidate(subscriptionProductsProvider),
+                  )
+                else ...[
+                  // Annual — highlighted
+                  _PlanCard(
+                    label: 'Annual',
+                    badge: 'Best Value · Save 37%',
+                    price: yearly?.priceString ?? '\$29.99',
+                    detail: 'billed yearly · cancel anytime',
+                    isHighlighted: true,
+                    onTap: _isPurchasing ? null : () => _purchase(yearly),
+                    isLoading: _isPurchasing,
+                  ),
+                  const SizedBox(height: 12),
+                  _PlanCard(
+                    label: 'Monthly',
+                    price: monthly?.priceString ?? '\$3.99',
+                    detail: 'per month · cancel anytime',
+                    isHighlighted: false,
+                    onTap: _isPurchasing ? null : () => _purchase(monthly),
+                    isLoading: false,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Cancel anytime · Billed via Google Play',
+                    style:
+                        TextStyle(color: context.colors.inkSoft, fontSize: 11),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 GestureDetector(
                   onTap: _isPurchasing ? null : _restore,
@@ -209,10 +241,68 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 }
 
+String _storeErrorMessage(Object? error) {
+  if (error is StateError) return error.message;
+  return 'Couldn\'t reach the store. Check your connection and try again.';
+}
+
+class _StoreUnavailable extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _StoreUnavailable({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colors.border),
+      ),
+      child: Column(
+        children: [
+          Icon(CupertinoIcons.exclamationmark_circle,
+              color: context.colors.inkSoft, size: 28),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: onRetry,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: context.colors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(
+                    color: context.colors.accent.withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                'Try again',
+                style: TextStyle(
+                  color: context.colors.accent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 const _features = [
   (CupertinoIcons.bolt_fill, 'Unlimited searches, every day'),
   (CupertinoIcons.book_fill, 'Unlimited word library'),
-  (CupertinoIcons.square_stack_fill, 'Floating overlay search — from any app'),
+  (CupertinoIcons.square_stack_fill, 'Unlimited floating-bubble search, any app'),
   (CupertinoIcons.xmark_circle_fill, 'No ads, ever'),
   (CupertinoIcons.heart_fill, 'Support an independent studio'),
 ];

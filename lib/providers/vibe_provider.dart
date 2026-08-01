@@ -30,13 +30,16 @@ class VibeState {
 final llmServiceProvider = Provider<LLMService>((ref) => LLMService());
 
 class VibeNotifier extends Notifier<VibeState> {
-  late final LLMService _llmService;
-  late final QuotaService _quotaService;
+  // Deliberately not `late final` — see LibraryNotifier. build() re-runs on the
+  // same instance whenever this provider is invalidated, and re-assigning a
+  // `late final` would throw LateInitializationError.
+  LLMService get _llmService => ref.read(llmServiceProvider);
+  QuotaService get _quotaService => ref.read(quotaServiceProvider);
 
   @override
   VibeState build() {
-    _llmService = ref.watch(llmServiceProvider);
-    _quotaService = ref.watch(quotaServiceProvider);
+    ref.watch(llmServiceProvider);
+    ref.watch(quotaServiceProvider);
     return VibeState.initial();
   }
 

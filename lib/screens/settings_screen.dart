@@ -50,11 +50,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) setState(() => _overlayEnabled = granted);
   }
 
+  // The overlay is no longer premium-gated — free users get it, with lookups
+  // drawing on the same daily search quota. It's the feature that best sells
+  // the upgrade, so locking it away meant nobody ever felt why it's worth it.
   Future<void> _toggleOverlay(bool value, bool isPremium) async {
-    if (!isPremium) {
-      _openSubscription();
-      return;
-    }
     if (value) {
       await OverlayService().requestPermission(context);
       final granted = await OverlayService().isPermissionGranted();
@@ -135,7 +134,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Floating Search Bubble',
             subtitle: isPremium
                 ? 'Search from any app without opening Context'
-                : 'Premium feature — search from any app',
+                : 'Search from any app · uses your daily searches',
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -148,7 +147,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
-                      'Premium',
+                      'Free',
                       style: TextStyle(
                         color: context.colors.accent,
                         fontSize: 10,
@@ -157,7 +156,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                 Switch(
-                  value: _overlayEnabled && isPremium,
+                  value: _overlayEnabled,
                   onChanged: (v) => _toggleOverlay(v, isPremium),
                   activeColor: context.colors.accent,
                   inactiveThumbColor: context.colors.inkSoft,

@@ -25,6 +25,13 @@ class SubscriptionService {
   List<StoreProduct> _products = [];
   List<StoreProduct> get products => _products;
 
+  /// False when no RevenueCat key was supplied at build time — the paywall
+  /// can't function at all in that case, and should say so rather than
+  /// rendering dead buttons.
+  bool get isConfigured => kRevenueCatApiKey.isNotEmpty;
+
+  bool _configured = false;
+
   Future<void> init(QuotaService quotaService) async {
     _quotaService = quotaService;
 
@@ -35,8 +42,11 @@ class SubscriptionService {
           await Purchases.setLogLevel(LogLevel.debug);
         }
 
-        PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
-        await Purchases.configure(configuration);
+        if (!_configured) {
+          PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+          await Purchases.configure(configuration);
+          _configured = true;
+        }
 
         await _checkEntitlements();
 
@@ -44,22 +54,40 @@ class SubscriptionService {
           await _updatePremiumStatus(customerInfo);
         });
 
-        await _loadProducts();
+        await loadProducts();
       }
     } catch (e) {
-      // Fail silently if setup fails
+      debugPrint('SubscriptionService init failed: $e');
     }
   }
 
-  Future<void> _loadProducts() async {
-    try {
-       Offerings offerings = await Purchases.getOfferings();
-       if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
-          _products = offerings.current!.availablePackages.map((p) => p.storeProduct).toList();
-       }
-    } catch (e) {
-       // Log error
+  /// Fetches the current offering's products. Throws on failure so the paywall
+  /// can show a real error with a retry, instead of silently rendering buttons
+  /// that do nothing when tapped.
+  Future<List<StoreProduct>> loadProducts() async {
+    if (!isConfigured) {
+      throw StateError(
+        'Store unavailable — the app was built without a RevenueCat key.',
+      );
     }
+    // init() may not have run yet (or may have failed) when the paywall is
+    // opened; make sure the SDK is configured before asking for offerings.
+    if (!_configured) {
+      await Purchases.configure(PurchasesConfiguration(kRevenueCatApiKey));
+      _configured = true;
+    }
+
+    final Offerings offerings = await Purchases.getOfferings();
+    final packages = offerings.current?.availablePackages ?? const [];
+    if (packages.isEmpty) {
+      throw StateError(
+        'No subscriptions are available right now. This usually means the '
+        'RevenueCat offering has no packages, or the Play products are not '
+        'active yet.',
+      );
+    }
+    _products = packages.map((p) => p.storeProduct).toList();
+    return _products;
   }
 
   Future<void> _checkEntitlements() async {
