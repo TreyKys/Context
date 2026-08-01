@@ -9,7 +9,19 @@ name: Build test APK
 # for sideload testing, but such an APK can NOT be uploaded to Play — build the
 # signed AAB locally for that.
 
+# NOTE: the "Run workflow" button only appears once this file is on the repo's
+# DEFAULT branch — that's a GitHub requirement for workflow_dispatch. Until this
+# is merged to main, use the push trigger below: any push to the branch builds
+# an APK automatically, which works from a feature branch.
 on:
+  push:
+    branches:
+      - claude/production-readiness-firebase-ai
+    paths:
+      - "lib/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - ".github/workflows/build-test-apk.yml"
   workflow_dispatch:
     inputs:
       enable_app_check:
@@ -44,11 +56,13 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
+      # On a push build `inputs.*` are empty, so these comparisons fall through
+      # to the diagnostic defaults: App Check off, raw errors on.
       - name: Build release APK
         run: |
           flutter build apk --release \
-            --dart-define=ENABLE_APP_CHECK=${{ inputs.enable_app_check }} \
-            --dart-define=SHOW_DEBUG_ERRORS=${{ inputs.show_debug_errors }}
+            --dart-define=ENABLE_APP_CHECK=${{ inputs.enable_app_check == true }} \
+            --dart-define=SHOW_DEBUG_ERRORS=${{ inputs.show_debug_errors != false }}
 
       - uses: actions/upload-artifact@v4
         with:
