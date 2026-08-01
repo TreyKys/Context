@@ -10,6 +10,7 @@ import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/ai_config.dart';
 import 'services/consent_service.dart';
 import 'services/notification_service.dart';
 import 'services/quota_service.dart';
@@ -55,9 +56,7 @@ void main() async {
       //   --dart-define=ENABLE_APP_CHECK=false
       // and make sure the AI API is set to UNENFORCED in the Firebase console.
       // Production (installed from Google Play) must keep this ON + enforced.
-      const appCheckEnabled =
-          bool.fromEnvironment('ENABLE_APP_CHECK', defaultValue: true);
-      if (appCheckEnabled) {
+      if (kAppCheckEnabled) {
         await FirebaseAppCheck.instance.activate(
           androidProvider: kDebugMode
               ? AndroidProvider.debug

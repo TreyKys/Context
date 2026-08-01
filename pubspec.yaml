@@ -6,7 +6,7 @@ publish_to: 'none'
 # version code: it must increase with EVERY upload and can never be reused,
 # even for releases that were rejected, discarded, or deleted. Bump it before
 # each new AAB you upload.
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.9.0

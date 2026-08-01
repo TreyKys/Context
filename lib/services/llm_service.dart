@@ -138,7 +138,8 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
       }
     }
     throw Exception(
-      'Decryption Failed: Signal Lost or High Network Traffic.\n\nDebug: $lastError',
+      'Decryption Failed: Signal Lost or High Network Traffic.\n\n'
+      'Debug [model=$kGeminiModel appCheck=$kAppCheckEnabled]: $lastError',
     );
   }
 }

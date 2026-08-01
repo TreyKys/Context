@@ -27,9 +27,7 @@ void overlayMain() async {
     );
     // See main.dart — skippable for sideloaded test builds via
     // --dart-define=ENABLE_APP_CHECK=false.
-    const appCheckEnabled =
-        bool.fromEnvironment('ENABLE_APP_CHECK', defaultValue: true);
-    if (appCheckEnabled) {
+    if (kAppCheckEnabled) {
       await FirebaseAppCheck.instance.activate(
         androidProvider:
             kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
