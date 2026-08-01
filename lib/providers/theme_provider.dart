@@ -14,6 +14,10 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 
   static ThemeMode _initial = ThemeMode.system;
 
+  /// The persisted mode, readable before a ProviderScope exists (the quick
+  /// "Define" card builds its MaterialApp outside the main provider tree).
+  static ThemeMode get initial => _initial;
+
   /// Call once at startup before running the app.
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();

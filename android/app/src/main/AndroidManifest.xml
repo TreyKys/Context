@@ -55,11 +55,32 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Puts "Context Dictionary" in the text-selection menu of every
-                 app. Requires no permission and works even inside FLAG_SECURE
-                 apps, where the floating overlay is blocked by the OS.
-                 android:label is what the user sees in that menu, so keep it
-                 short — long labels get pushed into the overflow "⋮". -->
+        </activity>
+
+        <!-- "Define" in the text-selection menu of every app. Requires no
+             permission and works even inside FLAG_SECURE apps, where the OS
+             blocks the floating overlay outright.
+
+             Routed to QuickDefineActivity rather than MainActivity so it opens
+             as a small floating card over whatever the user was reading, and
+             dismisses straight back to it — rather than yanking them into the
+             full app to look up one word.
+
+             android:label is the text shown in the selection menu; keep it
+             short or Android pushes it into the overflow "⋮".
+             excludeFromRecents keeps this transient card out of the recents
+             list, and noHistory means it never lingers behind. -->
+        <activity
+            android:name=".QuickDefineActivity"
+            android:exported="true"
+            android:label="Define"
+            android:theme="@style/QuickDefineTheme"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter android:label="Define">
                 <action android:name="android.intent.action.PROCESS_TEXT"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -10,6 +10,8 @@ import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/quick_define_sheet.dart';
+import 'screens/define_tutorial_screen.dart';
 import 'services/ai_config.dart';
 import 'services/consent_service.dart';
 import 'services/process_text_service.dart';
@@ -27,8 +29,19 @@ import 'overlay/overlay_main.dart' as overlay_entry; // ignore: unused_import
 
 final initialNotificationPayloadProvider = Provider<String?>((ref) => null);
 
+/// QuickDefineActivity launches the engine on this route.
+const String _kQuickDefineRoute = '/quick-define';
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+
+  // The "Define" card is a transient dialog over another app. It only needs
+  // Firebase, so skip ads / notifications / billing / DB entirely — those add
+  // seconds of startup the user would spend staring at an empty overlay.
+  if (binding.platformDispatcher.defaultRouteName == _kQuickDefineRoute) {
+    await _runQuickDefine();
+    return;
+  }
 
   try {
     // Gather EEA/UK ad consent (UMP) before requesting ads. Bounded so a slow
@@ -182,6 +195,37 @@ void main() async {
   }
 }
 
+/// Minimal entry point for the floating "Define" card — Firebase only.
+Future<void> _runQuickDefine() async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    if (kAppCheckEnabled) {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider:
+            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      );
+    }
+  } catch (e) {
+    debugPrint('QuickDefine Firebase init failed: $e');
+  }
+
+  await ThemeModeNotifier.load();
+
+  runApp(
+    ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
+        themeMode: ThemeModeNotifier.initial,
+        home: const QuickDefineSheet(),
+      ),
+    ),
+  );
+}
+
 class ContextDictionaryApp extends ConsumerWidget {
   final bool showOnboarding;
   const ContextDictionaryApp({super.key, this.showOnboarding = false});
@@ -206,8 +250,16 @@ class _OnboardingGate extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_onboarded', true);
     if (context.mounted) {
+      // Straight into the Define tutorial — it's the app's strongest feature
+      // and the one nothing in the UI would otherwise reveal.
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (ctx) => DefineTutorialScreen(
+            onDone: () => Navigator.of(ctx).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            ),
+          ),
+        ),
       );
     }
   }

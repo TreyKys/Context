@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/subscription_provider.dart';
 import '../services/quota_service.dart';
 import '../services/overlay_service.dart';
+import 'define_tutorial_screen.dart';
 import '../services/notification_service.dart';
 import '../services/consent_service.dart';
 import '../providers/theme_provider.dart';
@@ -169,6 +170,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 8),
           _SectionHeader(title: 'Features'),
+
+          // How to use Define — the feature nothing else in the UI reveals.
+          _SettingsTile(
+            icon: CupertinoIcons.text_cursor,
+            iconColor: context.colors.accent,
+            title: 'Define from any app',
+            subtitle: 'How to look up words without leaving what you\'re reading',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DefineTutorialScreen()),
+            ),
+          ),
 
           // Overlay toggle
           _SettingsTile(

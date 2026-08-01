@@ -15,52 +15,73 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 }
 
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
-  bool _isPurchasing = false;
+  /// Identifier of the product currently being purchased, or null.
+  /// Tracked per-product rather than as a single bool so the spinner appears on
+  /// the card the user actually tapped — previously tapping Monthly spun the
+  /// Annual card.
+  String? _purchasingId;
+  bool _restoring = false;
 
-  void _toast(String message) {
+  bool get _busy => _purchasingId != null || _restoring;
+
+  void _toast(String message, {bool success = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? context.colors.accent : Colors.redAccent,
+      ),
     );
   }
 
   Future<void> _purchase(StoreProduct? product) async {
-    if (_isPurchasing) return;
+    if (_busy) return;
     if (product == null) {
       // Previously a silent `return` — the button simply did nothing and the
       // user had no idea why.
       _toast('That plan isn\'t available right now. Please try again.');
       return;
     }
-    setState(() => _isPurchasing = true);
+    setState(() => _purchasingId = product.identifier);
     try {
-      final success = await ref.read(subscriptionServiceProvider).purchase(product);
-      if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Purchase failed or cancelled.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+      final success =
+          await ref.read(subscriptionServiceProvider).purchase(product);
+      if (!mounted) return;
+      if (success) {
+        // Make the entitlement change visible immediately rather than waiting
+        // for the next stream tick, then confirm it to the user.
+        ref.invalidate(isPremiumProvider);
+        _toast('You\'re Premium ⚡ Enjoy unlimited searches.', success: true);
+      } else {
+        _toast('Purchase failed or cancelled.');
       }
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Purchase failed. Please try again.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      _toast('Purchase failed. Please try again.');
     } finally {
-      if (mounted) setState(() => _isPurchasing = false);
+      if (mounted) setState(() => _purchasingId = null);
     }
   }
 
   Future<void> _restore() async {
-    setState(() => _isPurchasing = true);
-    await ref.read(subscriptionServiceProvider).restorePurchases();
-    if (mounted) setState(() => _isPurchasing = false);
+    if (_busy) return;
+    setState(() => _restoring = true);
+    try {
+      final restored =
+          await ref.read(subscriptionServiceProvider).restorePurchases();
+      if (!mounted) return;
+      if (restored) {
+        ref.invalidate(isPremiumProvider);
+        _toast('Purchases restored — Premium is active.', success: true);
+      } else {
+        // Previously this gave no feedback at all, so a user with nothing to
+        // restore just saw the spinner stop and assumed it was broken.
+        _toast('No previous purchase found for this Google account.');
+      }
+    } catch (_) {
+      _toast('Couldn\'t reach the store. Please try again.');
+    } finally {
+      if (mounted) setState(() => _restoring = false);
+    }
   }
 
   @override
@@ -187,8 +208,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                     price: yearly?.priceString ?? '\$29.99',
                     detail: 'billed yearly · cancel anytime',
                     isHighlighted: true,
-                    onTap: _isPurchasing ? null : () => _purchase(yearly),
-                    isLoading: _isPurchasing,
+                    onTap: _busy ? null : () => _purchase(yearly),
+                    isLoading: _purchasingId != null &&
+                        _purchasingId == yearly?.identifier,
                   ),
                   const SizedBox(height: 12),
                   _PlanCard(
@@ -196,8 +218,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                     price: monthly?.priceString ?? '\$3.99',
                     detail: 'per month · cancel anytime',
                     isHighlighted: false,
-                    onTap: _isPurchasing ? null : () => _purchase(monthly),
-                    isLoading: false,
+                    onTap: _busy ? null : () => _purchase(monthly),
+                    isLoading: _purchasingId != null &&
+                        _purchasingId == monthly?.identifier,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -208,7 +231,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 ],
                 const SizedBox(height: 24),
                 GestureDetector(
-                  onTap: _isPurchasing ? null : _restore,
+                  onTap: _busy ? null : _restore,
                   child: Text(
                     'Restore Purchases',
                     style: TextStyle(
