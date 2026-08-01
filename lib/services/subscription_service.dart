@@ -6,10 +6,26 @@ import '../services/quota_service.dart';
 const String kMonthlySubId = 'context_monthly_sub';
 const String kYearlySubId = 'context_yearly_sub';
 
-/// RevenueCat public SDK key (Android, starts with `goog_`). It is a
-/// publishable key, but we still supply it at build time rather than commit it:
-///   flutter build appbundle --dart-define=REVENUECAT_API_KEY=goog_XXXXXXXX
-const String kRevenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
+/// RevenueCat **public** SDK key (Android, `goog_` prefix).
+///
+/// Committed rather than injected at build time, on purpose. This is a
+/// publishable key — RevenueCat designs it to ship inside client apps, it is
+/// extractable from any APK regardless, and purchases are validated server side
+/// against Google Play, so the key on its own grants nothing. Same reasoning as
+/// the committed `firebase_options.dart`.
+///
+/// It previously came only from `--dart-define`, which meant *forgetting the
+/// flag on one release silently shipped a dead paywall* — no crash, no error,
+/// just zero revenue until somebody noticed. A default that works beats a
+/// default that quietly breaks.
+///
+/// Still overridable for a different environment:
+///   flutter build appbundle --release --dart-define=REVENUECAT_API_KEY=goog_…
+const String _kDefaultRevenueCatApiKey = 'goog_etdaElwYfnfHwoDNvEvrhQnXMEj';
+const String kRevenueCatApiKey = String.fromEnvironment(
+  'REVENUECAT_API_KEY',
+  defaultValue: _kDefaultRevenueCatApiKey,
+);
 
 class SubscriptionService {
   static final SubscriptionService _instance = SubscriptionService._internal();
