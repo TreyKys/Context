@@ -73,6 +73,24 @@ flutter pub get
       **verified** requests.
    5. Only once verified: set the API to **Enforced** and flip the default in `lib/services/ai_config.dart`
       back to `true`.
+
+   ### ⚠️ Enabling enforcement is a BREAKING change for installed users
+
+   Every build shipped with App Check off sends **no token**. The moment the API is set to Enforced,
+   the server starts rejecting those requests — search breaks instantly for everyone who hasn't
+   updated yet, and Play rollouts take days. Never flip enforcement as a single step.
+
+   **Safe rollout order:**
+
+   | # | Client | API | Effect |
+   | - | --- | --- | --- |
+   | 1 | App Check **off** | Unenforced | Works for everyone. Ship this first. |
+   | 2 | App Check **on** (`--dart-define=ENABLE_APP_CHECK=true`) | Unenforced | Tokens start flowing. **If attestation is still broken, nobody notices** — this is the free trial run. |
+   | 3 | — | Unenforced | Watch **App Check → APIs → Firebase AI Logic**. Wait for *verified* requests to dominate as users update. |
+   | 4 | App Check **on** | **Enforced** | Only now. Users still on step-1 builds will break, but by now they're a small tail. |
+
+   Step 2 is the one that's easy to skip and the one that makes this safe: it proves attestation works
+   against real users, on real devices, installed from Play, with zero blast radius if it doesn't.
    - **Release:** register **Play Integrity** for the Android app and add your app’s **SHA-256**
      fingerprints — both your upload key and the **Google Play App Signing** key (Play Console → Setup →
      App signing). The app already uses Play Integrity in release builds.
