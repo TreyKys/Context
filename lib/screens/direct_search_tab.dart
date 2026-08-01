@@ -85,7 +85,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
   void _consumePendingLookup(String? text) {
     if (text == null || text.trim().isEmpty || !mounted) return;
     // Clear it first so re-entering this tab doesn't re-run the same lookup.
-    ref.read(pendingLookupProvider.notifier).state = null;
+    ref.read(pendingLookupProvider.notifier).clear();
     _searchController.text = text;
     _performSearch();
   }

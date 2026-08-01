@@ -49,15 +49,9 @@ void main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      // App Check protects the Firebase AI backend. Debug builds use the debug
-      // provider; release builds use Play Integrity.
-      //
-      // A *sideloaded* release APK can't pass Play Integrity ("App attestation
-      // failed"), which breaks AI calls. For local testing on a sideloaded
-      // build, skip App Check with:
-      //   --dart-define=ENABLE_APP_CHECK=false
-      // and make sure the AI API is set to UNENFORCED in the Firebase console.
-      // Production (installed from Google Play) must keep this ON + enforced.
+      // Currently OFF by default — see kAppCheckEnabled in ai_config.dart for
+      // why, and PUBLISHING.md for the staged sequence to turn it back on
+      // without breaking already-installed users.
       if (kAppCheckEnabled) {
         await FirebaseAppCheck.instance.activate(
           androidProvider: kDebugMode
@@ -129,7 +123,9 @@ void main() async {
       ProviderScope(
         overrides: [
           initialNotificationPayloadProvider.overrideWithValue(initialPayload),
-          pendingLookupProvider.overrideWith((ref) => initialLookup),
+          pendingLookupProvider.overrideWith(
+            () => PendingLookupNotifier(initialLookup),
+          ),
           quotaServiceProvider.overrideWithValue(quotaService),
           libraryServiceProvider.overrideWithValue(libraryService),
           subscriptionServiceProvider.overrideWithValue(subscriptionService),

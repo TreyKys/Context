@@ -41,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _selectionSub = ProcessTextService.instance.textStream.listen((text) {
       if (!mounted) return;
       setState(() => _currentIndex = 1);
-      ref.read(pendingLookupProvider.notifier).state = text;
+      ref.read(pendingLookupProvider.notifier).set(text);
     });
 
     // Listen for rating prompt after build completes
