@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final quotaServiceProvider = Provider<QuotaService>((ref) => QuotaService());
@@ -13,52 +14,77 @@ class QuotaService {
   static const int _ratingTriggerCount = 5;
 
   SharedPreferences? _prefs;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  Future<void> init() async {
+  bool _isPremium = false;
+  int _availableSearches = 0;
+
+  Future<void> init(String appUserId) async {
     _prefs = await SharedPreferences.getInstance();
-    _checkDailyReset();
+    await _checkDailyReset(appUserId);
   }
 
-  void _checkDailyReset() {
-    if (_prefs == null) return;
-    if (isPremium) return; // Premium users have unlimited searches
+  String? _appUserId;
+
+  Future<void> _checkDailyReset(String appUserId) async {
+    _appUserId = appUserId;
+    if (isPremium) return;
 
     final today = DateTime.now().toIso8601String().split('T')[0];
-    final lastDate = _prefs!.getString(_dateKey);
+    final keySuffix = _appUserId ?? 'anonymous';
+    final dateKey = '${_dateKey}_$keySuffix';
+    final searchKey = '${_searchesKey}_$keySuffix';
+
+    final lastDate = await _secureStorage.read(key: dateKey);
+    final searchesStr = await _secureStorage.read(key: searchKey);
 
     if (lastDate != today) {
-      _prefs!.setString(_dateKey, today);
-      _prefs!.setInt(_searchesKey, _dailyLimit);
+      await _secureStorage.write(key: dateKey, value: today);
+      await _secureStorage.write(key: searchKey, value: _dailyLimit.toString());
+      _availableSearches = _dailyLimit;
     } else {
-      if (!_prefs!.containsKey(_searchesKey)) {
-        _prefs!.setInt(_searchesKey, _dailyLimit);
+      if (searchesStr == null) {
+        await _secureStorage.write(key: searchKey, value: _dailyLimit.toString());
+        _availableSearches = _dailyLimit;
+      } else {
+        _availableSearches = int.tryParse(searchesStr) ?? 0;
       }
     }
   }
 
-  bool get isPremium => _prefs?.getBool(_premiumKey) ?? false;
+  bool get isPremium => _isPremium;
 
   Future<void> setPremium(bool value) async {
-    await _prefs?.setBool(_premiumKey, value);
+    _isPremium = value;
   }
 
   int get availableSearches {
     if (isPremium) return 999;
-    return _prefs?.getInt(_searchesKey) ?? 0;
+    return _availableSearches;
   }
 
   Future<void> consumeSearch() async {
-    if (_prefs == null || isPremium) return;
+    if (isPremium) return;
     int current = availableSearches;
+    final keySuffix = _appUserId ?? 'anonymous';
+    final searchKey = '${_searchesKey}_$keySuffix';
+
     if (current > 0) {
-      await _prefs!.setInt(_searchesKey, current - 1);
+      current -= 1;
+      _availableSearches = current;
+      await _secureStorage.write(key: searchKey, value: current.toString());
     }
   }
 
   Future<void> addBonusSearches(int amount) async {
-    if (_prefs == null || isPremium) return;
-    int current = _prefs!.getInt(_searchesKey) ?? 0;
-    await _prefs!.setInt(_searchesKey, current + amount);
+    if (isPremium) return;
+    int current = availableSearches;
+    current += amount;
+    _availableSearches = current;
+    final keySuffix = _appUserId ?? 'anonymous';
+    final searchKey = '${_searchesKey}_$keySuffix';
+
+    await _secureStorage.write(key: searchKey, value: current.toString());
   }
 
   /// Increments lifetime search count. Returns true if this is the trigger

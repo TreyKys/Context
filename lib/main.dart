@@ -4,6 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
@@ -26,6 +28,15 @@ void main() async {
     await MobileAds.instance.initialize();
     await dotenv.load(fileName: '.env');
 
+    try {
+      await Firebase.initializeApp();
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+      );
+    } catch (e) {
+      debugPrint('Firebase init failed: $e');
+    }
+
     final notificationService = NotificationService();
     await notificationService.init();
     await notificationService.requestPermissions();
@@ -33,7 +44,8 @@ void main() async {
     final initialPayload = notificationService.initialPayload;
 
     final quotaService = QuotaService();
-    await quotaService.init();
+    // Assuming anonymous access, update when authenticated
+    await quotaService.init('anonymous');
 
     final libraryService = LibraryService();
     await libraryService.init();
@@ -62,7 +74,8 @@ void main() async {
         child: ContextDictionaryApp(showOnboarding: !hasOnboarded),
       ),
     );
-  } catch (_) {
+  } catch (e, stackTrace) {
+    debugPrint('App failed to start: $e\n$stackTrace');
     runApp(
       MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -115,20 +128,22 @@ class ContextDictionaryApp extends StatelessWidget {
     return MaterialApp(
       title: 'The Context Dictionary',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0B0C10),
+        scaffoldBackgroundColor: const Color(0xFF030305),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0B0C10),
+          backgroundColor: Color(0xFF030305),
           elevation: 0,
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF0B0C10),
+          backgroundColor: Color(0xFF030305),
+          selectedItemColor: Color(0xFF00FFD1),
+          unselectedItemColor: Colors.grey,
           elevation: 0,
         ),
         textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
         colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
-          secondary: Colors.grey,
-          surface: Color(0xFF0B0C10),
+          primary: Color(0xFFA855F7),
+          secondary: Color(0xFF00FFD1),
+          surface: Color(0xFF030305),
         ),
       ),
       home: showOnboarding ? const _OnboardingGate() : const HomeScreen(),

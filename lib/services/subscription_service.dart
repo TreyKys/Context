@@ -1,24 +1,16 @@
 import 'dart:async';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:flutter/foundation.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/quota_service.dart';
 
-const String kMonthlySubId = 'context_premium_monthly';
-const String kYearlySubId = 'context_premium_yearly';
-const Set<String> _kProductIds = {kMonthlySubId, kYearlySubId};
+const String kMonthlySubId = 'context_monthly_sub';
+const String kLifetimeSubId = 'context_lifetime_unlock';
 
 class SubscriptionService {
   static final SubscriptionService _instance = SubscriptionService._internal();
   factory SubscriptionService() => _instance;
   SubscriptionService._internal();
-
-  final InAppPurchase _iap = InAppPurchase.instance;
-  StreamSubscription<List<PurchaseDetails>>? _subscription;
-
-  List<ProductDetails> _products = [];
-  List<ProductDetails> get products => _products;
-
-  bool _isAvailable = false;
-  bool get isAvailable => _isAvailable;
 
   QuotaService? _quotaService;
 
@@ -26,61 +18,89 @@ class SubscriptionService {
       StreamController<bool>.broadcast();
   Stream<bool> get premiumStatusStream => _premiumStatusController.stream;
 
+  List<StoreProduct> _products = [];
+  List<StoreProduct> get products => _products;
+
   Future<void> init(QuotaService quotaService) async {
     _quotaService = quotaService;
 
-    _isAvailable = await _iap.isAvailable();
-    if (!_isAvailable) return;
+    try {
+      final apiKey = dotenv.env['REVENUECAT_API_KEY'];
+      if (apiKey != null && apiKey.isNotEmpty) {
+        if (kDebugMode) {
+          await Purchases.setLogLevel(LogLevel.debug);
+        }
 
-    _subscription = _iap.purchaseStream.listen(
-      _onPurchaseUpdate,
-      onDone: () => _subscription?.cancel(),
-      onError: (_) {},
-    );
+        PurchasesConfiguration configuration = PurchasesConfiguration(apiKey);
+        await Purchases.configure(configuration);
 
-    await _loadProducts();
-    await restorePurchases();
+        await _checkEntitlements();
+
+        Purchases.addCustomerInfoUpdateListener((customerInfo) async {
+          await _updatePremiumStatus(customerInfo);
+        });
+
+        await _loadProducts();
+      }
+    } catch (e) {
+      // Fail silently if setup fails
+    }
   }
 
   Future<void> _loadProducts() async {
     try {
-      final response = await _iap.queryProductDetails(_kProductIds);
-      _products = response.productDetails;
-    } catch (_) {}
+       Offerings offerings = await Purchases.getOfferings();
+       if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
+          _products = offerings.current!.availablePackages.map((p) => p.storeProduct).toList();
+       }
+    } catch (e) {
+       // Log error
+    }
   }
 
-  Future<void> purchase(ProductDetails product) async {
-    final purchaseParam = PurchaseParam(productDetails: product);
-    await _iap.buyNonConsumable(purchaseParam: purchaseParam);
-  }
-
-  Future<void> restorePurchases() async {
+  Future<void> _checkEntitlements() async {
     try {
-      await _iap.restorePurchases();
-    } catch (_) {}
+      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+      await _updatePremiumStatus(customerInfo);
+    } catch (e) {
+       // Log error
+    }
   }
 
-  void _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
-    for (final purchase in purchases) {
-      if (purchase.status == PurchaseStatus.purchased ||
-          purchase.status == PurchaseStatus.restored) {
-        if (_kProductIds.contains(purchase.productID)) {
-          await _quotaService?.setPremium(true);
-          _premiumStatusController.add(true);
-        }
-        if (purchase.pendingCompletePurchase) {
-          await _iap.completePurchase(purchase);
-        }
-      } else if (purchase.status == PurchaseStatus.error) {
-        if (purchase.pendingCompletePurchase) {
-          await _iap.completePurchase(purchase);
-        }
+  Future<void> _updatePremiumStatus(CustomerInfo customerInfo) async {
+     final isPremium = customerInfo.entitlements.active.containsKey("pro_fluency");
+     await _quotaService?.setPremium(isPremium);
+     _premiumStatusController.add(isPremium);
+  }
+
+  Future<bool> purchase(StoreProduct product) async {
+    try {
+      PurchaseResult result = await Purchases.purchaseStoreProduct(product);
+      CustomerInfo customerInfo = result.customerInfo;
+      final success = customerInfo.entitlements.active.containsKey("pro_fluency");
+      if (success) {
+        await _updatePremiumStatus(customerInfo);
       }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> restorePurchases() async {
+    try {
+      CustomerInfo customerInfo = await Purchases.restorePurchases();
+      final success = customerInfo.entitlements.active.containsKey("pro_fluency");
+      if (success) {
+        await _updatePremiumStatus(customerInfo);
+      }
+      return success;
+    } catch (e) {
+      return false;
     }
   }
 
   void dispose() {
-    _subscription?.cancel();
     _premiumStatusController.close();
   }
 }

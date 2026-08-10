@@ -29,28 +29,49 @@ class ResultCard extends ConsumerWidget {
     if (isQuotaLocked) return const PaywallCard();
 
     if (isLoading) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: Column(
-            children: [
-              const CircularProgressIndicator(
-                color: Colors.cyanAccent,
-                strokeWidth: 2,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Cross-referencing sources...',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0B0C10),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.grey.shade800, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.6),
+              blurRadius: 15.0,
+              spreadRadius: 2.0,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color(0xFFA855F7).withValues(alpha: 0.3), // Ultra-Violet glowing pulse
+              blurRadius: 15.0,
+              spreadRadius: 2.0,
+            ),
+          ],
         ),
-      );
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(
+              color: Color(0xFF00FFD1), // Electric Cyan
+              strokeWidth: 2,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Cross-referencing sources...',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 12,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+       .shimmer(duration: 1500.ms, color: const Color(0xFFA855F7).withValues(alpha: 0.1))
+       .fade(begin: 0.7, end: 1.0, duration: 800.ms);
     }
 
     if (error != null) {

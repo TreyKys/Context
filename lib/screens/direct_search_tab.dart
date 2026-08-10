@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/vibe_provider.dart';
 import '../providers/quota_provider.dart';
@@ -55,6 +56,7 @@ class DirectSearchTab extends ConsumerStatefulWidget {
 class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  Timer? _debounce;
   String _lastSearchedWord = '';
   bool _showHistory = false;
   List<HistoryEntry> _history = [];
@@ -71,6 +73,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -187,11 +190,17 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                       ),
                     ),
                     textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _performSearch(),
+                    onSubmitted: (_) {
+                       _debounce?.cancel();
+                       _performSearch();
+                    },
                     onChanged: (v) {
                       if (!mounted) return;
-                      setState(() {
-                        _showHistory = v.isEmpty && _history.isNotEmpty;
+                      if (_debounce?.isActive ?? false) _debounce!.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 500), () {
+                        setState(() {
+                          _showHistory = v.isEmpty && _history.isNotEmpty;
+                        });
                       });
                     },
                   ),
