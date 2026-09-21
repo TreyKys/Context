@@ -17,36 +17,68 @@ import {
   INK,
   INK_SOFT,
   CARAMEL,
-  BG,
   BORDER,
   CARD,
   EASE,
 } from "./shared";
 
 /* ══════════════════════════════════════════════════════════════════════════
- * Ad #7 — "Before You Google It"
- * 1:1 square, 14s. Comparison / punchy.
- * FOMO: everyone else is still Googling like a caveman; you already have
- * the exact answer for your exact context.
+ * Ad #7 — "Before You Google It" (v2)
+ * 1:1 · 1080×1080 · 24s @ 30fps (720 frames).
+ *
+ * v2 change vs. the 14s cut: keeps the "before you Google it" hook and the
+ * clean-card payoff, but adds the beats that actually explain the need —
+ * the trigger moment (a DM you're mid-reply to), the hidden cost of the
+ * Google detour (five tabs, four minutes, no answer for YOUR context), and
+ * the real benefit (you get back to the reply).
  * ══════════════════════════════════════════════════════════════════════════ */
 
-/* A fake "browser bar" element, minimal and clean. */
-const BrowserBar: React.FC<{ text: string; caretVisible: boolean }> = ({
+/* ────────────────────────────────────────────────────────────────────────────
+ * Building blocks
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** iMessage-style thread. Right = sent (caramel), left = received (cream). */
+const Bubble: React.FC<{
+  side: "left" | "right";
+  children: React.ReactNode;
+  faded?: boolean;
+}> = ({ side, children, faded }) => (
+  <div
+    style={{
+      alignSelf: side === "left" ? "flex-start" : "flex-end",
+      maxWidth: "78%",
+      padding: "12px 18px",
+      borderRadius: 22,
+      background: side === "right" ? CARAMEL : CARD,
+      color: side === "right" ? "#FFFCF3" : INK,
+      border: side === "left" ? `1px solid ${BORDER}` : "none",
+      fontSize: 22,
+      lineHeight: 1.35,
+      opacity: faded ? 0.55 : 1,
+      boxShadow:
+        side === "left" ? `0 2px 4px rgba(42,37,33,0.05)` : `0 6px 14px rgba(176,122,71,0.22)`,
+    }}
+  >
+    {children}
+  </div>
+);
+
+/** Fake browser omnibar — reused across the Google beats. */
+const BrowserBar: React.FC<{ text: string; caret?: boolean }> = ({
   text,
-  caretVisible,
+  caret = false,
 }) => (
   <div
     style={{
       background: CARD,
       border: `1px solid ${BORDER}`,
       borderRadius: 40,
-      padding: "18px 26px",
+      padding: "16px 24px",
       display: "flex",
       alignItems: "center",
       gap: 14,
-      width: 720,
-      maxWidth: "80%",
-      boxShadow: `0 24px 60px rgba(42,37,33,0.10)`,
+      width: "82%",
+      boxShadow: `0 20px 50px rgba(42,37,33,0.10)`,
     }}
   >
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -55,53 +87,148 @@ const BrowserBar: React.FC<{ text: string; caretVisible: boolean }> = ({
     </svg>
     <div style={{ fontSize: 22, color: INK, fontWeight: 500 }}>
       {text}
-      {caretVisible && (
-        <span style={{ color: CARAMEL, fontWeight: 400 }}>|</span>
-      )}
+      {caret && <span style={{ color: CARAMEL, fontWeight: 400 }}>|</span>}
     </div>
   </div>
 );
 
-/* Fake messy search results — grey blocks that read as noise, not signal. */
-const FakeResults: React.FC<{ progress: number }> = ({ progress }) => (
-  <div
-    style={{
-      width: 720,
-      maxWidth: "80%",
-      opacity: progress,
-      display: "flex",
-      flexDirection: "column",
-      gap: 22,
-    }}
-  >
-    {[0, 1, 2, 3].map((i) => (
-      <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div
-          style={{
-            height: 12,
-            width: `${60 + i * 6}%`,
-            background: CARAMEL,
-            opacity: 0.55 - i * 0.08,
-            borderRadius: 4,
-          }}
-        />
-        <div style={{ height: 6, width: `${88 - i * 4}%`, background: INK_SOFT, opacity: 0.35, borderRadius: 3 }} />
-        <div style={{ height: 6, width: `${72 - i * 4}%`, background: INK_SOFT, opacity: 0.35, borderRadius: 3 }} />
-      </div>
-    ))}
-  </div>
-);
+/** Fake browser tab-strip that grows to communicate "you fell down a rabbit hole". */
+const TabStrip: React.FC<{ count: number }> = ({ count }) => {
+  const titles = [
+    "what does mid mean",
+    "mid — Urban Dictionary",
+    "mid slang meaning",
+    "10 slang words parents…",
+    "mid vs mediocre - reddit",
+  ];
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 4,
+        width: "100%",
+        maxWidth: 760,
+      }}
+    >
+      {Array.from({ length: 5 }).map((_, i) => {
+        const on = i < count;
+        return (
+          <div
+            key={i}
+            style={{
+              flex: 1,
+              padding: "10px 14px 10px 14px",
+              background: on ? CARD : "transparent",
+              border: `1px solid ${on ? BORDER : "transparent"}`,
+              borderBottom: on ? `1px solid ${CARD}` : `1px solid ${BORDER}`,
+              borderRadius: "10px 10px 0 0",
+              fontSize: 12,
+              color: on ? INK : "transparent",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              opacity: on ? 1 : 0,
+              transform: on ? "translateY(0)" : "translateY(-6px)",
+              transition: "opacity 0.3s, transform 0.3s",
+            }}
+          >
+            {titles[i]}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
-/* S1 — the Google search bar with a word being typed. */
+/* ══════════════════════════════════════════════════════════════════════════
+ * SCENES
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/* S1 — The moment. You're in a chat, they used a word. */
 const S1: React.FC = () => {
   const frame = useCurrentFrame();
-  // Character-by-character typing of the word.
+  return (
+    <Paper>
+      <AbsoluteFill
+        style={{
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "0 70px",
+          gap: 24,
+        }}
+      >
+        <div style={{ ...driftUp(frame, 4, 18) }}>
+          <Kicker size={13}>IN YOUR DMS, RIGHT NOW</Kicker>
+        </div>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            marginTop: 12,
+          }}
+        >
+          <div style={{ ...driftUp(frame, 12, 18) }}>
+            <Bubble side="right" faded>
+              did you see her new video
+            </Bubble>
+          </div>
+          <div style={{ ...driftUp(frame, 22, 18) }}>
+            <Bubble side="left" faded>
+              yeah
+            </Bubble>
+          </div>
+          <div style={{ ...driftUp(frame, 32, 22, 26) }}>
+            <Bubble side="left">
+              she's giving{" "}
+              <span
+                style={{
+                  background: "rgba(255,252,243,0.55)",
+                  padding: "1px 6px",
+                  borderRadius: 4,
+                  fontWeight: 700,
+                }}
+              >
+                mid
+              </span>{" "}
+              ngl 💀
+            </Bubble>
+          </div>
+        </div>
+        <div
+          style={{
+            fontSize: 26,
+            color: INK,
+            fontStyle: "italic",
+            marginTop: 22,
+            textAlign: "center",
+            lineHeight: 1.4,
+            ...driftUp(frame, 54, 20),
+          }}
+        >
+          A word you don't quite know.
+        </div>
+      </AbsoluteFill>
+    </Paper>
+  );
+};
+
+/* S2 — The Google reflex. Cursor types in the omnibar. */
+const S2: React.FC = () => {
+  const frame = useCurrentFrame();
   const query = "what does mid mean";
-  const typed = Math.min(query.length, Math.floor(interpolate(frame, [6, 46], [0, query.length], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  })));
-  const shownText = query.slice(0, typed);
+  const typed = Math.min(
+    query.length,
+    Math.floor(
+      interpolate(frame, [10, 60], [0, query.length], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
+    )
+  );
+  const shown = query.slice(0, typed);
   const caret = frame % 20 < 10;
   return (
     <Paper>
@@ -114,20 +241,20 @@ const S1: React.FC = () => {
         }}
       >
         <div style={{ ...driftUp(frame, 2, 18) }}>
-          <Kicker size={12}>BEFORE YOU GOOGLE IT</Kicker>
+          <Kicker size={13}>BEFORE YOU GOOGLE IT…</Kicker>
         </div>
-        <div style={{ ...driftUp(frame, 8, 20, 20) }}>
-          <BrowserBar text={shownText} caretVisible={caret && typed === query.length} />
+        <div style={{ ...driftUp(frame, 8, 20, 18), width: "100%", display: "flex", justifyContent: "center" }}>
+          <BrowserBar text={shown} caret={caret && typed === query.length} />
         </div>
       </AbsoluteFill>
     </Paper>
   );
 };
 
-/* S2 — the messy Google response. */
-const S2: React.FC = () => {
+/* S3 — What Google gives you: 47M results, none for your DM. */
+const S3: React.FC = () => {
   const frame = useCurrentFrame();
-  const results = interpolate(frame, [4, 22], [0, 1], {
+  const listIn = interpolate(frame, [4, 22], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: EASE,
@@ -139,34 +266,167 @@ const S2: React.FC = () => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          gap: 34,
+          padding: "0 60px",
+          gap: 22,
         }}
       >
         <div style={{ ...driftUp(frame, 2, 16) }}>
           <Kicker size={12}>ABOUT 47,300,000 RESULTS</Kicker>
         </div>
-        <FakeResults progress={results} />
+        <div
+          style={{
+            width: "84%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
+            opacity: listIn,
+          }}
+        >
+          {[
+            "12 definitions of mid, explained",
+            "The Complete History of the Word 'Mid'",
+            "mid - Wiktionary",
+            "Why Everyone Started Saying Mid in 2021",
+          ].map((title, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div
+                style={{
+                  fontSize: 20,
+                  color: CARAMEL,
+                  fontWeight: 500,
+                  textDecoration: "underline",
+                  opacity: 0.85 - i * 0.08,
+                }}
+              >
+                {title}
+              </div>
+              <div
+                style={{
+                  height: 6,
+                  width: `${88 - i * 4}%`,
+                  background: INK_SOFT,
+                  opacity: 0.35,
+                  borderRadius: 3,
+                }}
+              />
+              <div
+                style={{
+                  height: 6,
+                  width: `${68 - i * 4}%`,
+                  background: INK_SOFT,
+                  opacity: 0.35,
+                  borderRadius: 3,
+                }}
+              />
+            </div>
+          ))}
+        </div>
         <div
           style={{
             fontSize: 26,
-            color: INK_SOFT,
-            fontWeight: 300,
+            color: INK,
             fontStyle: "italic",
-            marginTop: 8,
-            ...driftUp(frame, 30, 18),
+            marginTop: 12,
+            textAlign: "center",
+            lineHeight: 1.4,
+            ...driftUp(frame, 60, 20),
           }}
         >
-          which one applies to your DMs, though?
+          Twelve definitions. None for your DM.
         </div>
       </AbsoluteFill>
     </Paper>
   );
 };
 
-/* S3 — the sharp cut to Context: one clean card. */
-const S3: React.FC = () => {
+/* S4 — The hidden cost. Tabs multiply, clock ticks. */
+const S4: React.FC = () => {
   const frame = useCurrentFrame();
-  const cardIn = interpolate(frame, [4, 22], [0, 1], {
+  // Tabs open every ~20 frames.
+  const tabs = Math.min(5, Math.floor(interpolate(frame, [10, 90], [0, 5], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  })));
+  // Clock ticks up from 00:47 to 04:32 across the scene.
+  const clockT = interpolate(frame, [10, 100], [47, 272], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const mm = Math.floor(clockT / 60).toString().padStart(2, "0");
+  const ss = Math.floor(clockT % 60).toString().padStart(2, "0");
+  return (
+    <Paper>
+      <AbsoluteFill
+        style={{
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "0 60px",
+          gap: 30,
+        }}
+      >
+        <div style={{ ...driftUp(frame, 2, 16) }}>
+          <Kicker size={12}>AND NOW…</Kicker>
+        </div>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+          <TabStrip count={tabs} />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 16,
+            fontFamily: "'Courier New', monospace",
+            fontVariantNumeric: "tabular-nums",
+            marginTop: 6,
+          }}
+        >
+          <span style={{ fontSize: 14, color: INK_SOFT, letterSpacing: 2 }}>
+            TIME SPENT
+          </span>
+          <span
+            style={{
+              fontSize: 68,
+              fontWeight: 700,
+              color: INK,
+              letterSpacing: -2,
+            }}
+          >
+            {mm}:{ss}
+          </span>
+        </div>
+        <div
+          style={{
+            fontSize: 30,
+            color: INK,
+            fontWeight: 700,
+            marginTop: 6,
+            textAlign: "center",
+            lineHeight: 1.3,
+            ...driftUp(frame, 50, 22),
+          }}
+        >
+          You wanted to reply.<br />
+          <span style={{ color: INK_SOFT, fontWeight: 300 }}>
+            Not write a dissertation.
+          </span>
+        </div>
+      </AbsoluteFill>
+    </Paper>
+  );
+};
+
+/* S5 — the Context way. Back to the same DM. Long-press → Define → card. */
+const S5: React.FC = () => {
+  const frame = useCurrentFrame();
+  // Card appears late in the scene.
+  const cardIn = interpolate(frame, [40, 62], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: EASE,
+  });
+  // Selection highlight on "mid" fades in early.
+  const sel = interpolate(frame, [12, 28], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: EASE,
@@ -178,100 +438,197 @@ const S3: React.FC = () => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          gap: 26,
-          padding: "0 60px",
+          padding: "0 70px",
+          gap: 22,
         }}
       >
         <div style={{ ...driftUp(frame, 2, 16) }}>
-          <Kicker size={12}>OR — ONE TAP, THE RIGHT ANSWER</Kicker>
+          <Kicker size={13} color={CARAMEL}>OR — ONE TAP, RIGHT HERE</Kicker>
         </div>
         <div
           style={{
-            width: 720,
-            maxWidth: "80%",
-            opacity: cardIn,
-            transform: `translateY(${(1 - cardIn) * 26}px)`,
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            position: "relative",
           }}
         >
-          <CreamCard style={{ padding: 30 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 8, height: 8, borderRadius: 4, background: CARAMEL }} />
-              <div style={{ fontSize: 30, fontWeight: 700, color: INK }}>mid</div>
-              <div
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 11,
-                  color: CARAMEL,
-                  letterSpacing: 2,
-                  border: `1px solid ${CARAMEL}55`,
-                  borderRadius: 6,
-                  padding: "3px 10px",
-                  fontWeight: 600,
-                }}
-              >
-                GEN Z · SLANG
-              </div>
-            </div>
-            <div style={{ fontSize: 20, color: INK, lineHeight: 1.5 }}>
-              Mediocre. Not bad enough to hate, not good enough to remember —
-              a dismissal wearing a shrug.
-            </div>
-            <div
+          <Bubble side="right" faded>did you see her new video</Bubble>
+          <Bubble side="left" faded>yeah</Bubble>
+          <Bubble side="left">
+            she's giving{" "}
+            <span
               style={{
-                marginTop: 16,
-                height: 1,
-                background: BORDER,
-              }}
-            />
-            <div
-              style={{
-                marginTop: 12,
-                fontSize: 11,
-                color: INK_SOFT,
-                letterSpacing: 1.6,
-                textTransform: "uppercase",
+                background: `rgba(176,122,71,${0.35 * sel})`,
+                padding: sel > 0 ? "1px 6px" : "0",
+                borderRadius: 4,
+                fontWeight: 700,
               }}
             >
-              via Context Dictionary
-            </div>
-          </CreamCard>
+              mid
+            </span>{" "}
+            ngl 💀
+          </Bubble>
+          {/* Floating Define card slides up over the thread. */}
+          <div
+            style={{
+              position: "absolute",
+              top: 130,
+              left: 0,
+              right: 0,
+              opacity: cardIn,
+              transform: `translateY(${(1 - cardIn) * 26}px)`,
+              zIndex: 5,
+            }}
+          >
+            <CreamCard style={{ padding: 22 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <div style={{ width: 7, height: 7, borderRadius: 4, background: CARAMEL }} />
+                <span style={{ fontSize: 24, fontWeight: 700, color: INK }}>mid</span>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 10,
+                    letterSpacing: 1.4,
+                    color: CARAMEL,
+                    border: `1px solid ${CARAMEL}55`,
+                    padding: "3px 8px",
+                    borderRadius: 5,
+                    fontWeight: 600,
+                  }}
+                >
+                  GEN Z · SLANG
+                </span>
+              </div>
+              <div style={{ fontSize: 16, color: INK, lineHeight: 1.5 }}>
+                Mediocre. Not bad enough to hate, not good enough to remember —
+                a dismissal wearing a shrug.
+              </div>
+              <div style={{ marginTop: 12, height: 1, background: BORDER, opacity: 0.7 }} />
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 10,
+                  color: INK_SOFT,
+                  letterSpacing: 1.4,
+                  textTransform: "uppercase",
+                }}
+              >
+                via Context Dictionary
+              </div>
+            </CreamCard>
+          </div>
         </div>
       </AbsoluteFill>
     </Paper>
   );
 };
 
-/* S4 — the claim + brand close. */
-const S4: React.FC = () => {
+/* S6 — Payoff. You get the reply out and get on with your day. */
+const S6: React.FC = () => {
+  const frame = useCurrentFrame();
+  // The reply bubble types itself in.
+  const reply = "lol you're so right, super mid 😭";
+  const typed = Math.min(
+    reply.length,
+    Math.floor(
+      interpolate(frame, [10, 46], [0, reply.length], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
+    )
+  );
+  const shown = reply.slice(0, typed);
+  return (
+    <Paper>
+      <AbsoluteFill
+        style={{
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "0 70px",
+          gap: 22,
+        }}
+      >
+        <div style={{ ...driftUp(frame, 2, 16) }}>
+          <Kicker size={13}>BACK TO THE REPLY</Kicker>
+        </div>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          <Bubble side="left" faded>she's giving mid ngl 💀</Bubble>
+          <Bubble side="right">{shown || " "}</Bubble>
+        </div>
+        <div
+          style={{
+            fontSize: 48,
+            fontWeight: 700,
+            color: INK,
+            letterSpacing: -1.5,
+            textAlign: "center",
+            marginTop: 20,
+            lineHeight: 1.1,
+            ...driftUp(frame, 54, 24, 28),
+          }}
+        >
+          You didn't need vocabulary.<br />
+          <span style={{ color: CARAMEL }}>You needed to reply.</span>
+        </div>
+      </AbsoluteFill>
+    </Paper>
+  );
+};
+
+/* S7 — brand close. */
+const S7: React.FC = () => {
   const frame = useCurrentFrame();
   return (
     <Paper>
       <AbsoluteFill
-        style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 20 }}
+        style={{
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 20,
+          padding: "0 60px",
+        }}
       >
         <div style={{ ...driftUp(frame, 2, 20) }}>
-          <AppIcon size={120} />
+          <AppIcon size={130} />
         </div>
         <div
           style={{
-            fontSize: 66,
+            fontSize: 56,
             fontWeight: 700,
             color: INK,
-            letterSpacing: -2,
+            letterSpacing: -1.8,
             textAlign: "center",
             lineHeight: 1.05,
-            ...driftUp(frame, 12, 22, 28),
+            ...driftUp(frame, 12, 22),
           }}
         >
-          One tap.<br />
-          <span style={{ color: CARAMEL }}>Real context.</span>
+          Context Dictionary
         </div>
         <div
           style={{
             fontSize: 20,
             color: INK_SOFT,
-            marginTop: 6,
-            ...driftUp(frame, 24, 20),
+            marginTop: 4,
+            textAlign: "center",
+            ...driftUp(frame, 22, 20),
           }}
         >
           33 rooms · 25 voices · no accounts
@@ -281,8 +638,8 @@ const S4: React.FC = () => {
             display: "flex",
             gap: 22,
             alignItems: "center",
-            marginTop: 22,
-            ...driftUp(frame, 36, 20),
+            marginTop: 20,
+            ...driftUp(frame, 32, 20),
           }}
         >
           <PlayBadge />
@@ -303,22 +660,40 @@ const S4: React.FC = () => {
   );
 };
 
-/* ══════════════ TIMELINE (1:1, 420 frames = 14s @ 30fps) ══════════════ */
+/* ══════════════ TIMELINE (1:1 · 720 frames = 24s @ 30fps) ══════════════
+ *
+ *  0–100   S1  the moment (in your DMs)      (3.3s)
+ *  100–200 S2  the Google reflex             (3.3s)
+ *  200–320 S3  47M results, none yours       (4.0s)
+ *  320–440 S4  hidden cost — tabs + clock    (4.0s)
+ *  440–580 S5  Or… Context Define card       (4.6s)
+ *  580–670 S6  reply typed out + payoff line (3.0s)
+ *  670–720 S7  brand close                    (1.7s)
+ * ═══════════════════════════════════════════════════════════════════════ */
 export const ContextAd7: React.FC = () => {
   useBricolage();
   return (
     <AbsoluteFill>
-      <Sequence from={0} durationInFrames={90}>
-        <SceneFade life={90}><S1 /></SceneFade>
+      <Sequence from={0} durationInFrames={100}>
+        <SceneFade life={100}><S1 /></SceneFade>
       </Sequence>
-      <Sequence from={90} durationInFrames={110}>
-        <SceneFade life={110}><S2 /></SceneFade>
+      <Sequence from={100} durationInFrames={100}>
+        <SceneFade life={100}><S2 /></SceneFade>
       </Sequence>
-      <Sequence from={200} durationInFrames={110}>
-        <SceneFade life={110}><S3 /></SceneFade>
+      <Sequence from={200} durationInFrames={120}>
+        <SceneFade life={120}><S3 /></SceneFade>
       </Sequence>
-      <Sequence from={310} durationInFrames={110}>
-        <SceneFade life={110}><S4 /></SceneFade>
+      <Sequence from={320} durationInFrames={120}>
+        <SceneFade life={120}><S4 /></SceneFade>
+      </Sequence>
+      <Sequence from={440} durationInFrames={140}>
+        <SceneFade life={140}><S5 /></SceneFade>
+      </Sequence>
+      <Sequence from={580} durationInFrames={90}>
+        <SceneFade life={90}><S6 /></SceneFade>
+      </Sequence>
+      <Sequence from={670} durationInFrames={50}>
+        <SceneFade life={50}><S7 /></SceneFade>
       </Sequence>
     </AbsoluteFill>
   );
