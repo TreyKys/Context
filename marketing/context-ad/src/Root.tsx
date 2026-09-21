@@ -38,15 +38,18 @@ export const RemotionRoot: React.FC = () => {
 
       {/* ── Cream cut (v2 identity, matches app + Play listing). ── */}
 
-      {/* Ad #4 — "The Room You're Locked Out Of" (v2, 32s): cinematic FOMO
-          plus an explicit three-step walkthrough of the Define feature. */}
+      {/* Ad #4 — "The Room You're Locked Out Of" (portrait, 32s):
+          cinematic FOMO + a three-step Define walkthrough. Vertical so
+          the phone-in-phone becomes the visual centrepiece instead of
+          a side panel, and so it plays without letterboxing on Reels,
+          TikTok, IG Stories, and X mobile. */}
       <Composition
         id="ContextAd4"
         component={ContextAd4}
         durationInFrames={960}
         fps={30}
-        width={1920}
-        height={1080}
+        width={1080}
+        height={1920}
       />
       {/* Ad #5 — "The Meeting Nod": corporate-jargon FOMO, 16:9. */}
       <Composition

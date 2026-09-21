@@ -5,7 +5,7 @@
   "scripts": {
     "start": "remotion studio",
     "render": "remotion render ContextAd out/context-ad.mp4",
-    "render:4": "remotion render ContextAd4 out/context-ad-4-room-16x9.mp4",
+    "render:4": "remotion render ContextAd4 out/context-ad-4-room-9x16.mp4",
     "render:5": "remotion render ContextAd5 out/context-ad-5-meeting-16x9.mp4",
     "render:6": "remotion render ContextAd6 out/context-ad-6-rooms-9x16.mp4",
     "render:7": "remotion render ContextAd7 out/context-ad-7-vsgoogle-1x1.mp4",
