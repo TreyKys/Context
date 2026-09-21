@@ -69,17 +69,17 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
-      {/* Ad #7 — "Before You Google It" (v2, 24s): the trigger DM, the
-          Google detour (47M results + growing tabs + ticking clock), and
-          the Context alternative that lets you finish the reply you were
-          in. 1:1 for IG feed / X. */}
+      {/* Ad #7 — "Before You Google It" (v3, 30s, portrait): the trigger
+          DM, the Google detour (47M results + growing tabs + ticking
+          clock), and the Context alternative that lets you finish the
+          reply you were in. 9:16 for Reels / TikTok / Stories / X mobile. */}
       <Composition
         id="ContextAd7"
         component={ContextAd7}
-        durationInFrames={720}
+        durationInFrames={900}
         fps={30}
         width={1080}
-        height={1080}
+        height={1920}
       />
     </>
   );

@@ -23,14 +23,13 @@ import {
 } from "./shared";
 
 /* ══════════════════════════════════════════════════════════════════════════
- * Ad #7 — "Before You Google It" (v2)
- * 1:1 · 1080×1080 · 24s @ 30fps (720 frames).
+ * Ad #7 — "Before You Google It" (v3, portrait)
+ * 9:16 · 1080×1920 · 30s @ 30fps (900 frames).
  *
- * v2 change vs. the 14s cut: keeps the "before you Google it" hook and the
- * clean-card payoff, but adds the beats that actually explain the need —
- * the trigger moment (a DM you're mid-reply to), the hidden cost of the
- * Google detour (five tabs, four minutes, no answer for YOUR context), and
- * the real benefit (you get back to the reply).
+ * Same 7-beat arc as v2 (1:1, 24s) but taller canvas and slower pace, so
+ * each beat gets room to land — especially S4 (tab-multiplying + ticking
+ * clock), which is the beat that actually proves the cost of the current
+ * alternative. Plays natively on Reels / TikTok / IG Stories / X mobile.
  * ══════════════════════════════════════════════════════════════════════════ */
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -107,7 +106,7 @@ const TabStrip: React.FC<{ count: number }> = ({ count }) => {
         display: "flex",
         gap: 4,
         width: "100%",
-        maxWidth: 760,
+        maxWidth: 940,
       }}
     >
       {Array.from({ length: 5 }).map((_, i) => {
@@ -199,13 +198,13 @@ const S1: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 26,
+            fontSize: 34,
             color: INK,
             fontStyle: "italic",
-            marginTop: 22,
+            marginTop: 30,
             textAlign: "center",
             lineHeight: 1.4,
-            ...driftUp(frame, 54, 20),
+            ...driftUp(frame, 70, 22),
           }}
         >
           A word you don't quite know.
@@ -323,16 +322,16 @@ const S3: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 26,
+            fontSize: 32,
             color: INK,
             fontStyle: "italic",
-            marginTop: 12,
+            marginTop: 18,
             textAlign: "center",
             lineHeight: 1.4,
-            ...driftUp(frame, 60, 20),
+            ...driftUp(frame, 90, 22),
           }}
         >
-          Twelve definitions. None for your DM.
+          Twelve definitions.<br />None for your DM.
         </div>
       </AbsoluteFill>
     </Paper>
@@ -342,13 +341,14 @@ const S3: React.FC = () => {
 /* S4 — The hidden cost. Tabs multiply, clock ticks. */
 const S4: React.FC = () => {
   const frame = useCurrentFrame();
-  // Tabs open every ~20 frames.
-  const tabs = Math.min(5, Math.floor(interpolate(frame, [10, 90], [0, 5], {
+  // Tabs open across the first third; each one lands with a ~25-frame beat.
+  const tabs = Math.min(5, Math.floor(interpolate(frame, [10, 120], [0, 5], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   })));
-  // Clock ticks up from 00:47 to 04:32 across the scene.
-  const clockT = interpolate(frame, [10, 100], [47, 272], {
+  // Clock ticks up 00:47 → 05:34 across almost the whole scene, so the
+  // number is still visibly climbing when the payoff line lands.
+  const clockT = interpolate(frame, [10, 155], [47, 334], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -397,13 +397,13 @@ const S4: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 30,
+            fontSize: 40,
             color: INK,
             fontWeight: 700,
-            marginTop: 6,
+            marginTop: 10,
             textAlign: "center",
-            lineHeight: 1.3,
-            ...driftUp(frame, 50, 22),
+            lineHeight: 1.25,
+            ...driftUp(frame, 80, 22),
           }}
         >
           You wanted to reply.<br />
@@ -474,11 +474,11 @@ const S5: React.FC = () => {
           <div
             style={{
               position: "absolute",
-              top: 130,
+              top: 160,
               left: 0,
               right: 0,
               opacity: cardIn,
-              transform: `translateY(${(1 - cardIn) * 26}px)`,
+              transform: `translateY(${(1 - cardIn) * 30}px)`,
               zIndex: 5,
             }}
           >
@@ -574,14 +574,14 @@ const S6: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 48,
+            fontSize: 62,
             fontWeight: 700,
             color: INK,
-            letterSpacing: -1.5,
+            letterSpacing: -2,
             textAlign: "center",
-            marginTop: 20,
-            lineHeight: 1.1,
-            ...driftUp(frame, 54, 24, 28),
+            marginTop: 34,
+            lineHeight: 1.06,
+            ...driftUp(frame, 60, 24, 30),
           }}
         >
           You didn't need vocabulary.<br />
@@ -660,40 +660,40 @@ const S7: React.FC = () => {
   );
 };
 
-/* ══════════════ TIMELINE (1:1 · 720 frames = 24s @ 30fps) ══════════════
+/* ══════════════ TIMELINE (9:16 · 900 frames = 30s @ 30fps) ══════════════
  *
- *  0–100   S1  the moment (in your DMs)      (3.3s)
- *  100–200 S2  the Google reflex             (3.3s)
- *  200–320 S3  47M results, none yours       (4.0s)
- *  320–440 S4  hidden cost — tabs + clock    (4.0s)
- *  440–580 S5  Or… Context Define card       (4.6s)
- *  580–670 S6  reply typed out + payoff line (3.0s)
- *  670–720 S7  brand close                    (1.7s)
+ *  0–130   S1  the moment (in your DMs)      (4.3s)
+ *  130–230 S2  the Google reflex             (3.3s)
+ *  230–390 S3  47M results, none yours       (5.3s)
+ *  390–560 S4  hidden cost — tabs + clock    (5.7s)  ← the money beat
+ *  560–730 S5  Or… Context Define card       (5.7s)
+ *  730–840 S6  reply typed out + payoff      (3.7s)
+ *  840–900 S7  brand close                   (2.0s)
  * ═══════════════════════════════════════════════════════════════════════ */
 export const ContextAd7: React.FC = () => {
   useBricolage();
   return (
     <AbsoluteFill>
-      <Sequence from={0} durationInFrames={100}>
-        <SceneFade life={100}><S1 /></SceneFade>
+      <Sequence from={0} durationInFrames={130}>
+        <SceneFade life={130}><S1 /></SceneFade>
       </Sequence>
-      <Sequence from={100} durationInFrames={100}>
+      <Sequence from={130} durationInFrames={100}>
         <SceneFade life={100}><S2 /></SceneFade>
       </Sequence>
-      <Sequence from={200} durationInFrames={120}>
-        <SceneFade life={120}><S3 /></SceneFade>
+      <Sequence from={230} durationInFrames={160}>
+        <SceneFade life={160}><S3 /></SceneFade>
       </Sequence>
-      <Sequence from={320} durationInFrames={120}>
-        <SceneFade life={120}><S4 /></SceneFade>
+      <Sequence from={390} durationInFrames={170}>
+        <SceneFade life={170}><S4 /></SceneFade>
       </Sequence>
-      <Sequence from={440} durationInFrames={140}>
-        <SceneFade life={140}><S5 /></SceneFade>
+      <Sequence from={560} durationInFrames={170}>
+        <SceneFade life={170}><S5 /></SceneFade>
       </Sequence>
-      <Sequence from={580} durationInFrames={90}>
-        <SceneFade life={90}><S6 /></SceneFade>
+      <Sequence from={730} durationInFrames={110}>
+        <SceneFade life={110}><S6 /></SceneFade>
       </Sequence>
-      <Sequence from={670} durationInFrames={50}>
-        <SceneFade life={50}><S7 /></SceneFade>
+      <Sequence from={840} durationInFrames={60}>
+        <SceneFade life={60}><S7 /></SceneFade>
       </Sequence>
     </AbsoluteFill>
   );
