@@ -38,11 +38,12 @@ export const RemotionRoot: React.FC = () => {
 
       {/* ── Cream cut (v2 identity, matches app + Play listing). ── */}
 
-      {/* Ad #4 — "The Room You're Locked Out Of": cinematic FOMO, 16:9. */}
+      {/* Ad #4 — "The Room You're Locked Out Of" (v2, 32s): cinematic FOMO
+          plus an explicit three-step walkthrough of the Define feature. */}
       <Composition
         id="ContextAd4"
         component={ContextAd4}
-        durationInFrames={540}
+        durationInFrames={960}
         fps={30}
         width={1920}
         height={1080}
