@@ -9,7 +9,10 @@
     "render:5": "remotion render ContextAd5 out/context-ad-5-meeting-16x9.mp4",
     "render:6": "remotion render ContextAd6 out/context-ad-6-rooms-9x16.mp4",
     "render:7": "remotion render ContextAd7 out/context-ad-7-vsgoogle-9x16.mp4",
-    "render:cream": "npm run render:4 && npm run render:5 && npm run render:6 && npm run render:7",
+    "render:8": "remotion render ContextAd8 out/context-ad-8-translation-9x16.mp4",
+    "render:9": "remotion render ContextAd9 out/context-ad-9-conversation-9x16.mp4",
+    "render:10": "remotion render ContextAd10 out/context-ad-10-numbers-16x9.mp4",
+    "render:cream": "npm run render:4 && npm run render:5 && npm run render:6 && npm run render:7 && npm run render:8 && npm run render:9 && npm run render:10",
     "upgrade": "remotion upgrade"
   },
   "dependencies": {

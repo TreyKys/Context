@@ -6,6 +6,9 @@ import { ContextAd4 } from "./ContextAd4";
 import { ContextAd5 } from "./ContextAd5";
 import { ContextAd6 } from "./ContextAd6";
 import { ContextAd7 } from "./ContextAd7";
+import { ContextAd8 } from "./ContextAd8";
+import { ContextAd9 } from "./ContextAd9";
+import { ContextAd10 } from "./ContextAd10";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -80,6 +83,37 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1920}
+      />
+
+      {/* Ad #8 — "The Translation" (15s, portrait): kinetic typography,
+          hard-cuts between slang/plain-English word pairs. Hook ad. */}
+      <Composition
+        id="ContextAd8"
+        component={ContextAd8}
+        durationInFrames={450}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Ad #9 — "The Conversation" (25s, portrait): pure full-screen
+          chat sim, zero narration, zero labels. Native FYP feel. */}
+      <Composition
+        id="ContextAd9"
+        component={ContextAd9}
+        durationInFrames={750}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Ad #10 — "By the Numbers" (15s, landscape): minimalist count-up
+          infographic. The brand-forward LinkedIn cut. */}
+      <Composition
+        id="ContextAd10"
+        component={ContextAd10}
+        durationInFrames={450}
+        fps={30}
+        width={1920}
+        height={1080}
       />
     </>
   );
