@@ -48,56 +48,23 @@ flutter pub get
    `FirebaseAI.googleAI()`). The free tier has rate limits; to raise them later, switch to Vertex AI
    (Blaze) and change `.googleAI()` → `.vertexAI()` in `lib/services/llm_service.dart` and
    `lib/overlay/overlay_main.dart` — no other code changes.
-2. **App Check — currently DISABLED in the client (`kAppCheckEnabled` defaults to false).**
+2. **App Check — ENABLED by default with resilient token handling (`kAppCheckEnabled` defaults to `true`).**
 
-   > **Why:** activating App Check makes the AI call throw *client side* during token fetch whenever
-   > attestation fails. Setting the API to **Unenforced** does **not** prevent this — "unenforced"
-   > governs how the server treats an unverified request, not whether the client SDK throws. While the
-   > API is unenforced, App Check therefore buys **no protection at all** (every request is accepted
-   > either way) while being a hard dependency that breaks search for **every** user. Symptom seen in
-   > testing: `[firebase_app_check/unknown] … 403 App attestation failed`, and **zero** requests
-   > reaching the API in App Check metrics — the call dies before it leaves the device.
+   > **How it works:** `AppCheckService.activate()` wraps `FirebaseAppCheck` in `ResilientFirebaseAppCheck`.
+   > - When attestation succeeds, the valid `X-Firebase-AppCheck` token is sent so requests pass **`Basic - Enforced`** as **Verified requests**.
+   > - If client-side token fetch fails (e.g., while testing with the API set to **Unenforced** before Play Integrity or a debug token is registered), `ResilientFirebaseAppCheck` catches the exception and allows the request to proceed instead of crashing on the device.
 
-   **To turn it back on — in this order, verifying each step:**
-   1. **App Check → Apps →** register **`com.context.dictv1`** for **Play Integrity**.
+   **Checklist for production (Google Play) builds:**
+   1. **App Check → Apps →** register **`com.context.dictv1`** (`1:321903242851:android:a253dde2e488eca38b5256`) for **Play Integrity**.
       ⚠️ The older `com.context.dict.v1` entry is a *different app*; registering it does nothing here.
-   2. Add the **Play App Signing SHA-256** (Play Console → **Test and release → Setup → App signing**).
-      Play strips your upload signature and re-signs with its own key, so the upload key fingerprint
-      alone is **not** sufficient for anything installed from Play.
-   3. Google Cloud console → **APIs & Services → Library → Play Integrity API → Enable** on
-      `com-context-dict-v1`. (This is *not* the same as the "Play Integrity API" settings page in Play
-      Console — those 7 toggles are optional *verdict fields* that App Check does not use. Enabling
-      them does not help.)
-   4. Build with `--dart-define=ENABLE_APP_CHECK=true`, install **from Play** (a sideloaded build can
-      never pass Play Integrity), and confirm **App Check → APIs → Firebase AI Logic** shows
-      **verified** requests.
-   5. Only once verified: set the API to **Enforced** and flip the default in `lib/services/ai_config.dart`
-      back to `true`.
+   2. Add both your **upload key SHA-256** and the **Play App Signing SHA-256** (Play Console → **Test and release → Setup → App signing**).
+      Play strips your upload signature and re-signs with its own key, so the Play App Signing fingerprint is required for everything installed from Play.
+   3. Google Cloud console → **APIs & Services → Library → Play Integrity API → Enable** on `com-context-dict-v1`.
 
-   ### ⚠️ Enabling enforcement is a BREAKING change for installed users
-
-   Every build shipped with App Check off sends **no token**. The moment the API is set to Enforced,
-   the server starts rejecting those requests — search breaks instantly for everyone who hasn't
-   updated yet, and Play rollouts take days. Never flip enforcement as a single step.
-
-   **Safe rollout order:**
-
-   | # | Client | API | Effect |
-   | - | --- | --- | --- |
-   | 1 | App Check **off** | Unenforced | Works for everyone. Ship this first. |
-   | 2 | App Check **on** (`--dart-define=ENABLE_APP_CHECK=true`) | Unenforced | Tokens start flowing. **If attestation is still broken, nobody notices** — this is the free trial run. |
-   | 3 | — | Unenforced | Watch **App Check → APIs → Firebase AI Logic**. Wait for *verified* requests to dominate as users update. |
-   | 4 | App Check **on** | **Enforced** | Only now. Users still on step-1 builds will break, but by now they're a small tail. |
-
-   Step 2 is the one that's easy to skip and the one that makes this safe: it proves attestation works
-   against real users, on real devices, installed from Play, with zero blast radius if it doesn't.
-   - **Release:** register **Play Integrity** for the Android app and add your app’s **SHA-256**
-     fingerprints — both your upload key and the **Google Play App Signing** key (Play Console → Setup →
-     App signing). The app already uses Play Integrity in release builds.
-   - **Local testing:** the app already installs the App Check **debug provider** in debug builds. Run a
-     debug build, find `Enter this debug secret into the allow list … : <token>` in logcat, then add it
-     under **App Check → Apps → (your app) → ⋮ → Manage debug tokens.** Keep that token private — never
-     commit it.
+   **Checklist for sideloaded test APKs (GitHub Actions / local APK):**
+   - Sideloaded APKs are not installed by Google Play and cannot pass Play Integrity.
+   - Build sideloaded test APKs with `--dart-define=USE_APP_CHECK_DEBUG_PROVIDER=true` (enabled by default in `.github/workflows/build-test-apk.yml` and in `flutter run` debug builds).
+   - Open **Settings → Developer & Diagnostics → App Check Debug Token** (or tap **Copy App Check Debug Token** on the diagnostic error card) to copy the device's persistent UUID token—no `adb logcat` needed—and add it under **Firebase Console → App Check → Apps → `com.context.dictv1` → ⋮ → Manage debug tokens**.
 3. (Optional) Set a **budget alert** if you later move to the Vertex/Blaze backend.
 
 > Sanity check: a debug build on a registered device should return AI results. A failure is almost always

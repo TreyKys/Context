@@ -13,8 +13,9 @@ class ProcessTextService {
   ProcessTextService._();
   static final ProcessTextService instance = ProcessTextService._();
 
-  static const MethodChannel _channel =
-      MethodChannel('com.context.dictv1/process_text');
+  static const MethodChannel _channel = MethodChannel(
+    'com.context.dictv1/process_text',
+  );
 
   final StreamController<String> _controller =
       StreamController<String>.broadcast();

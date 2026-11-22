@@ -1,6 +1,5 @@
 import '../theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,12 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../models/vibe_result.dart';
 import '../providers/library_provider.dart';
+import '../screens/subscription_screen.dart';
+import '../services/ai_config.dart';
 import 'paywall_card.dart';
-
-/// Whether to render the raw exception text under the friendly error message.
-/// On in debug builds; opt-in for release via `--dart-define=SHOW_DEBUG_ERRORS=true`.
-const bool _showRawError =
-    kDebugMode || bool.fromEnvironment('SHOW_DEBUG_ERRORS');
 
 class ResultCard extends ConsumerWidget {
   final VibeResult? result;
@@ -37,45 +33,50 @@ class ResultCard extends ConsumerWidget {
 
     if (isLoading) {
       return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: context.colors.surface,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: context.colors.border, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: context.colors.ink.withValues(alpha: 0.06),
-              blurRadius: 18.0,
-              offset: const Offset(0, 8),
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: context.colors.surface,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: context.colors.border, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: context.colors.ink.withValues(alpha: 0.06),
+                  blurRadius: 18.0,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            CircularProgressIndicator(
-              color: context.colors.accent, // Electric Cyan
-              strokeWidth: 2,
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                CircularProgressIndicator(
+                  color: context.colors.accent,
+                  strokeWidth: 2,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Cross-referencing sources...',
+                  style: TextStyle(
+                    color: context.colors.inkSoft,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Cross-referencing sources...',
-              style: TextStyle(
-                color: context.colors.inkSoft,
-                fontSize: 12,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-       .shimmer(duration: 1500.ms, color: context.colors.accent.withValues(alpha: 0.1))
-       .fade(begin: 0.7, end: 1.0, duration: 800.ms);
+          )
+          .animate(onPlay: (controller) => controller.repeat(reverse: true))
+          .shimmer(
+            duration: 1500.ms,
+            color: context.colors.accent.withValues(alpha: 0.1),
+          )
+          .fade(begin: 0.7, end: 1.0, duration: 800.ms);
     }
 
     if (error != null) {
+      final debugToken = AppCheckService.debugToken;
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
@@ -89,7 +90,7 @@ class ResultCard extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            Icon(
+            const Icon(
               CupertinoIcons.exclamationmark_triangle_fill,
               color: Colors.redAccent,
               size: 40,
@@ -107,19 +108,16 @@ class ResultCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               'Check your connection and try again.',
-              style: TextStyle(
-                color: context.colors.inkSoft,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
               textAlign: TextAlign.center,
             ),
             // Raw error text is for diagnosis only — never shown to real users.
             // Debug builds always show it; a release build can opt in with
             //   --dart-define=SHOW_DEBUG_ERRORS=true
             // to read failures on-device without adb.
-            if (_showRawError && error!.isNotEmpty) ...[
+            if (kShowDebugErrors && error!.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text(
+              SelectableText(
                 error!,
                 style: TextStyle(
                   color: context.colors.inkSoft,
@@ -128,6 +126,55 @@ class ResultCard extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              if (debugToken != null) ...[
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: debugToken));
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'App Check debug token copied to clipboard',
+                        ),
+                        backgroundColor: context.colors.surfaceAlt,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.colors.accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: context.colors.accent.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          CupertinoIcons.doc_on_clipboard,
+                          size: 14,
+                          color: context.colors.accent,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Copy App Check Debug Token',
+                          style: TextStyle(
+                            color: context.colors.accent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ],
         ),
@@ -136,10 +183,10 @@ class ResultCard extends ConsumerWidget {
 
     if (result == null) return const SizedBox.shrink();
 
-    return _ResultContent(result: result!, searchWord: searchWord)
-        .animate()
-        .fadeIn(duration: 400.ms)
-        .slideY(begin: 0.05, end: 0);
+    return _ResultContent(
+      result: result!,
+      searchWord: searchWord,
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
   }
 }
 
@@ -156,8 +203,8 @@ class _ResultContent extends ConsumerWidget {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied to clipboard'),
-        duration: Duration(seconds: 2),
+        content: const Text('Copied to clipboard'),
+        duration: const Duration(seconds: 2),
         backgroundColor: context.colors.surfaceAlt,
       ),
     );
@@ -174,8 +221,8 @@ class _ResultContent extends ConsumerWidget {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied & ready to share!'),
-        duration: Duration(seconds: 2),
+        content: const Text('Copied & ready to share!'),
+        duration: const Duration(seconds: 2),
         backgroundColor: context.colors.surfaceAlt,
       ),
     );
@@ -281,8 +328,9 @@ class _ResultContent extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: context.colors.ink.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(20),
-                border:
-                    Border.all(color: context.colors.ink.withValues(alpha: 0.1)),
+                border: Border.all(
+                  color: context.colors.ink.withValues(alpha: 0.1),
+                ),
               ),
               child: AnimatedTextKit(
                 key: ValueKey('example_${result.exampleSentence}'),
@@ -356,7 +404,9 @@ class _ResultContent extends ConsumerWidget {
                     ? CupertinoIcons.bookmark_fill
                     : CupertinoIcons.bookmark,
                 label: isSaved ? 'Saved' : 'Save',
-                color: isSaved ? context.colors.accent2 : context.colors.inkSoft!,
+                color: isSaved
+                    ? context.colors.accent2
+                    : context.colors.inkSoft,
                 onTap: word.isEmpty
                     ? null
                     : () async {
@@ -378,13 +428,13 @@ class _ResultContent extends ConsumerWidget {
               _ActionButton(
                 icon: CupertinoIcons.doc_on_clipboard,
                 label: 'Copy',
-                color: context.colors.inkSoft!,
+                color: context.colors.inkSoft,
                 onTap: () => _copyToClipboard(context),
               ),
               _ActionButton(
                 icon: CupertinoIcons.share,
                 label: 'Share',
-                color: context.colors.inkSoft!,
+                color: context.colors.inkSoft,
                 onTap: () => _shareDefinition(context),
               ),
             ],
@@ -438,12 +488,18 @@ class _ResultContent extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Maybe Later', style: TextStyle(color: context.colors.inkSoft)),
+            child: Text(
+              'Maybe Later',
+              style: TextStyle(color: context.colors.inkSoft),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              // SubscriptionScreen push handled by caller if needed
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+              );
             },
             child: Text(
               'Go Premium',
@@ -479,10 +535,7 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(color: color, fontSize: 10),
-            ),
+            Text(label, style: TextStyle(color: color, fontSize: 10)),
           ],
         ),
       ),

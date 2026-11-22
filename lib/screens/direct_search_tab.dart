@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/vibe_provider.dart';
 import '../providers/process_text_provider.dart';
-import '../providers/quota_provider.dart';
 import '../services/history_service.dart';
 import '../services/quota_service.dart';
 import '../widgets/result_card.dart';
@@ -82,12 +82,15 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
     });
   }
 
-  void _consumePendingLookup(String? text) {
+  Future<void> _consumePendingLookup(String? text) async {
     if (text == null || text.trim().isEmpty || !mounted) return;
     // Clear it first so re-entering this tab doesn't re-run the same lookup.
     ref.read(pendingLookupProvider.notifier).clear();
+    // Sync quota in case QuickDefineSheet just ran in its own engine.
+    await ref.read(quotaServiceProvider).reload();
+    if (!mounted) return;
     _searchController.text = text;
-    _performSearch();
+    await _performSearch();
   }
 
   @override
@@ -124,23 +127,30 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
       _showHistory = false;
     });
 
-    await HistoryService().addEntry(HistoryEntry(
-      word: input,
-      mode: '',
-      persona: _selectedContext,
-      isDirectSearch: true,
-      timestamp: DateTime.now(),
-    ));
-
-    ref.read(directSearchProvider.notifier).directSearch(
-      input,
-      domain: _selectedContext,
+    await HistoryService().addEntry(
+      HistoryEntry(
+        word: input,
+        mode: '',
+        persona: _selectedContext,
+        isDirectSearch: true,
+        timestamp: DateTime.now(),
+      ),
     );
+
+    ref
+        .read(directSearchProvider.notifier)
+        .directSearch(input, domain: _selectedContext);
   }
 
   @override
   Widget build(BuildContext context) {
     final vibeState = ref.watch(directSearchProvider);
+    final isPremium =
+        ref.watch(isPremiumProvider).asData?.value ??
+        ref.read(quotaServiceProvider).isPremium;
+    final effectiveWord =
+        vibeState.searchWord ??
+        (_lastSearchedWord.isNotEmpty ? _lastSearchedWord : null);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
@@ -204,13 +214,14 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     ),
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) {
-                       _debounce?.cancel();
-                       _performSearch();
+                      _debounce?.cancel();
+                      _performSearch();
                     },
                     onChanged: (v) {
                       if (!mounted) return;
                       if (_debounce?.isActive ?? false) _debounce!.cancel();
                       _debounce = Timer(const Duration(milliseconds: 500), () {
+                        if (!mounted) return;
                         setState(() {
                           _showHistory = v.isEmpty && _history.isNotEmpty;
                         });
@@ -237,7 +248,10 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
               child: DropdownButton<String>(
                 value: _selectedContext,
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: context.colors.inkSoft),
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: context.colors.inkSoft,
+                ),
                 dropdownColor: context.colors.surface,
                 style: TextStyle(color: context.colors.ink, fontSize: 13),
                 onChanged: (val) {
@@ -250,7 +264,10 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                       children: [
                         ShaderMask(
                           shaderCallback: (b) => LinearGradient(
-                            colors: [context.colors.accent, context.colors.accent2],
+                            colors: [
+                              context.colors.accent,
+                              context.colors.accent2,
+                            ],
                           ).createShader(b),
                           child: Icon(
                             CupertinoIcons.tag_fill,
@@ -260,10 +277,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                         ),
                         const SizedBox(width: 8),
                         Flexible(
-                          child: Text(
-                            ctx,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          child: Text(ctx, overflow: TextOverflow.ellipsis),
                         ),
                       ],
                     ),
@@ -274,7 +288,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
           ),
 
           // Search counter — free tier only
-          SearchCounter(isPremium: ref.read(quotaServiceProvider).isPremium),
+          SearchCounter(isPremium: isPremium),
 
           // History chips
           if (_showHistory && _history.isNotEmpty) ...[
@@ -301,7 +315,9 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 7),
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: context.colors.surface,
                       borderRadius: BorderRadius.circular(100),
@@ -310,15 +326,20 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(CupertinoIcons.clock,
-                            size: 11, color: context.colors.inkSoft),
+                        Icon(
+                          CupertinoIcons.clock,
+                          size: 11,
+                          color: context.colors.inkSoft,
+                        ),
                         const SizedBox(width: 5),
                         Flexible(
                           child: Text(
                             entry.word,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: context.colors.inkSoft, fontSize: 12),
+                              color: context.colors.inkSoft,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -338,11 +359,18 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             Center(
               child: Column(
                 children: [
-                  Icon(CupertinoIcons.search, size: 32, color: context.colors.inkSoft),
+                  Icon(
+                    CupertinoIcons.search,
+                    size: 32,
+                    color: context.colors.inkSoft,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Try  "sonder",  "liminal",  or  "gaslighting"',
-                    style: TextStyle(color: context.colors.inkSoft, fontSize: 13),
+                    style: TextStyle(
+                      color: context.colors.inkSoft,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -357,7 +385,7 @@ class _DirectSearchTabState extends ConsumerState<DirectSearchTab> {
             result: vibeState.result,
             error: vibeState.error,
             isQuotaLocked: vibeState.isQuotaLocked,
-            searchWord: _lastSearchedWord.isNotEmpty ? _lastSearchedWord : null,
+            searchWord: effectiveWord,
           ),
 
           const SizedBox(height: 100),

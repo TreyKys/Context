@@ -66,8 +66,12 @@ class HistoryService {
     if (prefs == null) return;
 
     final existing = getHistory();
-    // Remove duplicate word
-    existing.removeWhere((e) => e.word.toLowerCase() == entry.word.toLowerCase());
+    // Remove duplicate word within the same search mode (Direct vs Vibe)
+    existing.removeWhere(
+      (e) =>
+          e.isDirectSearch == entry.isDirectSearch &&
+          e.word.toLowerCase() == entry.word.toLowerCase(),
+    );
     existing.insert(0, entry);
 
     // Keep only last N entries

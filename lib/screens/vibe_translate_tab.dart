@@ -4,9 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/vibe_provider.dart';
-import '../providers/quota_provider.dart';
 import '../services/history_service.dart';
+import '../services/notification_service.dart';
 import '../services/quota_service.dart';
 import '../widgets/result_card.dart';
 import '../widgets/search_counter.dart';
@@ -25,6 +26,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   Timer? _debounce;
+  StreamSubscription<String>? _notificationSub;
   String _lastSearchedWord = '';
   bool _showHistory = false;
   List<HistoryEntry> _history = [];
@@ -63,7 +65,13 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   void initState() {
     super.initState();
     _focusNode.addListener(() {
+      if (!mounted) return;
       if (_focusNode.hasFocus) _loadHistory();
+    });
+    _notificationSub = NotificationService().payloadStream.listen((payload) {
+      if (!mounted || payload.trim().isEmpty) return;
+      _controller.text = payload.trim();
+      _handleSearch();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkNotificationPayload();
@@ -73,6 +81,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _notificationSub?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -80,6 +89,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
 
   void _loadHistory() {
     final history = HistoryService().getHistory();
+    if (!mounted) return;
     setState(() {
       _history = history.where((e) => !e.isDirectSearch).take(8).toList();
       _showHistory = history.isNotEmpty && _controller.text.isEmpty;
@@ -87,7 +97,10 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   }
 
   void _checkNotificationPayload() {
-    final payload = ref.read(initialNotificationPayloadProvider);
+    final providerPayload = ref.read(initialNotificationPayloadProvider);
+    final payload = NotificationService().consumeInitialPayload(
+      providerPayload,
+    );
     if (payload != null && payload.isNotEmpty) {
       _controller.text = payload;
       _handleSearch();
@@ -118,13 +131,15 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
       _showHistory = false;
     });
 
-    await HistoryService().addEntry(HistoryEntry(
-      word: input,
-      mode: _selectedMode ?? 'Define',
-      persona: _selectedContext ?? '',
-      isDirectSearch: false,
-      timestamp: DateTime.now(),
-    ));
+    await HistoryService().addEntry(
+      HistoryEntry(
+        word: input,
+        mode: _selectedMode ?? 'Define',
+        persona: _selectedContext ?? '',
+        isDirectSearch: false,
+        timestamp: DateTime.now(),
+      ),
+    );
 
     ref
         .read(vibeProvider.notifier)
@@ -147,6 +162,12 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
   Widget build(BuildContext context) {
     final greeting = _getGreeting();
     final vibeState = ref.watch(vibeProvider);
+    final isPremium =
+        ref.watch(isPremiumProvider).asData?.value ??
+        ref.read(quotaServiceProvider).isPremium;
+    final effectiveWord =
+        vibeState.searchWord ??
+        (_lastSearchedWord.isNotEmpty ? _lastSearchedWord : null);
 
     return SingleChildScrollView(
       child: Padding(
@@ -215,12 +236,14 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                     ),
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) {
-                       _debounce?.cancel();
-                       _handleSearch();
+                      _debounce?.cancel();
+                      _handleSearch();
                     },
                     onChanged: (v) {
+                      if (!mounted) return;
                       if (_debounce?.isActive ?? false) _debounce!.cancel();
                       _debounce = Timer(const Duration(milliseconds: 500), () {
+                        if (!mounted) return;
                         setState(() {
                           _showHistory = v.isEmpty && _history.isNotEmpty;
                         });
@@ -256,7 +279,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
             ),
 
             // Search counter — free tier only
-            SearchCounter(isPremium: ref.read(quotaServiceProvider).isPremium),
+            SearchCounter(isPremium: isPremium),
 
             // History chips
             if (_showHistory && _history.isNotEmpty) ...[
@@ -279,7 +302,9 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                     onTap: () => _fillFromHistory(entry),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 7),
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: context.colors.surface,
                         borderRadius: BorderRadius.circular(100),
@@ -288,8 +313,11 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(CupertinoIcons.clock,
-                              size: 11, color: context.colors.inkSoft),
+                          Icon(
+                            CupertinoIcons.clock,
+                            size: 11,
+                            color: context.colors.inkSoft,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             entry.word,
@@ -315,13 +343,18 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               Center(
                 child: Column(
                   children: [
-                    Icon(CupertinoIcons.sparkles,
-                        size: 32, color: context.colors.inkSoft),
+                    Icon(
+                      CupertinoIcons.sparkles,
+                      size: 32,
+                      color: context.colors.inkSoft,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Try  "rizz",  "HODL",  or  "synergy"',
-                      style:
-                          TextStyle(color: context.colors.inkSoft, fontSize: 13),
+                      style: TextStyle(
+                        color: context.colors.inkSoft,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -336,9 +369,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
               result: vibeState.result,
               error: vibeState.error,
               isQuotaLocked: vibeState.isQuotaLocked,
-              searchWord: _lastSearchedWord.isNotEmpty
-                  ? _lastSearchedWord
-                  : null,
+              searchWord: effectiveWord,
             ),
 
             const SizedBox(height: 100),
@@ -385,8 +416,7 @@ class _VibeTranslateTabState extends ConsumerState<VibeTranslateTab> {
                     child: Icon(icon, size: 16, color: context.colors.ink),
                   ),
                   const SizedBox(width: 8),
-                  Flexible(
-                      child: Text(item, overflow: TextOverflow.ellipsis)),
+                  Flexible(child: Text(item, overflow: TextOverflow.ellipsis)),
                 ],
               ),
             );

@@ -64,11 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView(
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _currentPage = i),
-                children: [
-                  _OnboardPage1(),
-                  _OnboardPage2(),
-                  _OnboardPage3(),
-                ],
+                children: [_OnboardPage1(), _OnboardPage2(), _OnboardPage3()],
               ),
             ),
 
@@ -89,7 +85,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: active ? context.colors.accent : context.colors.inkSoft,
+                          color: active
+                              ? context.colors.accent
+                              : context.colors.inkSoft,
                         ),
                       );
                     }),
@@ -105,7 +103,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         gradient: LinearGradient(
-                          colors: [context.colors.accent, context.colors.accent2],
+                          colors: [
+                            context.colors.accent,
+                            context.colors.accent2,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -242,7 +243,11 @@ class _OnboardPage2 extends StatelessWidget {
           Text(
             'Same word, completely different energy depending on who\'s explaining it.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: context.colors.inkSoft, fontSize: 14, height: 1.5),
+            style: TextStyle(
+              color: context.colors.inkSoft,
+              fontSize: 14,
+              height: 1.5,
+            ),
           ).animate().fadeIn(delay: 350.ms),
           const SizedBox(height: 24),
           Wrap(
@@ -252,23 +257,24 @@ class _OnboardPage2 extends StatelessWidget {
             children: _personas
                 .map(
                   (p) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
-                      color: (p.$3 as Color).withValues(alpha: 0.1),
+                      color: p.$3.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: (p.$3 as Color).withValues(alpha: 0.3),
-                      ),
+                      border: Border.all(color: p.$3.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(p.$2 as IconData, size: 12, color: p.$3 as Color),
+                        Icon(p.$2, size: 12, color: p.$3),
                         const SizedBox(width: 6),
                         Text(
                           p.$1,
                           style: TextStyle(
-                            color: (p.$3 as Color).withValues(alpha: 0.9),
+                            color: p.$3.withValues(alpha: 0.9),
                             fontSize: 12,
                           ),
                         ),
@@ -320,12 +326,19 @@ class _OnboardPage3 extends StatelessWidget {
           Text(
             'Save any definition with one tap. Your personal glossary of every word that ever made you pause.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: context.colors.inkSoft, fontSize: 14, height: 1.5),
+            style: TextStyle(
+              color: context.colors.inkSoft,
+              fontSize: 14,
+              height: 1.5,
+            ),
           ).animate().fadeIn(delay: 350.ms),
           const SizedBox(height: 28),
           ...[
             (CupertinoIcons.bell_fill, 'Daily Word of the Day at 10 AM'),
-            (CupertinoIcons.checkmark_shield_fill, 'Fact-checked against Wikipedia'),
+            (
+              CupertinoIcons.checkmark_shield_fill,
+              'Fact-checked against Wikipedia',
+            ),
             (CupertinoIcons.square_stack_fill, 'Search from any app (Premium)'),
           ].map(
             (item) => Padding(

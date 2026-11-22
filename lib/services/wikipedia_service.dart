@@ -16,7 +16,9 @@ class WikipediaService {
         final extract = data['extract'] as String?;
         if (extract != null && extract.isNotEmpty) {
           // Return first ~400 chars — enough for grounding context
-          return extract.length > 400 ? '${extract.substring(0, 400)}...' : extract;
+          return extract.length > 400
+              ? '${extract.substring(0, 400)}...'
+              : extract;
         }
       }
     } catch (_) {

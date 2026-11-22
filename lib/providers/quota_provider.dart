@@ -10,8 +10,9 @@ class QuotaCountNotifier extends Notifier<int> {
   void set(int value) => state = value;
 }
 
-final quotaCountProvider =
-    NotifierProvider<QuotaCountNotifier, int>(QuotaCountNotifier.new);
+final quotaCountProvider = NotifierProvider<QuotaCountNotifier, int>(
+  QuotaCountNotifier.new,
+);
 
 class ShowRatingPromptNotifier extends Notifier<bool> {
   @override
@@ -21,4 +22,6 @@ class ShowRatingPromptNotifier extends Notifier<bool> {
 }
 
 final showRatingPromptProvider =
-    NotifierProvider<ShowRatingPromptNotifier, bool>(ShowRatingPromptNotifier.new);
+    NotifierProvider<ShowRatingPromptNotifier, bool>(
+      ShowRatingPromptNotifier.new,
+    );

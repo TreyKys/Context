@@ -7,22 +7,13 @@ import 'wikipedia_service.dart';
 import 'dictionary_service.dart';
 
 class LLMService {
-  late final GenerativeModel _model;
   final WikipediaService _wikipedia = WikipediaService();
   final DictionaryService _dictionary = DictionaryService();
+  final GenerationConfig _jsonGenerationConfig = GenerationConfig(
+    responseMimeType: 'application/json',
+  );
 
-  LLMService() {
-    // Firebase AI Logic via the Gemini Developer API backend (free tier, no
-    // billing). The request is authenticated by Firebase + App Check, so there
-    // is no API key in the app. (Swap `.googleAI()` for `.vertexAI()` to use the
-    // enterprise Vertex AI backend, which requires the Blaze plan.)
-    _model = FirebaseAI.googleAI().generativeModel(
-      model: kGeminiModel,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-      ),
-    );
-  }
+  LLMService();
 
   Future<VibeResult> directSearch(String input, {String? domain}) async {
     // Fetch reference data in parallel — silent fail if unavailable
@@ -40,16 +31,21 @@ class LLMService {
         ? '\nDomain context: "$domain" — frame the definition and etymology specifically within this domain.'
         : '';
 
-    final prompt = '''
+    final prompt =
+        '''
 You are a hyper-intelligent linguistic and cultural analyst. The user is searching for: '$input'.
 $groundingBlock$domainLine
 Return a strict JSON object with no markdown backticks containing:
 1. literal_meaning: A sharp, strictly factual and objective dictionary definition. Do not use slang here.${isVerified ? ' Cross-reference the REFERENCE DATA above to ensure factual accuracy.' : ''}
-2. etymology_context: A breakdown of the word\'s origins, current cultural/professional usage, and its evolution.
+2. etymology_context: A breakdown of the word's origins, current cultural/professional usage, and its evolution.
 3. tags: An array of 4 highly specific string tags (e.g., #Finance, #GenZ).
 ''';
 
-    return _callLlmAndParse(prompt, isDirectSearch: true, isVerified: isVerified);
+    return _callLlmAndParse(
+      prompt,
+      isDirectSearch: true,
+      isVerified: isVerified,
+    );
   }
 
   Future<VibeResult> generateVibe(
@@ -68,7 +64,8 @@ Return a strict JSON object with no markdown backticks containing:
 
     final groundingBlock = _buildGroundingBlock(wikiSummary, dictDefinition);
 
-    final prompt = '''
+    final prompt =
+        '''
 You are a hyper-intelligent cultural dictionary. The user wants you to process the word/phrase: '$input'.
 Action requested (Mode): '$mode'. > Target Persona (Vibe): '$vibe'.
 $groundingBlock
@@ -79,14 +76,22 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
 4. tags: An array of 3 relevant strings.
 ''';
 
-    return _callLlmAndParse(prompt, isDirectSearch: false, isVerified: isVerified);
+    return _callLlmAndParse(
+      prompt,
+      isDirectSearch: false,
+      isVerified: isVerified,
+    );
   }
 
   String _buildGroundingBlock(String? wikiSummary, String? dictDefinition) {
     if (wikiSummary == null && dictDefinition == null) return '';
-    final buffer = StringBuffer('\n[REFERENCE DATA — use to ensure factual accuracy of the literal definition]\n');
+    final buffer = StringBuffer(
+      '\n[REFERENCE DATA — use to ensure factual accuracy of the literal definition]\n',
+    );
     if (wikiSummary != null) buffer.writeln('Wikipedia: $wikiSummary');
-    if (dictDefinition != null) buffer.writeln('Dictionary (Wiktionary): $dictDefinition');
+    if (dictDefinition != null) {
+      buffer.writeln('Dictionary (Wiktionary): $dictDefinition');
+    }
     buffer.writeln('[END REFERENCE]\n');
     return buffer.toString();
   }
@@ -101,7 +106,10 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
     while (retries < 3) {
       try {
         final content = [Content.text(prompt)];
-        final response = await _model.generateContent(content);
+        final response = await generateContentWithFallback(
+          content,
+          generationConfig: _jsonGenerationConfig,
+        );
         final responseText = response.text;
 
         if (responseText == null || responseText.isEmpty) {
@@ -129,9 +137,10 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
         debugPrint('[LLMService] attempt $retries failed: $e');
         lastError = e;
         retries++;
-        if (retries >= 3) {
+        if (retries >= 3 || isNonRetryableAiError(e)) {
           throw Exception(
-            'Decryption Failed: Signal Lost or High Network Traffic.\n\nDebug: $lastError',
+            'Decryption Failed: Signal Lost or High Network Traffic.\n\n'
+            '${AppCheckService.formatDiagnostics(e)}',
           );
         }
         await Future.delayed(Duration(seconds: retries == 1 ? 2 : 4));
@@ -139,7 +148,7 @@ Analyze the input and return a strict JSON object with exactly these four keys. 
     }
     throw Exception(
       'Decryption Failed: Signal Lost or High Network Traffic.\n\n'
-      'Debug [model=$kGeminiModel appCheck=$kAppCheckEnabled]: $lastError',
+      '${AppCheckService.formatDiagnostics(lastError ?? 'Unknown error')}',
     );
   }
 }

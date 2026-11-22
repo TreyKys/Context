@@ -6,7 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/quota_provider.dart';
 import '../providers/process_text_provider.dart';
+import '../providers/vibe_provider.dart';
+import '../services/notification_service.dart';
 import '../services/process_text_service.dart';
+import '../services/quota_service.dart';
 import 'vibe_translate_tab.dart';
 import 'direct_search_tab.dart';
 import 'library_screen.dart';
@@ -19,20 +22,24 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   final List<Widget> _tabs = [
-    VibeTranslateTab(),
-    DirectSearchTab(),
-    LibraryScreen(),
+    const VibeTranslateTab(),
+    const DirectSearchTab(),
+    const LibraryScreen(),
   ];
 
   StreamSubscription<String>? _selectionSub;
+  StreamSubscription<String>? _notificationSub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     // Launched from another app's selection menu — land on Direct Search so the
     // pending lookup is visible as it runs.
     if (ref.read(pendingLookupProvider) != null) _currentIndex = 1;
@@ -42,6 +49,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       setState(() => _currentIndex = 1);
       ref.read(pendingLookupProvider.notifier).set(text);
+    });
+
+    // Notification taps that arrive while the app is already open.
+    _notificationSub = NotificationService().payloadStream.listen((_) {
+      if (!mounted) return;
+      setState(() => _currentIndex = 0);
     });
 
     // Listen for rating prompt after build completes
@@ -57,8 +70,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _selectionSub?.cancel();
+    _notificationSub?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncQuotaOnResume();
+    }
+  }
+
+  Future<void> _syncQuotaOnResume() async {
+    final quotaService = ref.read(quotaServiceProvider);
+    await quotaService.reload();
+    if (!mounted) return;
+    ref.read(quotaCountProvider.notifier).set(quotaService.availableSearches);
+    ref.read(vibeProvider.notifier).checkQuotaLock();
+    ref.read(directSearchProvider.notifier).checkQuotaLock();
   }
 
   void _showRatingSnackBar() {
@@ -71,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         duration: const Duration(seconds: 5),
         content: Row(
           children: [
-            Text('⭐', style: TextStyle(fontSize: 18)),
+            const Text('⭐', style: TextStyle(fontSize: 18)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -125,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: _tabs[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _tabs),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

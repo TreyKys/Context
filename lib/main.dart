@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
@@ -47,9 +45,9 @@ void main() async {
     // Gather EEA/UK ad consent (UMP) before requesting ads. Bounded so a slow
     // or stuck form can never freeze startup; no-op outside the EEA/UK.
     try {
-      await ConsentService.instance
-          .gatherConsent()
-          .timeout(const Duration(seconds: 8));
+      await ConsentService.instance.gatherConsent().timeout(
+        const Duration(seconds: 8),
+      );
     } catch (_) {}
 
     try {
@@ -62,16 +60,7 @@ void main() async {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      // Currently OFF by default — see kAppCheckEnabled in ai_config.dart for
-      // why, and PUBLISHING.md for the staged sequence to turn it back on
-      // without breaking already-installed users.
-      if (kAppCheckEnabled) {
-        await FirebaseAppCheck.instance.activate(
-          androidProvider: kDebugMode
-              ? AndroidProvider.debug
-              : AndroidProvider.playIntegrity,
-        );
-      }
+      await AppCheckService.activate();
     } catch (e) {
       debugPrint('Firebase init failed: $e');
     }
@@ -201,12 +190,7 @@ Future<void> _runQuickDefine() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    if (kAppCheckEnabled) {
-      await FirebaseAppCheck.instance.activate(
-        androidProvider:
-            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      );
-    }
+    await AppCheckService.activate();
   } catch (e) {
     debugPrint('QuickDefine Firebase init failed: $e');
   }
@@ -266,8 +250,6 @@ class _OnboardingGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OnboardingScreen(
-      onDone: () => _completeOnboarding(context),
-    );
+    return OnboardingScreen(onDone: () => _completeOnboarding(context));
   }
 }

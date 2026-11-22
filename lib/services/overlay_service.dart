@@ -62,7 +62,15 @@ class OverlayService {
     if (!Platform.isAndroid) return false;
     try {
       final manufacturer = await _manufacturer();
-      const gated = {'xiaomi', 'redmi', 'poco', 'oppo', 'realme', 'vivo', 'iqoo'};
+      const gated = {
+        'xiaomi',
+        'redmi',
+        'poco',
+        'oppo',
+        'realme',
+        'vivo',
+        'iqoo',
+      };
       return gated.contains(manufacturer.toLowerCase().trim());
     } catch (_) {
       return false;

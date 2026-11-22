@@ -111,21 +111,27 @@ class SubscriptionService {
       CustomerInfo customerInfo = await Purchases.getCustomerInfo();
       await _updatePremiumStatus(customerInfo);
     } catch (e) {
-       // Log error
+      // Log error
     }
   }
 
   Future<void> _updatePremiumStatus(CustomerInfo customerInfo) async {
-     final isPremium = customerInfo.entitlements.active.containsKey("pro_fluency");
-     await _quotaService?.setPremium(isPremium);
-     _premiumStatusController.add(isPremium);
+    final isPremium = customerInfo.entitlements.active.containsKey(
+      "pro_fluency",
+    );
+    await _quotaService?.setPremium(isPremium);
+    _premiumStatusController.add(isPremium);
   }
 
   Future<bool> purchase(StoreProduct product) async {
     try {
-      PurchaseResult result = await Purchases.purchaseStoreProduct(product);
+      PurchaseResult result = await Purchases.purchase(
+        PurchaseParams.storeProduct(product),
+      );
       CustomerInfo customerInfo = result.customerInfo;
-      final success = customerInfo.entitlements.active.containsKey("pro_fluency");
+      final success = customerInfo.entitlements.active.containsKey(
+        "pro_fluency",
+      );
       if (success) {
         await _updatePremiumStatus(customerInfo);
       }
@@ -138,7 +144,9 @@ class SubscriptionService {
   Future<bool> restorePurchases() async {
     try {
       CustomerInfo customerInfo = await Purchases.restorePurchases();
-      final success = customerInfo.entitlements.active.containsKey("pro_fluency");
+      final success = customerInfo.entitlements.active.containsKey(
+        "pro_fluency",
+      );
       if (success) {
         await _updatePremiumStatus(customerInfo);
       }

@@ -82,16 +82,20 @@ class LibraryService {
     if (q.isEmpty) return getSavedWords();
     // Plain LIKE search across the saved fields. No FTS5 module required, so it
     // works on every device. The library is small, so performance is a non-issue.
-    final like = '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
+    final like =
+        '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
     try {
-      final maps = await db.rawQuery('''
+      final maps = await db.rawQuery(
+        '''
         SELECT * FROM saved_words
         WHERE word LIKE ? ESCAPE '\\'
            OR literal_definition LIKE ? ESCAPE '\\'
            OR vibe_translation LIKE ? ESCAPE '\\'
            OR tags_json LIKE ? ESCAPE '\\'
         ORDER BY saved_at DESC
-      ''', [like, like, like, like]);
+      ''',
+        [like, like, like, like],
+      );
       return maps.map(SavedWord.fromMap).toList();
     } catch (e) {
       debugPrint('LibraryService.searchLibrary failed: $e');
@@ -114,7 +118,9 @@ class LibraryService {
   Future<int> getSavedCount() async {
     final db = _db;
     if (db == null) return 0;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM saved_words');
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM saved_words',
+    );
     return Sqflite.firstIntValue(result) ?? 0;
   }
 

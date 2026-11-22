@@ -21,5 +21,6 @@ class PendingLookupNotifier extends Notifier<String?> {
   void clear() => state = null;
 }
 
-final pendingLookupProvider =
-    NotifierProvider<PendingLookupNotifier, String?>(PendingLookupNotifier.new);
+final pendingLookupProvider = NotifierProvider<PendingLookupNotifier, String?>(
+  PendingLookupNotifier.new,
+);

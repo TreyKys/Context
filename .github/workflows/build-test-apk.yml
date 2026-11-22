@@ -25,11 +25,19 @@ on:
   workflow_dispatch:
     inputs:
       enable_app_check:
-        description: "Activate App Check (Play Integrity). Sideloaded builds can never pass it — leave false for local testing."
+        description: "Activate Firebase App Check (required when Basic - Enforced is on in Firebase Console)"
         type: boolean
-        default: false
+        default: true
+      use_debug_provider:
+        description: "Use App Check Debug Provider (required for sideloaded APKs, which cannot pass Play Integrity)"
+        type: boolean
+        default: true
+      app_check_debug_token:
+        description: "Optional pre-registered App Check debug token UUID (if empty, copy the device's token from Settings)"
+        type: string
+        default: ""
       show_debug_errors:
-        description: "Render the raw exception text on the result card"
+        description: "Render the raw exception text and App Check debug token on the result card"
         type: boolean
         default: true
 
@@ -42,7 +50,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - uses: subosito/flutter-action@v2
         with:
@@ -57,11 +65,13 @@ jobs:
         run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
       # On a push build `inputs.*` are empty, so these comparisons fall through
-      # to the diagnostic defaults: App Check off, raw errors on.
+      # to the diagnostic defaults: App Check on with Debug Provider, raw errors on.
       - name: Build release APK
         run: |
           flutter build apk --release \
-            --dart-define=ENABLE_APP_CHECK=${{ inputs.enable_app_check == true }} \
+            --dart-define=ENABLE_APP_CHECK=${{ inputs.enable_app_check != false }} \
+            --dart-define=USE_APP_CHECK_DEBUG_PROVIDER=${{ inputs.use_debug_provider != false }} \
+            --dart-define=APP_CHECK_DEBUG_TOKEN=${{ inputs.app_check_debug_token }} \
             --dart-define=SHOW_DEBUG_ERRORS=${{ inputs.show_debug_errors != false }}
 
       - uses: actions/upload-artifact@v4

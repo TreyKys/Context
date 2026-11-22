@@ -28,8 +28,11 @@ class DefineTutorialScreen extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () =>
                       onDone != null ? onDone!() : Navigator.pop(context),
-                  child: Icon(CupertinoIcons.xmark,
-                      color: colors.inkSoft, size: 20),
+                  child: Icon(
+                    CupertinoIcons.xmark,
+                    color: colors.inkSoft,
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -37,8 +40,11 @@ class DefineTutorialScreen extends StatelessWidget {
                 shaderCallback: (b) => LinearGradient(
                   colors: [colors.accent, colors.accent2],
                 ).createShader(b),
-                child: Icon(CupertinoIcons.text_cursor,
-                    size: 44, color: colors.ink),
+                child: Icon(
+                  CupertinoIcons.text_cursor,
+                  size: 44,
+                  color: colors.ink,
+                ),
               ).animate().fadeIn(duration: 400.ms).scale(),
               const SizedBox(height: 18),
               Text(
@@ -56,19 +62,23 @@ class DefineTutorialScreen extends StatelessWidget {
                 'Reading a post, an article, a message? You never have to come '
                 'back here to look a word up.',
                 style: TextStyle(
-                    color: colors.inkSoft, fontSize: 14, height: 1.5),
+                  color: colors.inkSoft,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 28),
               ..._steps.asMap().entries.map(
-                    (e) => _Step(
-                      number: e.key + 1,
-                      title: e.value.$1,
-                      body: e.value.$2,
-                    )
+                (e) =>
+                    _Step(
+                          number: e.key + 1,
+                          title: e.value.$1,
+                          body: e.value.$2,
+                        )
                         .animate(delay: (120 * e.key).ms)
                         .fadeIn()
                         .slideY(begin: 0.08, end: 0),
-                  ),
+              ),
               const SizedBox(height: 8),
               Container(
                 width: double.infinity,
@@ -83,14 +93,20 @@ class DefineTutorialScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(CupertinoIcons.lightbulb_fill,
-                            size: 15, color: colors.accent2),
+                        Icon(
+                          CupertinoIcons.lightbulb_fill,
+                          size: 15,
+                          color: colors.accent2,
+                        ),
                         const SizedBox(width: 8),
-                        Text('Can\'t find "Define"?',
-                            style: TextStyle(
-                                color: colors.ink,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600)),
+                        Text(
+                          'Can\'t find "Define"?',
+                          style: TextStyle(
+                            color: colors.ink,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -98,7 +114,10 @@ class DefineTutorialScreen extends StatelessWidget {
                       'Tap the ⋮ (three dots) at the end of the selection menu — '
                       'Android hides extra options there when the bar is full.',
                       style: TextStyle(
-                          color: colors.inkSoft, fontSize: 12.5, height: 1.5),
+                        color: colors.inkSoft,
+                        fontSize: 12.5,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
@@ -176,26 +195,37 @@ class _Step extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: colors.accent.withValues(alpha: 0.35)),
             ),
-            child: Text('$number',
-                style: TextStyle(
-                    color: colors.accent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold)),
+            child: Text(
+              '$number',
+              style: TextStyle(
+                color: colors.accent,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: TextStyle(
-                        color: colors.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: colors.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(body,
-                    style: TextStyle(
-                        color: colors.inkSoft, fontSize: 13, height: 1.5)),
+                Text(
+                  body,
+                  style: TextStyle(
+                    color: colors.inkSoft,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
               ],
             ),
           ),

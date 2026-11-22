@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'quota_service.dart';
@@ -21,8 +20,9 @@ class AdService {
       'ca-app-pub-6864344458492366/4992609826';
   static const String _testRewardedAdUnitId =
       'ca-app-pub-3940256099942544/5224354917';
-  static const String rewardedAdUnitId =
-      kDebugMode ? _testRewardedAdUnitId : _realRewardedAdUnitId;
+  static const String rewardedAdUnitId = kDebugMode
+      ? _testRewardedAdUnitId
+      : _realRewardedAdUnitId;
 
   AdService(this._quotaService);
 
