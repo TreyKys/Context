@@ -9,21 +9,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Primary Gemini model used across the app (main search, quick define, and
 /// floating overlay). Overridable at build time via:
-///   --dart-define=GEMINI_MODEL=gemini-2.5-flash
+///   --dart-define=GEMINI_MODEL=gemini-3.8-flash
+///
+/// Per Firebase AI Logic supported models (Nov 2026), `gemini-3.8-flash` and
+/// `gemini-3.5-flash-lite` are the current general-use free-tier models
+/// (replacing `gemini-3.5-flash` and the retired `gemini-2.5-flash`).
 const String kGeminiModel = String.fromEnvironment(
   'GEMINI_MODEL',
-  defaultValue: 'gemini-2.5-flash',
+  defaultValue: 'gemini-3.8-flash',
 );
 
 /// Ordered fallback list tried automatically if the primary model returns a
 /// "model not found" / "no longer available" / 404 error.
 const List<String> kGeminiModelCandidates = [
   kGeminiModel,
+  'gemini-3.8-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
-  'gemini-3.5-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-2.0-flash',
 ];
 
 String _activeGeminiModel = kGeminiModel;
