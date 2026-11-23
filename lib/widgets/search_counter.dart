@@ -16,12 +16,12 @@ class SearchCounter extends ConsumerWidget {
     final count = ref.watch(quotaCountProvider);
     if (count >= 999) return const SizedBox.shrink(); // Safety guard
 
-    final color = count <= 1 ? Colors.redAccent : context.colors.inkSoft!;
+    final color = count <= 1 ? Colors.redAccent : context.colors.inkSoft;
     final icon = count <= 1
         ? Icons.battery_1_bar_rounded
         : count == 2
-            ? Icons.battery_3_bar_rounded
-            : Icons.battery_full_rounded;
+        ? Icons.battery_3_bar_rounded
+        : Icons.battery_full_rounded;
 
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 2),
@@ -34,11 +34,7 @@ class SearchCounter extends ConsumerWidget {
             count == 0
                 ? 'No searches left today'
                 : '$count ${count == 1 ? 'search' : 'searches'} left today',
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              letterSpacing: 0.3,
-            ),
+            style: TextStyle(color: color, fontSize: 11, letterSpacing: 0.3),
           ),
         ],
       ),

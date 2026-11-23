@@ -7,6 +7,10 @@
 -keep class io.flutter.embedding.**  { *; }
 -keep class io.flutter.plugins.**  { *; }
 
+# Rules for Firebase App Check & FlutterFire plugins
+-keep class com.google.firebase.appcheck.** { *; }
+-keep class io.flutter.plugins.firebase.** { *; }
+
 # Rules for Google AI Generative SDK and its dependencies
 -keep class com.google.ai.client.generativeai.** { *; }
 -keep class com.google.android.gms.tflite.** { *; }

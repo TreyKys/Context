@@ -1,16 +1,13 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 import '../firebase_options.dart';
 import '../services/ai_config.dart';
 import '../services/quota_service.dart';
-
 
 /// Registered as a separate Flutter engine entry point.
 /// flutter_overlay_window calls this to render the floating widget.
@@ -22,14 +19,7 @@ void overlayMain() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    // See main.dart — skippable for sideloaded test builds via
-    // --dart-define=ENABLE_APP_CHECK=false.
-    if (kAppCheckEnabled) {
-      await FirebaseAppCheck.instance.activate(
-        androidProvider:
-            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      );
-    }
+    await AppCheckService.activate();
   } catch (_) {}
 
   runApp(
@@ -91,15 +81,14 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         return;
       }
 
-      final model = FirebaseAI.googleAI().generativeModel(model: kGeminiModel);
       final prompt =
           'Give a concise 1-2 sentence definition of "$input" suitable for '
           'quick reference. Include current cultural/slang usage if applicable. '
           'Plain text only, no JSON, no formatting.';
 
-      final response = await model
-          .generateContent([Content.text(prompt)])
-          .timeout(const Duration(seconds: 10));
+      final response = await generateContentWithFallback([
+        Content.text(prompt),
+      ], timeout: const Duration(seconds: 10));
 
       // Only bill the user once the lookup actually succeeded.
       await quota.consumeSearch();
@@ -108,9 +97,11 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         _result = response.text?.trim() ?? 'No result.';
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
       setState(() {
-        _error = 'Signal lost. Check connection.';
+        _error = kShowDebugErrors
+            ? 'Signal lost. Check connection.\n${AppCheckService.formatDiagnostics(e)}'
+            : 'Signal lost. Check connection.';
         _isLoading = false;
       });
     }
@@ -138,10 +129,13 @@ class _OverlaySearchWidgetState extends State<_OverlaySearchWidget> {
         decoration: BoxDecoration(
           color: const Color(0xFFFBF6EC),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Color(0xFFB07A47).withValues(alpha: 0.4), width: 1),
+          border: Border.all(
+            color: const Color(0xFFB07A47).withValues(alpha: 0.4),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFB07A47).withValues(alpha: 0.15),
+              color: const Color(0xFFB07A47).withValues(alpha: 0.15),
               blurRadius: 20,
               spreadRadius: 2,
             ),

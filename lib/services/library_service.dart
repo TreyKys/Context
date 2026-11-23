@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/saved_word.dart';
@@ -10,9 +12,11 @@ class LibraryService {
   LibraryService._internal();
 
   static const int _freeTierLimit = 10;
+  static const String _kPrefsFallbackKey = 'context_library_fallback_v1';
   Database? _db;
 
   Future<void> init() async {
+    if (kIsWeb) return;
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'context_library.db');
     try {
@@ -63,9 +67,33 @@ class LibraryService {
     );
   }
 
+  Future<List<SavedWord>> _loadPrefsFallback() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_kPrefsFallbackKey) ?? const <String>[];
+      final items = raw
+          .map(
+            (s) => SavedWord.fromMap(
+              Map<String, dynamic>.from(jsonDecode(s) as Map),
+            ),
+          )
+          .toList();
+      items.sort((a, b) => b.savedAt.compareTo(a.savedAt));
+      return items;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> _savePrefsFallback(List<SavedWord> items) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = items.map((w) => jsonEncode(w.toMap())).toList();
+    await prefs.setStringList(_kPrefsFallbackKey, encoded);
+  }
+
   Future<List<SavedWord>> getSavedWords() async {
     final db = _db;
-    if (db == null) return [];
+    if (db == null) return _loadPrefsFallback();
     try {
       final maps = await db.query('saved_words', orderBy: 'saved_at DESC');
       return maps.map(SavedWord.fromMap).toList();
@@ -77,21 +105,37 @@ class LibraryService {
 
   Future<List<SavedWord>> searchLibrary(String query) async {
     final db = _db;
-    if (db == null) return [];
     final q = query.trim();
     if (q.isEmpty) return getSavedWords();
+    if (db == null) {
+      final lower = q.toLowerCase();
+      final all = await _loadPrefsFallback();
+      return all
+          .where(
+            (w) =>
+                w.word.toLowerCase().contains(lower) ||
+                w.literalDefinition.toLowerCase().contains(lower) ||
+                w.vibeTranslation.toLowerCase().contains(lower) ||
+                w.tags.any((t) => t.toLowerCase().contains(lower)),
+          )
+          .toList();
+    }
     // Plain LIKE search across the saved fields. No FTS5 module required, so it
     // works on every device. The library is small, so performance is a non-issue.
-    final like = '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
+    final like =
+        '%${q.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%';
     try {
-      final maps = await db.rawQuery('''
+      final maps = await db.rawQuery(
+        '''
         SELECT * FROM saved_words
         WHERE word LIKE ? ESCAPE '\\'
            OR literal_definition LIKE ? ESCAPE '\\'
            OR vibe_translation LIKE ? ESCAPE '\\'
            OR tags_json LIKE ? ESCAPE '\\'
         ORDER BY saved_at DESC
-      ''', [like, like, like, like]);
+      ''',
+        [like, like, like, like],
+      );
       return maps.map(SavedWord.fromMap).toList();
     } catch (e) {
       debugPrint('LibraryService.searchLibrary failed: $e');
@@ -101,7 +145,11 @@ class LibraryService {
 
   Future<bool> isWordSaved(String word) async {
     final db = _db;
-    if (db == null) return false;
+    if (db == null) {
+      final lower = word.trim().toLowerCase();
+      final all = await _loadPrefsFallback();
+      return all.any((w) => w.word.toLowerCase() == lower);
+    }
     final result = await db.query(
       'saved_words',
       where: 'LOWER(word) = LOWER(?)',
@@ -113,8 +161,13 @@ class LibraryService {
 
   Future<int> getSavedCount() async {
     final db = _db;
-    if (db == null) return 0;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM saved_words');
+    if (db == null) {
+      final all = await _loadPrefsFallback();
+      return all.length;
+    }
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM saved_words',
+    );
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
@@ -125,7 +178,6 @@ class LibraryService {
     required bool isPremium,
   }) async {
     final db = _db;
-    if (db == null) return 'Library unavailable.';
 
     if (!isPremium) {
       final count = await getSavedCount();
@@ -136,6 +188,28 @@ class LibraryService {
 
     // Don't save duplicates
     if (await isWordSaved(word)) return null;
+
+    if (db == null) {
+      final all = await _loadPrefsFallback();
+      final nextId =
+          all.fold<int>(0, (m, w) => (w.id ?? 0) > m ? (w.id ?? 0) : m) + 1;
+      all.insert(
+        0,
+        SavedWord(
+          id: nextId,
+          word: word.trim(),
+          literalDefinition: result.literalDefinition,
+          vibeTranslation: result.vibeTranslation,
+          exampleSentence: result.exampleSentence,
+          tags: result.tags,
+          isDirectSearch: result.isDirectSearch,
+          isVerified: result.isVerified,
+          savedAt: DateTime.now(),
+        ),
+      );
+      await _savePrefsFallback(all);
+      return null;
+    }
 
     final saved = SavedWord(
       word: word.trim(),
@@ -153,11 +227,26 @@ class LibraryService {
   }
 
   Future<void> deleteWord(int id) async {
-    await _db?.delete('saved_words', where: 'id = ?', whereArgs: [id]);
+    final db = _db;
+    if (db == null) {
+      final all = await _loadPrefsFallback();
+      all.removeWhere((w) => w.id == id);
+      await _savePrefsFallback(all);
+      return;
+    }
+    await db.delete('saved_words', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> deleteByWord(String word) async {
-    await _db?.delete(
+    final db = _db;
+    if (db == null) {
+      final lower = word.trim().toLowerCase();
+      final all = await _loadPrefsFallback();
+      all.removeWhere((w) => w.word.toLowerCase() == lower);
+      await _savePrefsFallback(all);
+      return;
+    }
+    await db.delete(
       'saved_words',
       where: 'LOWER(word) = LOWER(?)',
       whereArgs: [word.trim()],

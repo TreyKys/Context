@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import '../services/quota_service.dart';
 import '../services/subscription_service.dart';
+import '../providers/quota_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/vibe_provider.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({super.key});
@@ -34,6 +37,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     );
   }
 
+  void _onEntitlementActivated() {
+    final quotaService = ref.read(quotaServiceProvider);
+    ref.read(quotaCountProvider.notifier).set(quotaService.availableSearches);
+    ref.read(vibeProvider.notifier).checkQuotaLock();
+    ref.read(directSearchProvider.notifier).checkQuotaLock();
+    ref.invalidate(isPremiumProvider);
+  }
+
   Future<void> _purchase(StoreProduct? product) async {
     if (_busy) return;
     if (product == null) {
@@ -44,13 +55,14 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     }
     setState(() => _purchasingId = product.identifier);
     try {
-      final success =
-          await ref.read(subscriptionServiceProvider).purchase(product);
+      final success = await ref
+          .read(subscriptionServiceProvider)
+          .purchase(product);
       if (!mounted) return;
       if (success) {
         // Make the entitlement change visible immediately rather than waiting
         // for the next stream tick, then confirm it to the user.
-        ref.invalidate(isPremiumProvider);
+        _onEntitlementActivated();
         _toast('You\'re Premium ⚡ Enjoy unlimited searches.', success: true);
       } else {
         _toast('Purchase failed or cancelled.');
@@ -66,11 +78,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     if (_busy) return;
     setState(() => _restoring = true);
     try {
-      final restored =
-          await ref.read(subscriptionServiceProvider).restorePurchases();
+      final restored = await ref
+          .read(subscriptionServiceProvider)
+          .restorePurchases();
       if (!mounted) return;
       if (restored) {
-        ref.invalidate(isPremiumProvider);
+        _onEntitlementActivated();
         _toast('Purchases restored — Premium is active.', success: true);
       } else {
         // Previously this gave no feedback at all, so a user with nothing to
@@ -118,7 +131,11 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                       color: context.colors.ink.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(CupertinoIcons.xmark, color: context.colors.inkSoft, size: 16),
+                    child: Icon(
+                      CupertinoIcons.xmark,
+                      color: context.colors.inkSoft,
+                      size: 16,
+                    ),
                   ),
                 ),
               ),
@@ -209,7 +226,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                     detail: 'billed yearly · cancel anytime',
                     isHighlighted: true,
                     onTap: _busy ? null : () => _purchase(yearly),
-                    isLoading: _purchasingId != null &&
+                    isLoading:
+                        _purchasingId != null &&
                         _purchasingId == yearly?.identifier,
                   ),
                   const SizedBox(height: 12),
@@ -219,14 +237,17 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                     detail: 'per month · cancel anytime',
                     isHighlighted: false,
                     onTap: _busy ? null : () => _purchase(monthly),
-                    isLoading: _purchasingId != null &&
+                    isLoading:
+                        _purchasingId != null &&
                         _purchasingId == monthly?.identifier,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Cancel anytime · Billed via Google Play',
-                    style:
-                        TextStyle(color: context.colors.inkSoft, fontSize: 11),
+                    style: TextStyle(
+                      color: context.colors.inkSoft,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -286,8 +307,11 @@ class _StoreUnavailable extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(CupertinoIcons.exclamationmark_circle,
-              color: context.colors.inkSoft, size: 28),
+          Icon(
+            CupertinoIcons.exclamationmark_circle,
+            color: context.colors.inkSoft,
+            size: 28,
+          ),
           const SizedBox(height: 12),
           Text(
             message,
@@ -298,13 +322,13 @@ class _StoreUnavailable extends StatelessWidget {
           GestureDetector(
             onTap: onRetry,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
                 color: context.colors.accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(100),
                 border: Border.all(
-                    color: context.colors.accent.withValues(alpha: 0.4)),
+                  color: context.colors.accent.withValues(alpha: 0.4),
+                ),
               ),
               child: Text(
                 'Try again',
@@ -325,7 +349,10 @@ class _StoreUnavailable extends StatelessWidget {
 const _features = [
   (CupertinoIcons.bolt_fill, 'Unlimited searches, every day'),
   (CupertinoIcons.book_fill, 'Unlimited word library'),
-  (CupertinoIcons.square_stack_fill, 'Unlimited floating-bubble search, any app'),
+  (
+    CupertinoIcons.square_stack_fill,
+    'Unlimited floating-bubble search, any app',
+  ),
   (CupertinoIcons.xmark_circle_fill, 'No ads, ever'),
   (CupertinoIcons.heart_fill, 'Support an independent studio'),
 ];
@@ -348,7 +375,12 @@ class _FeatureRow extends StatelessWidget {
             child: Icon(icon, size: 18, color: context.colors.ink),
           ),
           const SizedBox(width: 14),
-          Flexible(child: Text(text, style: TextStyle(color: context.colors.ink, fontSize: 14))),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(color: context.colors.ink, fontSize: 14),
+            ),
+          ),
         ],
       ),
     );
@@ -386,7 +418,10 @@ class _PlanCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           gradient: isHighlighted
               ? LinearGradient(
-                  colors: [context.colors.surfaceAlt, context.colors.surfaceAlt],
+                  colors: [
+                    context.colors.surfaceAlt,
+                    context.colors.surfaceAlt,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
@@ -434,10 +469,14 @@ class _PlanCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: context.colors.accent2.withValues(alpha: 0.15),
+                                  color: context.colors.accent2.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(100),
                                   border: Border.all(
-                                    color: context.colors.accent2.withValues(alpha: 0.4),
+                                    color: context.colors.accent2.withValues(
+                                      alpha: 0.4,
+                                    ),
                                   ),
                                 ),
                                 child: Text(
@@ -455,7 +494,10 @@ class _PlanCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           detail,
-                          style: TextStyle(color: context.colors.inkSoft, fontSize: 12),
+                          style: TextStyle(
+                            color: context.colors.inkSoft,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),

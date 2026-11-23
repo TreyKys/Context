@@ -4,13 +4,18 @@ import '../models/vibe_result.dart';
 import '../services/library_service.dart';
 import '../services/quota_service.dart';
 
-final libraryServiceProvider = Provider<LibraryService>((ref) => LibraryService());
+final libraryServiceProvider = Provider<LibraryService>(
+  (ref) => LibraryService(),
+);
 
 final libraryProvider = AsyncNotifierProvider<LibraryNotifier, List<SavedWord>>(
   LibraryNotifier.new,
 );
 
-final isWordSavedProvider = FutureProvider.family<bool, String>((ref, word) async {
+final isWordSavedProvider = FutureProvider.family<bool, String>((
+  ref,
+  word,
+) async {
   final service = ref.watch(libraryServiceProvider);
   return service.isWordSaved(word);
 });

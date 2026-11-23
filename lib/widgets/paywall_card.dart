@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/ad_service.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/vibe_provider.dart';
 import '../screens/subscription_screen.dart';
 
@@ -56,8 +57,10 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       onFallback: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Second ad failed. Awarded 1 search for the first ad.'),
+            const SnackBar(
+              content: Text(
+                'Second ad failed. Awarded 1 search for the first ad.',
+              ),
               backgroundColor: Colors.orangeAccent,
             ),
           );
@@ -77,15 +80,25 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
     );
   }
 
-  void _openSubscription() {
-    Navigator.push(
+  Future<void> _openSubscription() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
     );
+    if (mounted) {
+      _clearQuotaLock();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = ref.watch(isPremiumProvider).asData?.value ?? false;
+    if (isPremium) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _clearQuotaLock();
+      });
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -103,7 +116,11 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
       ),
       child: Column(
         children: [
-          Icon(CupertinoIcons.lock_shield_fill, color: Colors.redAccent, size: 48),
+          const Icon(
+            CupertinoIcons.lock_shield_fill,
+            color: Colors.redAccent,
+            size: 48,
+          ),
           const SizedBox(height: 16),
           Text(
             'Neural Link Depleted',
@@ -118,7 +135,11 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
           Text(
             'You\'ve used your 3 free searches today.\nRecharge with an ad, or go unlimited.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: context.colors.inkSoft, fontSize: 13, height: 1.5),
+            style: TextStyle(
+              color: context.colors.inkSoft,
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -191,8 +212,12 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(CupertinoIcons.bolt_fill, color: context.colors.ink, size: 16),
-                SizedBox(width: 6),
+                Icon(
+                  CupertinoIcons.bolt_fill,
+                  color: context.colors.ink,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
                 Text(
                   'Go Premium — Unlimited',
                   style: TextStyle(
@@ -205,8 +230,11 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
             ),
             const SizedBox(height: 4),
             Text(
-              'From \$4.99/month · No ads · Full library',
-              style: TextStyle(color: context.colors.ink.withValues(alpha: 0.75), fontSize: 12),
+              'From \$3.99/month · No ads · Full library',
+              style: TextStyle(
+                color: context.colors.ink.withValues(alpha: 0.75),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -257,24 +285,27 @@ class _PaywallCardState extends ConsumerState<PaywallCard> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.colors.ink,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: context.colors.ink,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        subtitle,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
-                      ),
-                    ],
-                  ),
+                        Text(
+                          subtitle,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: context.colors.inkSoft,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,14 +11,23 @@ class QuotaService {
   static const String _premiumKey = 'is_premium';
   static const String _totalSearchCountKey = 'total_search_count';
   static const String _ratingShownKey = 'rating_shown';
+  static const String _prepaidWordKey = 'prepaid_lookup_word';
+  static const String _prepaidTimestampKey = 'prepaid_lookup_ts';
   static const int _dailyLimit = 3;
   static const int _ratingTriggerCount = 5;
 
   SharedPreferences? _prefs;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
+  final StreamController<bool> _premiumController =
+      StreamController<bool>.broadcast();
+
+  /// Emits whenever [setPremium] or [reload] updates the premium flag.
+  Stream<bool> get premiumStream => _premiumController.stream;
+
   bool _isPremium = false;
   int _availableSearches = 0;
+  String? _appUserId;
 
   Future<void> init(String appUserId) async {
     _prefs = await SharedPreferences.getInstance();
@@ -29,7 +39,20 @@ class QuotaService {
     await _checkDailyReset(appUserId);
   }
 
-  String? _appUserId;
+  /// Re-reads persisted quota and premium status from storage (e.g., when
+  /// returning to the main app after using the floating overlay or QuickDefine).
+  Future<void> reload() async {
+    final prefs = _prefs ??= await SharedPreferences.getInstance();
+    try {
+      await prefs.reload();
+    } catch (_) {}
+    final newPremium = prefs.getBool(_premiumKey) ?? false;
+    if (newPremium != _isPremium) {
+      _isPremium = newPremium;
+      _premiumController.add(_isPremium);
+    }
+    await _checkDailyReset(_appUserId ?? 'anonymous');
+  }
 
   Future<void> _checkDailyReset(String appUserId) async {
     _appUserId = appUserId;
@@ -49,7 +72,10 @@ class QuotaService {
       _availableSearches = _dailyLimit;
     } else {
       if (searchesStr == null) {
-        await _secureStorage.write(key: searchKey, value: _dailyLimit.toString());
+        await _secureStorage.write(
+          key: searchKey,
+          value: _dailyLimit.toString(),
+        );
         _availableSearches = _dailyLimit;
       } else {
         _availableSearches = int.tryParse(searchesStr) ?? 0;
@@ -65,6 +91,7 @@ class QuotaService {
     // RevenueCat has had a chance to answer. The entitlement remains the
     // source of truth — this is only a cache.
     await _prefs?.setBool(_premiumKey, value);
+    _premiumController.add(value);
   }
 
   int get availableSearches {
@@ -72,8 +99,45 @@ class QuotaService {
     return _availableSearches;
   }
 
-  Future<void> consumeSearch() async {
+  /// Marks [word] as already paid for (e.g., when QuickDefineSheet consumed a
+  /// search and the user immediately taps "More detail →" to open the full app)
+  /// so the full app does not double-charge for the same lookup.
+  Future<void> markPrepaidLookup(String word) async {
+    final prefs = _prefs ??= await SharedPreferences.getInstance();
+    await prefs.setString(_prepaidWordKey, word.trim().toLowerCase());
+    await prefs.setInt(
+      _prepaidTimestampKey,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
+  /// Returns true if [word] was prepaid within the last 60 seconds, and clears
+  /// the prepaid marker so it can only be redeemed once.
+  Future<bool> consumePrepaidIfMatching(String? word) async {
+    if (word == null || word.trim().isEmpty) return false;
+    final prefs = _prefs ??= await SharedPreferences.getInstance();
+    try {
+      await prefs.reload();
+    } catch (_) {}
+    final prepaidWord = prefs.getString(_prepaidWordKey);
+    final prepaidTs = prefs.getInt(_prepaidTimestampKey) ?? 0;
+    if (prepaidWord == null) return false;
+
+    final ageMs = DateTime.now().millisecondsSinceEpoch - prepaidTs;
+    if (prepaidWord == word.trim().toLowerCase() &&
+        ageMs >= 0 &&
+        ageMs <= 60000) {
+      await prefs.remove(_prepaidWordKey);
+      await prefs.remove(_prepaidTimestampKey);
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> consumeSearch({String? word}) async {
     if (isPremium) return;
+    if (await consumePrepaidIfMatching(word)) return;
+
     int current = availableSearches;
     final keySuffix = _appUserId ?? 'anonymous';
     final searchKey = '${_searchesKey}_$keySuffix';

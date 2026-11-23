@@ -61,7 +61,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             child: Row(
               children: [
-                Icon(CupertinoIcons.search, color: context.colors.inkSoft, size: 16),
+                Icon(
+                  CupertinoIcons.search,
+                  color: context.colors.inkSoft,
+                  size: 16,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
@@ -69,7 +73,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     style: TextStyle(color: context.colors.ink, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Search your library...',
-                      hintStyle: TextStyle(color: context.colors.inkSoft, fontSize: 14),
+                      hintStyle: TextStyle(
+                        color: context.colors.inkSoft,
+                        fontSize: 14,
+                      ),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -83,8 +90,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       _searchController.clear();
                       setState(() => _query = '');
                     },
-                    child: Icon(CupertinoIcons.xmark_circle_fill,
-                        color: context.colors.inkSoft, size: 16),
+                    child: Icon(
+                      CupertinoIcons.xmark_circle_fill,
+                      color: context.colors.inkSoft,
+                      size: 16,
+                    ),
                   ),
               ],
             ),
@@ -96,23 +106,31 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           Expanded(
             child: libraryAsync.when(
               loading: () => Center(
-                child: CircularProgressIndicator(color: context.colors.accent2, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: context.colors.accent2,
+                  strokeWidth: 2,
+                ),
               ),
               error: (_, __) => Center(
-                child: Text('Failed to load library', style: TextStyle(color: context.colors.inkSoft)),
+                child: Text(
+                  'Failed to load library',
+                  style: TextStyle(color: context.colors.inkSoft),
+                ),
               ),
               data: (words) {
                 final filtered = _query.isEmpty
                     ? words
                     : words
-                        .where(
-                          (w) =>
-                              w.word.toLowerCase().contains(_query.toLowerCase()) ||
-                              w.literalDefinition
-                                  .toLowerCase()
-                                  .contains(_query.toLowerCase()),
-                        )
-                        .toList();
+                          .where(
+                            (w) =>
+                                w.word.toLowerCase().contains(
+                                  _query.toLowerCase(),
+                                ) ||
+                                w.literalDefinition.toLowerCase().contains(
+                                  _query.toLowerCase(),
+                                ),
+                          )
+                          .toList();
 
                 if (filtered.isEmpty) {
                   return _EmptyLibrary(isFiltered: _query.isNotEmpty);
@@ -120,16 +138,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
                 return ListView.builder(
                   itemCount: filtered.length,
-                  itemBuilder: (ctx, i) => _LibraryCard(
-                    word: filtered[i],
-                    onTap: () => _showWordDetail(context, filtered[i]),
-                    onDelete: () => ref
-                        .read(libraryProvider.notifier)
-                        .deleteWord(filtered[i].id!, filtered[i].word),
-                  )
-                      .animate(delay: (30 * i).ms)
-                      .fadeIn()
-                      .slideY(begin: 0.03, end: 0),
+                  itemBuilder: (ctx, i) =>
+                      _LibraryCard(
+                            word: filtered[i],
+                            onTap: () => _showWordDetail(context, filtered[i]),
+                            onDelete: () => ref
+                                .read(libraryProvider.notifier)
+                                .deleteWord(filtered[i].id!, filtered[i].word),
+                          )
+                          .animate(delay: (30 * i).ms)
+                          .fadeIn()
+                          .slideY(begin: 0.03, end: 0),
                 );
               },
             ),
@@ -254,7 +273,11 @@ class _LibraryCard extends StatelessWidget {
                     word.literalDefinition.length > 70
                         ? '${word.literalDefinition.substring(0, 70)}...'
                         : word.literalDefinition,
-                    style: TextStyle(color: context.colors.inkSoft, fontSize: 12, height: 1.4),
+                    style: TextStyle(
+                      color: context.colors.inkSoft,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -305,7 +328,11 @@ class _EmptyLibrary extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             isFiltered ? 'No results found' : 'Your library is empty',
-            style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: context.colors.ink,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(

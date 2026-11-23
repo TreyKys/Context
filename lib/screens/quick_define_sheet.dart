@@ -19,9 +19,11 @@ class QuickDefineSheet extends StatefulWidget {
 }
 
 class _QuickDefineSheetState extends State<QuickDefineSheet> {
-  static const MethodChannel _channel =
-      MethodChannel('com.context.dictv1/quick_define');
+  static const MethodChannel _channel = MethodChannel(
+    'com.context.dictv1/quick_define',
+  );
 
+  final QuotaService _quota = QuotaService();
   String? _word;
   String? _result;
   String? _error;
@@ -41,6 +43,12 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
 
   Future<void> _openFullApp() async {
     try {
+      // If we already succeeded and consumed 1 search on this card, mark the
+      // word as prepaid so the full app's Direct Search doesn't charge a
+      // second search for the same lookup.
+      if (_result != null && _word != null && _word!.trim().isNotEmpty) {
+        await _quota.markPrepaidLookup(_word!);
+      }
       await _channel.invokeMethod('openFullApp');
     } catch (_) {}
   }
@@ -58,12 +66,11 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
     if (mounted) setState(() => _word = word);
 
     // Same daily allowance as everywhere else in the app.
-    final quota = QuotaService();
     try {
-      await quota.init('anonymous');
+      await _quota.init('anonymous');
     } catch (_) {}
 
-    if (quota.availableSearches <= 0) {
+    if (_quota.availableSearches <= 0) {
       if (mounted) {
         setState(() {
           _error = 'You\'ve used your free lookups for today.';
@@ -74,27 +81,29 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
     }
 
     try {
-      final model = FirebaseAI.googleAI().generativeModel(model: kGeminiModel);
-      final response = await model.generateContent([
+      final response = await generateContentWithFallback([
         Content.text(
           'Define "$word" in 1-2 short sentences for quick reference. '
           'Include current slang or cultural usage if relevant. '
           'Plain text only, no markdown, no JSON.',
         ),
-      ]).timeout(const Duration(seconds: 15));
+      ], timeout: const Duration(seconds: 15));
 
       // Only charge the user once it actually worked.
-      await quota.consumeSearch();
+      await _quota.consumeSearch();
 
       if (!mounted) return;
       setState(() {
         _result = response.text?.trim() ?? 'No definition found.';
         _loading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Couldn\'t reach the dictionary. Check your connection.';
+        _error = kShowDebugErrors
+            ? 'Couldn\'t reach the dictionary. Check your connection.\n\n'
+                  '${AppCheckService.formatDiagnostics(e)}'
+            : 'Couldn\'t reach the dictionary. Check your connection.';
         _loading = false;
       });
     }
@@ -140,8 +149,11 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
                           shaderCallback: (b) => LinearGradient(
                             colors: [colors.accent, colors.accent2],
                           ).createShader(b),
-                          child: Icon(CupertinoIcons.sparkles,
-                              size: 16, color: colors.ink),
+                          child: Icon(
+                            CupertinoIcons.sparkles,
+                            size: 16,
+                            color: colors.ink,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -158,8 +170,11 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
                         ),
                         GestureDetector(
                           onTap: _close,
-                          child: Icon(CupertinoIcons.xmark_circle_fill,
-                              size: 20, color: colors.inkSoft),
+                          child: Icon(
+                            CupertinoIcons.xmark_circle_fill,
+                            size: 20,
+                            color: colors.inkSoft,
+                          ),
                         ),
                       ],
                     ),
@@ -176,9 +191,13 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Text('Looking it up…',
-                              style: TextStyle(
-                                  color: colors.inkSoft, fontSize: 13)),
+                          Text(
+                            'Looking it up…',
+                            style: TextStyle(
+                              color: colors.inkSoft,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       )
                     else
@@ -196,13 +215,15 @@ class _QuickDefineSheetState extends State<QuickDefineSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Context',
-                            style: TextStyle(
-                              color: colors.inkSoft,
-                              fontSize: 11,
-                              letterSpacing: 1.2,
-                              fontWeight: FontWeight.w600,
-                            )),
+                        Text(
+                          'Context',
+                          style: TextStyle(
+                            color: colors.inkSoft,
+                            fontSize: 11,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         GestureDetector(
                           onTap: _openFullApp,
                           child: Text(

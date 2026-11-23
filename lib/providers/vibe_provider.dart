@@ -9,22 +9,39 @@ class VibeState {
   final VibeResult? result;
   final String? error;
   final bool isQuotaLocked;
+  final String? searchWord;
 
   VibeState({
     this.isLoading = false,
     this.result,
     this.error,
     this.isQuotaLocked = false,
+    this.searchWord,
   });
 
   factory VibeState.initial() => VibeState();
-  factory VibeState.loading() => VibeState(isLoading: true);
-  factory VibeState.success(VibeResult result) =>
-      VibeState(isLoading: false, result: result, error: null);
-  factory VibeState.error(String error) =>
-      VibeState(isLoading: false, result: null, error: error);
-  factory VibeState.quotaLocked() =>
-      VibeState(isLoading: false, result: null, error: null, isQuotaLocked: true);
+  factory VibeState.loading([String? searchWord]) =>
+      VibeState(isLoading: true, searchWord: searchWord);
+  factory VibeState.success(VibeResult result, [String? searchWord]) =>
+      VibeState(
+        isLoading: false,
+        result: result,
+        error: null,
+        searchWord: searchWord,
+      );
+  factory VibeState.error(String error, [String? searchWord]) => VibeState(
+    isLoading: false,
+    result: null,
+    error: error,
+    searchWord: searchWord,
+  );
+  factory VibeState.quotaLocked([String? searchWord]) => VibeState(
+    isLoading: false,
+    result: null,
+    error: null,
+    isQuotaLocked: true,
+    searchWord: searchWord,
+  );
 }
 
 final llmServiceProvider = Provider<LLMService>((ref) => LLMService());
@@ -46,36 +63,36 @@ class VibeNotifier extends Notifier<VibeState> {
   Future<void> generateVibe(String input, String mode, String context) async {
     if (state.isLoading) return;
     if (_quotaService.availableSearches <= 0) {
-      state = VibeState.quotaLocked();
+      state = VibeState.quotaLocked(input);
       return;
     }
 
-    state = VibeState.loading();
+    state = VibeState.loading(input);
     try {
       final result = await _llmService.generateVibe(input, mode, context);
-      await _quotaService.consumeSearch();
-      state = VibeState.success(result);
+      await _quotaService.consumeSearch(word: input);
+      state = VibeState.success(result, input);
       _postSearchUpdates();
     } catch (e) {
-      state = VibeState.error(e.toString());
+      state = VibeState.error(e.toString(), input);
     }
   }
 
   Future<void> directSearch(String input, {String? domain}) async {
     if (state.isLoading) return;
     if (_quotaService.availableSearches <= 0) {
-      state = VibeState.quotaLocked();
+      state = VibeState.quotaLocked(input);
       return;
     }
 
-    state = VibeState.loading();
+    state = VibeState.loading(input);
     try {
       final result = await _llmService.directSearch(input, domain: domain);
-      await _quotaService.consumeSearch();
-      state = VibeState.success(result);
+      await _quotaService.consumeSearch(word: input);
+      state = VibeState.success(result, input);
       _postSearchUpdates();
     } catch (e) {
-      state = VibeState.error(e.toString());
+      state = VibeState.error(e.toString(), input);
     }
   }
 
@@ -83,7 +100,9 @@ class VibeNotifier extends Notifier<VibeState> {
     if (state.isQuotaLocked && _quotaService.availableSearches > 0) {
       state = VibeState.initial();
       // Quota was refreshed (ad watched or premium activated) — sync count
-      ref.read(quotaCountProvider.notifier).set(_quotaService.availableSearches);
+      ref
+          .read(quotaCountProvider.notifier)
+          .set(_quotaService.availableSearches);
     }
   }
 

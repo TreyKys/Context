@@ -120,10 +120,9 @@ ThemeData _themeFrom(AppColors c, Brightness brightness) {
     scaffoldBackgroundColor: c.bg,
     colorScheme: scheme,
     extensions: [c],
-    textTheme: GoogleFonts.bricolageGrotesqueTextTheme(base.textTheme).apply(
-      bodyColor: c.ink,
-      displayColor: c.ink,
-    ),
+    textTheme: GoogleFonts.bricolageGrotesqueTextTheme(
+      base.textTheme,
+    ).apply(bodyColor: c.ink, displayColor: c.ink),
     appBarTheme: AppBarTheme(
       backgroundColor: c.bg,
       foregroundColor: c.ink,

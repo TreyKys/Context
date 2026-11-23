@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,25 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  final StreamController<String> _payloadController =
+      StreamController<String>.broadcast();
+
+  /// Emits when the user taps a notification while the app is already running.
+  Stream<String> get payloadStream => _payloadController.stream;
+
   String? initialPayload;
+  bool _initialPayloadConsumed = false;
+
+  /// Returns [initialPayload] at most once so tab rebuilds do not re-run the
+  /// same notification lookup and burn extra searches.
+  String? consumeInitialPayload([String? fallbackPayload]) {
+    if (_initialPayloadConsumed) return null;
+    final payload = initialPayload ?? fallbackPayload;
+    if (payload == null || payload.trim().isEmpty) return null;
+    _initialPayloadConsumed = true;
+    initialPayload = null;
+    return payload.trim();
+  }
 
   Future<void> init() async {
     // Initialize Timezone
@@ -41,12 +60,16 @@ class NotificationService {
     if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
       initialPayload =
           notificationAppLaunchDetails?.notificationResponse?.payload;
+      _initialPayloadConsumed = false;
     }
 
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Will be wired via Riverpod, but the provider can grab it later.
+        final payload = response.payload;
+        if (payload != null && payload.trim().isNotEmpty) {
+          _payloadController.add(payload.trim());
+        }
       },
     );
   }

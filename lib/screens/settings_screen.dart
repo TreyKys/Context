@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../providers/quota_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/vibe_provider.dart';
+import '../services/ai_config.dart';
 import '../services/quota_service.dart';
 import '../services/overlay_service.dart';
 import 'define_tutorial_screen.dart';
@@ -81,8 +85,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.colors.surface,
-        title: Text('One more step on this phone',
-            style: TextStyle(color: context.colors.ink, fontSize: 18)),
+        title: Text(
+          'One more step on this phone',
+          style: TextStyle(color: context.colors.ink, fontSize: 18),
+        ),
         content: Text(
           'Your phone needs one extra permission before the bubble can appear '
           'over other apps.\n\n'
@@ -93,16 +99,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Later',
-                style: TextStyle(color: context.colors.inkSoft)),
+            child: Text(
+              'Later',
+              style: TextStyle(color: context.colors.inkSoft),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               OverlayService().openAppSettings();
             },
-            child: Text('Open settings',
-                style: TextStyle(color: context.colors.accent)),
+            child: Text(
+              'Open settings',
+              style: TextStyle(color: context.colors.accent),
+            ),
           ),
         ],
       ),
@@ -118,12 +128,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = ref.watch(isPremiumProvider).asData?.value ??
+    final isPremium =
+        ref.watch(isPremiumProvider).asData?.value ??
         ref.read(quotaServiceProvider).isPremium;
 
     return Scaffold(
@@ -137,7 +150,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(
           'Settings',
-          style: TextStyle(color: context.colors.ink, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: context.colors.ink,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
@@ -147,17 +163,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _SectionHeader(title: 'Account'),
           _SettingsTile(
             icon: isPremium ? CupertinoIcons.bolt_fill : CupertinoIcons.bolt,
-            iconColor: isPremium ? context.colors.accent2 : context.colors.inkSoft,
+            iconColor: isPremium
+                ? context.colors.accent2
+                : context.colors.inkSoft,
             title: isPremium ? 'Premium Active' : 'Free Plan',
             subtitle: isPremium
                 ? 'Unlimited searches & library'
                 : '3 searches/day · Upgrade for unlimited',
             trailing: isPremium
                 ? null
-                : _PillButton(
-                    label: 'Upgrade',
-                    onTap: _openSubscription,
-                  ),
+                : _PillButton(label: 'Upgrade', onTap: _openSubscription),
             onTap: isPremium ? null : _openSubscription,
           ),
 
@@ -176,7 +191,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: CupertinoIcons.text_cursor,
             iconColor: context.colors.accent,
             title: 'Define from any app',
-            subtitle: 'How to look up words without leaving what you\'re reading',
+            subtitle:
+                'How to look up words without leaving what you\'re reading',
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const DefineTutorialScreen()),
@@ -186,7 +202,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Overlay toggle
           _SettingsTile(
             icon: CupertinoIcons.square_stack_fill,
-            iconColor: _overlayEnabled ? context.colors.accent : context.colors.inkSoft,
+            iconColor: _overlayEnabled
+                ? context.colors.accent
+                : context.colors.inkSoft,
             title: 'Floating Search Bubble',
             subtitle: isPremium
                 ? 'Search from any app without opening Context'
@@ -197,7 +215,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (!isPremium)
                   Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: context.colors.accent.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(100),
@@ -214,7 +235,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Switch(
                   value: _overlayEnabled,
                   onChanged: (v) => _toggleOverlay(v, isPremium),
-                  activeColor: context.colors.accent,
+                  activeThumbColor: context.colors.accent,
                   inactiveThumbColor: context.colors.inkSoft,
                   inactiveTrackColor: context.colors.border,
                 ),
@@ -231,7 +252,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: _PillButton(
               label: 'Refresh',
               onTap: () async {
-                await NotificationService().scheduleDailyNotifications(force: true);
+                await NotificationService().scheduleDailyNotifications(
+                  force: true,
+                );
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -300,26 +323,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: _appVersion.isNotEmpty ? 'Version $_appVersion' : '',
           ),
 
-          // Debug-only: exercise premium features (overlay, unlimited) without a
-          // real purchase. kDebugMode is false in release, so this never ships.
-          if (kDebugMode) ...[
+          // Developer / diagnostics section: shown in debug builds or when test
+          // diagnostics (USE_APP_CHECK_DEBUG_PROVIDER / SHOW_DEBUG_ERRORS) are
+          // enabled at build time.
+          if (kDebugMode || kUseAppCheckDebugProvider || kShowDebugErrors) ...[
             const SizedBox(height: 8),
-            _SectionHeader(title: 'Developer (debug only)'),
-            _SettingsTile(
-              icon: CupertinoIcons.hammer_fill,
-              iconColor: Colors.orange,
-              title: 'Premium override',
-              subtitle: 'Test premium features without a purchase',
-              trailing: Switch(
-                value: isPremium,
-                activeColor: Colors.orange,
-                onChanged: (v) async {
-                  await ref.read(quotaServiceProvider).setPremium(v);
-                  ref.invalidate(isPremiumProvider);
-                  if (mounted) setState(() {});
+            const _SectionHeader(title: 'Developer & Diagnostics'),
+            if (AppCheckService.debugToken != null)
+              _SettingsTile(
+                icon: CupertinoIcons.lock_shield,
+                iconColor: context.colors.accent,
+                title: 'App Check Debug Token',
+                subtitle:
+                    '${AppCheckService.debugToken}\nTap to copy for Firebase Console → App Check → Manage debug tokens',
+                trailing: _PillButton(
+                  label: 'Copy',
+                  onTap: () {
+                    final token = AppCheckService.debugToken!;
+                    Clipboard.setData(ClipboardData(text: token));
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'App Check debug token copied to clipboard',
+                        ),
+                        backgroundColor: context.colors.surfaceAlt,
+                      ),
+                    );
+                  },
+                ),
+                onTap: () {
+                  final token = AppCheckService.debugToken!;
+                  Clipboard.setData(ClipboardData(text: token));
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                        'App Check debug token copied to clipboard',
+                      ),
+                      backgroundColor: context.colors.surfaceAlt,
+                    ),
+                  );
                 },
               ),
-            ),
+            if (kDebugMode)
+              _SettingsTile(
+                icon: CupertinoIcons.hammer_fill,
+                iconColor: Colors.orange,
+                title: 'Premium override',
+                subtitle: 'Test premium features without a purchase',
+                trailing: Switch(
+                  value: isPremium,
+                  activeThumbColor: Colors.orange,
+                  onChanged: (v) async {
+                    final quotaService = ref.read(quotaServiceProvider);
+                    await quotaService.setPremium(v);
+                    ref
+                        .read(quotaCountProvider.notifier)
+                        .set(quotaService.availableSearches);
+                    ref.read(vibeProvider.notifier).checkQuotaLock();
+                    ref.read(directSearchProvider.notifier).checkQuotaLock();
+                    ref.invalidate(isPremiumProvider);
+                    if (mounted) setState(() {});
+                  },
+                ),
+              ),
           ],
 
           const SizedBox(height: 32),
@@ -450,7 +518,10 @@ class _SettingsTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: TextStyle(color: context.colors.inkSoft, fontSize: 11),
+                      style: TextStyle(
+                        color: context.colors.inkSoft,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ],
@@ -458,7 +529,11 @@ class _SettingsTile extends StatelessWidget {
             ),
             if (trailing != null) trailing!,
             if (trailing == null && onTap != null)
-              Icon(CupertinoIcons.chevron_right, color: context.colors.inkSoft, size: 14),
+              Icon(
+                CupertinoIcons.chevron_right,
+                color: context.colors.inkSoft,
+                size: 14,
+              ),
           ],
         ),
       ),
@@ -480,7 +555,9 @@ class _PillButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.colors.accent.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: context.colors.accent.withValues(alpha: 0.4)),
+          border: Border.all(
+            color: context.colors.accent.withValues(alpha: 0.4),
+          ),
         ),
         child: Text(
           label,
@@ -539,15 +616,21 @@ class _ThemeSelector extends StatelessWidget {
                     Icon(
                       o.$2,
                       size: 18,
-                      color: selected ? context.colors.accent : context.colors.inkSoft,
+                      color: selected
+                          ? context.colors.accent
+                          : context.colors.inkSoft,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       o.$3,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                        color: selected ? context.colors.accent : context.colors.inkSoft,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: selected
+                            ? context.colors.accent
+                            : context.colors.inkSoft,
                       ),
                     ),
                   ],
